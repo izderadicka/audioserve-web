@@ -1,15 +1,37 @@
 <script lang=ts>
 
-    import {AuthenticationApiFp} from '../api';
-import { apiConfig } from '../state/stores';
+import { apiConfig, isAuthenticated } from '../state/stores';
+import {AuthenticationApi} from '../client/apis'
+import { encodeSecret } from '../util/encode-secret';
+import { Configuration } from '../client';
 
     let sharedSecret:string;
     let playbackGroup:string;
+    let loginError = false;
 
     async function login() {
-        console.log("Initiating client login");
+        console.debug("Initiating client login");
+        loginError = false;
         if (sharedSecret) {
-            //const reply =  AuthenticationApiFp({});
+            const secret = await encodeSecret(sharedSecret);
+            const client = new AuthenticationApi($apiConfig);
+            try {
+                const token = await client.authenticatePost({secret});
+                console.debug("Client succesfully authenticated with server")
+                $isAuthenticated = true;
+                apiConfig.update((cfg) => new Configuration({
+                    basePath: cfg.basePath,
+                    credentials: cfg.credentials,
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                }))
+            } catch (e) {
+                console.error("Login error", e);
+                loginError = true;
+                $isAuthenticated = false;
+            }
+            sharedSecret = "";
         }
     }
 
@@ -17,6 +39,9 @@ import { apiConfig } from '../state/stores';
 
 <div class="login">
     <h1>Audioserve Login</h1>
+    {#if loginError} 
+    <p class="warning">Login failed!</p>
+    {/if}
     <form on:submit|preventDefault="{login}">
         <label for="shared-secret">Shared Secret</label>
         <input type="password" name="shared-secret" bind:value="{sharedSecret}">
