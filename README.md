@@ -2,6 +2,8 @@
 
 With Svelte and Typescript.  Will focus initially on experiments with Service Workers and audio caching.
 
+** NOT READY FOR USAGE - WIP ***
+
 ------------------------------------------------------------------------------------------------------------------
 
 *Psst — looking for a more complete solution? Check out [SvelteKit](https://kit.svelte.dev), the official framework for building web applications of all sizes, with a beautiful development experience and flexible filesystem-based routing.*
