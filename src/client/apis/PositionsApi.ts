@@ -108,7 +108,7 @@ export class PositionsApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => Position | Array&lt;Position&gt;FromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => PositionFromJSON(jsonValue)); // Manual fix, but will not work for rec param
     }
 
     /**
