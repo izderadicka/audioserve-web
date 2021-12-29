@@ -3,10 +3,11 @@
   import Login from "./components/Login.svelte";
   import Menu from "./components/Menu.svelte";
 
-  import { apiConfig, colApi, isAuthenticated } from "./state/stores";
+  import { apiConfig, colApi, isAuthenticated , collections, transcodings, selectedCollection} from "./state/stores";
   import { onMount } from "svelte";
   import { CollectionsApi, Configuration } from "./client";
 import { deleteCookie } from "./util/auth";
+import CollectionSelector from "./components/CollectionSelector.svelte";
 
   const API_BASE_URL = "http://localhost:3000";
   apiConfig.set(
@@ -17,10 +18,12 @@ import { deleteCookie } from "./util/auth";
   );
 
   async function loadCollections() {
-    const collections = await $colApi.collectionsGet();
-    console.debug("Got collections list", collections);
-    const transcodings = await $colApi.transcodingsGet();
-    console.debug("Got transcodings list", transcodings);
+    const cols = await $colApi.collectionsGet();
+    console.debug("Got collections list", cols);
+	$collections = cols;
+    const trans = await $colApi.transcodingsGet();
+    console.debug("Got transcodings list", trans);
+	$transcodings = trans;
   }
 
   function actOnMenu(menuEvt) {
@@ -47,6 +50,8 @@ import { deleteCookie } from "./util/auth";
       });
     }
   });
+
+$: console.debug("Selected collection is "+ $selectedCollection);
 </script>
 
 <main class="container">
@@ -62,7 +67,7 @@ import { deleteCookie } from "./util/auth";
       </ul>
     </nav>
 	<div class="searchbar">
-		
+		<CollectionSelector/>
 	</div>
     <div class="browser">
       <div class="breadcrumb">[home/neco/neco]</div>

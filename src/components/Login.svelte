@@ -22,9 +22,7 @@ import { Configuration } from '../client';
                 apiConfig.update((cfg) => new Configuration({
                     basePath: cfg.basePath,
                     credentials: cfg.credentials,
-                    headers: {
-                        "Authorization": `Bearer ${token}`
-                    }
+                    //accessToken: token // TBD enable access token 
                 }))
             } catch (e) {
                 console.error("Login error", e);
