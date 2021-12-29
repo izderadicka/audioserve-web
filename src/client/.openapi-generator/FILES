@@ -8,13 +8,13 @@ models/AudioFile.ts
 models/AudioFileMeta.ts
 models/AudioFileSection.ts
 models/AudioFolder.ts
-models/InlineResponse200.ts
-models/InlineResponse2001.ts
+models/CollectionsInfo.ts
 models/Position.ts
 models/SearchResult.ts
 models/SharedSecret.ts
 models/Subfolder.ts
 models/Transcoding.ts
+models/TranscodingsInfo.ts
 models/TypedFile.ts
 models/index.ts
 runtime.ts

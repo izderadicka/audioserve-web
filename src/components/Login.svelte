@@ -2,7 +2,7 @@
 
 import { apiConfig, isAuthenticated } from '../state/stores';
 import {AuthenticationApi} from '../client/apis'
-import { encodeSecret } from '../util/encode-secret';
+import { encodeSecret } from '../util/auth';
 import { Configuration } from '../client';
 
     let sharedSecret:string;

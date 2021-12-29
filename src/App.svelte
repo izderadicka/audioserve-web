@@ -6,6 +6,7 @@
   import { apiConfig, colApi, isAuthenticated } from "./state/stores";
   import { onMount } from "svelte";
   import { CollectionsApi, Configuration } from "./client";
+import { deleteCookie } from "./util/auth";
 
   const API_BASE_URL = "http://localhost:3000";
   apiConfig.set(
@@ -24,7 +25,12 @@
 
   function actOnMenu(menuEvt) {
 	  const menuSelection: string = menuEvt.detail;
-	  console.log("Menu selected", menuSelection)
+	  console.debug("Menu selected", menuSelection);
+
+	  if (menuSelection === "logout") {
+		  $isAuthenticated = false;
+		  deleteCookie();
+	  }
   }
 
   onMount(async () => {
@@ -49,12 +55,15 @@
   {:else}
     <nav class="nav-bar">
       <ul>
-        <li><h4><a href="/">AS</a></h4></li>
+        <li><h4><a href="/">audioserve</a></h4></li>
       </ul>
 	  <ul>
-        <li>[Menu] <Menu on:menu="{actOnMenu}"/></li>
+        <li><Menu on:menu="{actOnMenu}"/></li>
       </ul>
     </nav>
+	<div class="searchbar">
+		
+	</div>
     <div class="browser">
       <div class="breadcrumb">[home/neco/neco]</div>
       <div class="browser" />
