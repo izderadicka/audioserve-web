@@ -46,7 +46,7 @@
     role="img"
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
-    height="16px"
+    height="1.5rem"
     fill="none"
     stroke="currentColor"
     stroke-width="2"
