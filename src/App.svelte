@@ -8,6 +8,9 @@
   import { CollectionsApi, Configuration } from "./client";
 import { deleteCookie } from "./util/auth";
 import CollectionSelector from "./components/CollectionSelector.svelte";
+import Browser from "./components/Browser.svelte";
+import { StorageKeys } from "./types/enums";
+import Breadcrumb from "./components/Breadcrumb.svelte";
 
   const API_BASE_URL = "http://localhost:3000";
   apiConfig.set(
@@ -21,6 +24,9 @@ import CollectionSelector from "./components/CollectionSelector.svelte";
     const cols = await $colApi.collectionsGet();
     console.debug("Got collections list", cols);
 	$collections = cols;
+	let pastCollection:number = parseInt(localStorage.getItem(StorageKeys.LAST_COLLECTION) || "0");
+	if (pastCollection >= cols.names.length) pastCollection=0;
+	$selectedCollection = pastCollection;
     const trans = await $colApi.transcodingsGet();
     console.debug("Got transcodings list", trans);
 	$transcodings = trans;
@@ -54,6 +60,9 @@ import CollectionSelector from "./components/CollectionSelector.svelte";
 $: console.debug("Selected collection is "+ $selectedCollection);
 </script>
 
+<style>
+</style>
+
 <main class="container">
   {#if !$isAuthenticated}
     <Login />
@@ -70,12 +79,10 @@ $: console.debug("Selected collection is "+ $selectedCollection);
 		<CollectionSelector/>
 	</div>
     <div class="browser">
-      <div class="breadcrumb">[home/neco/neco]</div>
+      <Breadcrumb/>
       <div class="browser" />
+	  <Browser/>
     </div>
     <div class="player">[player]</div>
   {/if}
 </main>
-
-<style>
-</style>
