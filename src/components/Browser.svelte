@@ -1,12 +1,18 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
 
   import type { AudioFile, Subfolder } from "../client";
-  import { colApi, currentFolder, isAuthenticated, selectedCollection } from "../state/stores";
+  import {
+    colApi,
+    currentFolder,
+    isAuthenticated,
+    selectedCollection,
+  } from "../state/stores";
   import { StorageKeys } from "../types/enums";
 
   let subfolders: Subfolder[] = [];
   let files: AudioFile[] = [];
+  let folderPath: string | undefined;
 
   async function loadFolder(folder: string) {
     try {
@@ -17,12 +23,13 @@
       files = audioFolder.files!;
       subfolders = audioFolder.subfolders!;
       localStorage.setItem(StorageKeys.LAST_FOLDER, folder);
+      folderPath = folder;
     } catch (resp) {
       console.error("Cannot load folder", resp);
       if (resp.status === 404) {
         $currentFolder = "";
       } else if (resp.status === 401) {
-          $isAuthenticated = false;
+        $isAuthenticated = false;
       }
     }
   }
@@ -37,19 +44,33 @@
     };
   }
 
-  $: if ($selectedCollection != undefined) {
-    $currentFolder = localStorage.getItem(StorageKeys.LAST_FOLDER) || "";
-    localStorage.setItem(
-      StorageKeys.LAST_COLLECTION,
-      $selectedCollection.toString()
-    );
-  }
+  const unsubsribe = selectedCollection.subscribe((col) => {
+    if (col != undefined) {
+      if (folderPath === undefined) {
+        // restore last path from localStorage
+        $currentFolder = localStorage.getItem(StorageKeys.LAST_FOLDER) || "";
+      } else {
+        // go to root of other collection
+        $currentFolder = "";
+        if (folderPath === "") {
+          // TODO: fix it by having currentFolder as object
+          // have to enforce reload
+          loadFolder("");
+        }
+      }
+      localStorage.setItem(
+        StorageKeys.LAST_COLLECTION,
+        $selectedCollection.toString()
+      );
+    }
+  });
 
   $: if ($currentFolder != undefined) {
     loadFolder($currentFolder);
   }
 
   onMount(async () => {});
+  onDestroy(unsubsribe);
 </script>
 
 {#if subfolders.length > 0}

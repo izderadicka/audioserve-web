@@ -28,6 +28,6 @@ function changeFolder(idx:number) {
     <a href="/" on:click|preventDefault="{goHome}">Home</a>
     {#each pathSegments as seg,idx}
     <!-- svelte-ignore a11y-invalid-attribute -->
-    / <a href="#" on:click|preventDefault="{changeFolder(idx)}">{seg}</a>
+    / <a href="#" on:click|preventDefault="{changeFolder(idx)}">{seg} </a>
     {/each}
 </div>

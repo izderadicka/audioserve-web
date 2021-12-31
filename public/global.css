@@ -1,10 +1,36 @@
 body {
 	padding: 0em;
 }
-
+/* TODO use variables to match themes */
 .warning {
     color: red;
     font-weight: bold;
     background-color: #ff000030;
     padding: 0.3em;
+}
+
+/* Bit of tweaking sizes for header */
+
+.search-bar input, .search-bar select {
+	height: 2rem !important;
+	padding-top: 0.2rem;
+}
+
+.nav-bar {
+	height: 2.3rem;
+}
+
+/* and additional colors for menu */
+
+
+:root {
+	--menu-background: #f9f9f9;
+	--menu-shadow: rgba(0, 0, 0, 0.2);
+}
+
+@media only screen {
+	:root[data-theme=dark] {
+		--menu-background: #0a0a0a;
+		--menu-shadow: rgba(255, 255, 255, 0.2);
+	}
 }
