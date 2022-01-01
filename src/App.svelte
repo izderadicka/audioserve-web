@@ -18,7 +18,8 @@
   import Browser from "./components/Browser.svelte";
   import { StorageKeys } from "./types/enums";
   import Breadcrumb from "./components/Breadcrumb.svelte";
-import { otherTheme } from "./util";
+  import { otherTheme } from "./util";
+import Player from "./components/Player.svelte";
 
   const themePreference = localStorage.getItem(StorageKeys.THEME);
   if (themePreference) {
@@ -55,10 +56,10 @@ import { otherTheme } from "./util";
       $isAuthenticated = false;
       deleteCookie();
     } else if (menuSelection === "switch-theme") {
-		const theme =  otherTheme();
-		document.querySelector("html").setAttribute("data-theme", theme);
-		localStorage.setItem(StorageKeys.THEME, theme);
-	}
+      const theme = otherTheme();
+      document.querySelector("html").setAttribute("data-theme", theme);
+      localStorage.setItem(StorageKeys.THEME, theme);
+    }
   }
 
   onMount(async () => {
@@ -83,32 +84,50 @@ import { otherTheme } from "./util";
   {#if !$isAuthenticated}
     <Login />
   {:else}
-    <nav class="nav-bar">
-      <ul>
-        <li><h4><a href="/">audioserve</a></h4></li>
-      </ul>
-      <ul>
-        <li><Menu on:menu={actOnMenu} /></li>
-      </ul>
-    </nav>
-    <div class="search-bar grid">
-      <CollectionSelector /><input
-        type="text"
-        name="search"
-        placeholder="Search"
-      />
+    <div class="head">
+      <nav class="nav-bar">
+        <ul>
+          <li><h4><a href="/">audioserve</a></h4></li>
+        </ul>
+        <ul>
+          <li><Menu on:menu={actOnMenu} /></li>
+        </ul>
+      </nav>
+      <div class="search-bar grid">
+        <CollectionSelector /><input
+          type="text"
+          name="search"
+          placeholder="Search"
+        />
+      </div>
+      <Breadcrumb />
     </div>
     <div class="browser">
-      <Breadcrumb />
-      <div class="browser" />
       <Browser />
     </div>
-    <div class="player">[player]</div>
+    <div class="player">
+		<Player/>
+	</div>
   {/if}
 </main>
 
 <style>
   main {
     padding: 16px;
+    display: flex;
+    flex-flow: column;
+    height: 100%;
+  }
+
+  .head {
+	  flex: 0 1 auto;
+  }
+  .browser {
+	  flex: 1 1 auto;
+	  overflow-y: scroll;
+  }
+  .player {
+	  flex: 0 1 auto;
+	  border-top: 1px solid var(--color)
   }
 </style>
