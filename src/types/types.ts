@@ -4,7 +4,10 @@ export interface CurrentPlayItem {
     url: string,
     duration: number,
     name: string,
-    position: number
+    path: string,
+    position: number,
+    startPlay: boolean,
+    time?: number,
 }
 
 export interface CurrentPlayList {

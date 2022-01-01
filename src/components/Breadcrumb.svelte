@@ -19,7 +19,7 @@ function changeFolder(idx:number) {
 <style>
     .breadcrumb {
         padding: 0.5rem;
-        background-color: var(--primary-focus);
+        background-color: var(--secondary-focus);
         margin-bottom: 1.5rem;
     }
 </style>

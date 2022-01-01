@@ -3,7 +3,7 @@
 
   import type { AudioFile, Subfolder } from "../client";
   import {
-apiConfig,
+    apiConfig,
     colApi,
     currentFolder,
     isAuthenticated,
@@ -12,6 +12,7 @@ apiConfig,
     selectedCollection,
   } from "../state/stores";
   import { StorageKeys } from "../types/enums";
+import FileItem from "./FileItem.svelte";
 
   let subfolders: Subfolder[] = [];
   let files: AudioFile[] = [];
@@ -26,6 +27,24 @@ apiConfig,
       files = audioFolder.files!;
       subfolders = audioFolder.subfolders!;
       localStorage.setItem(StorageKeys.LAST_FOLDER, folder);
+      // restore last played file, if possible
+      if (folderPath === undefined) {
+      const prevFile = localStorage.getItem(StorageKeys.LAST_FILE);
+        if (prevFile) {
+            console.debug(`Can try to play ${prevFile} in folder ${$currentFolder} in collection ${$selectedCollection}`);
+            const position = files.findIndex((f) => f.path === prevFile);
+            if (position>=0) {
+                let time:number|undefined;
+                try {
+                    time = parseFloat(localStorage.getItem(StorageKeys.LAST_POSITION));
+                } catch (e) {
+                    console.log("Invalid last position", e);
+                }
+                startPlaying(position, false, time)()
+            }
+        }
+    }   
+
       folderPath = folder;
     } catch (resp) {
       console.error("Cannot load folder", resp);
@@ -41,23 +60,31 @@ apiConfig,
     return () => ($currentFolder = folder);
   }
 
-  function startPlaying(position:number) {
+  function startPlaying(position: number, startPlay = true, time?: number) {
     return () => {
-        const file = files[position];
-        const fileURL = $apiConfig.basePath + "/" + $selectedCollection + "/audio/" + encodeURI(file.path);
-        const duration = file.meta?.duration;
-        console.debug("Click action to start to play: " + fileURL);
-        $playList = {
-            files,
-            collection: $selectedCollection,
-            folder: $currentFolder
-        }
-        $playItem = {
-            url: fileURL,
-            duration,
-            name: file.name,
-            position
-        }
+      const file = files[position];
+      const fileURL =
+        $apiConfig.basePath +
+        "/" +
+        $selectedCollection +
+        "/audio/" +
+        encodeURI(file.path);
+      const duration = file.meta?.duration;
+      console.debug("Action to start to play: " + fileURL);
+      $playList = {
+        files,
+        collection: $selectedCollection,
+        folder: $currentFolder,
+      };
+      $playItem = {
+        url: fileURL,
+        duration,
+        name: file.name,
+        path: file.path,
+        position,
+        startPlay,
+        time
+      };
     };
   }
 
@@ -105,7 +132,8 @@ apiConfig,
     <summary>Files</summary>
     <ul>
       {#each files as file, pos}
-        <li on:click={startPlaying(pos)}>{file.name}</li>
+        <li on:click={startPlaying(pos)}><FileItem name="{file.name}" duration="{file.meta.duration}" 
+            bitrate="{file.meta.bitrate}" position="{pos}"/></li>
       {/each}
     </ul>
   </details>
@@ -115,6 +143,7 @@ apiConfig,
   summary {
     font-weight: bold;
     font-size: 1.5rem;
+    line-height: 1.5rem;
   }
   ul {
     padding-left: 0;
@@ -122,5 +151,10 @@ apiConfig,
   ul li {
     list-style-type: none;
     cursor: pointer;
+    border-bottom: 1px solid var(--accordion-border-color);
+  }
+
+  ul li:hover {
+      color: var(--primary);
   }
 </style>

@@ -16,6 +16,7 @@ html,body {
 .search-bar input, .search-bar select {
 	height: 2rem !important;
 	padding-top: 0.2rem;
+	padding-bottom: 0;
 }
 
 .nav-bar {

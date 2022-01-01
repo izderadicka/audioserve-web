@@ -1,25 +1,27 @@
 <script lang="ts">
-import { onDestroy, onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
 
-import { collections, selectedCollection } from "../state/stores";
+  import { collections, selectedCollection } from "../state/stores";
 
-export let selected = 0;
+  export let selected = 0;
 
-let cols = [];
+  let cols = [];
 
-const unsubsribe = collections.subscribe((c) => {if (c)  cols=c.names});
+  const unsubsribe = collections.subscribe((c) => {
+    if (c) cols = c.names;
+  });
 
-onDestroy(unsubsribe);
+  onDestroy(unsubsribe);
 
-function changeCollection() {
+  function changeCollection() {
     $selectedCollection = selected;
-}
-
+  }
 </script>
 
-
-<select name="collection" bind:value="{selected}" on:change="{changeCollection}"> 
-    {#each cols as colName, colId}
-    <option value="{colId}" selected="{$selectedCollection == colId}">{colName}</option>
-    {/each}
+<select name="collection" bind:value={selected} on:change={changeCollection}>
+  {#each cols as colName, colId}
+    <option value={colId} selected={$selectedCollection == colId}
+      >{colName}</option
+    >
+  {/each}
 </select>
