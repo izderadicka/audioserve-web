@@ -3,9 +3,12 @@
 
   import type { AudioFile, Subfolder } from "../client";
   import {
+apiConfig,
     colApi,
     currentFolder,
     isAuthenticated,
+    playItem,
+    playList,
     selectedCollection,
   } from "../state/stores";
   import { StorageKeys } from "../types/enums";
@@ -38,9 +41,23 @@
     return () => ($currentFolder = folder);
   }
 
-  function startPlaying(file: string) {
+  function startPlaying(position:number) {
     return () => {
-      console.debug("Click action to start to play: " + file);
+        const file = files[position];
+        const fileURL = $apiConfig.basePath + "/" + $selectedCollection + "/audio/" + encodeURI(file.path);
+        const duration = file.meta?.duration;
+        console.debug("Click action to start to play: " + fileURL);
+        $playList = {
+            files,
+            collection: $selectedCollection,
+            folder: $currentFolder
+        }
+        $playItem = {
+            url: fileURL,
+            duration,
+            name: file.name,
+            position
+        }
     };
   }
 
@@ -87,8 +104,8 @@
   <details open>
     <summary>Files</summary>
     <ul>
-      {#each files as file}
-        <li on:click={startPlaying(file.path)}>{file.name}</li>
+      {#each files as file, pos}
+        <li on:click={startPlaying(pos)}>{file.name}</li>
       {/each}
     </ul>
   </details>

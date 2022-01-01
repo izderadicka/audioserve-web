@@ -1,9 +1,10 @@
 <script lang="ts">
+import { onDestroy } from "svelte";
+
+import { playItem } from "../state/stores";
+
 import { formatTime } from "../util";
 
-
-
-    let src:string;
     let duration:number;
     $: formattedDuration = formatTime(duration);
     let currentTime:number;
@@ -14,6 +15,24 @@ import { formatTime } from "../util";
 
     let file = "";
     let folder = "";
+
+    const unsubscribe = playItem.subscribe((item) => {
+        if (item) {
+            player.src = item.url;
+            player.play();
+            file = item.name
+        }
+    });
+
+    function playPause() {
+        if (paused) {
+            player.play();
+        } else {
+            player.pause();
+        }
+    }
+
+    onDestroy(unsubscribe);
 
 </script>
 <div class="info">
@@ -29,9 +48,9 @@ import { formatTime } from "../util";
     </div>
 </div>
 <div class="player">
-    <audio src="{src}" bind:duration bind:currentTime bind:paused bind:this="{player}"></audio>
+    <audio bind:duration bind:currentTime bind:paused bind:this="{player}"></audio>
     <div class="play-btn">
-        <button>
+        <button on:click="{playPause}">
             
             <svg id="play-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="24" viewBox="0 0 18 24">
                 {#if paused}
