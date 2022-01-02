@@ -24,7 +24,7 @@
   let folder = "";
 
   const unsubscribe = playItem.subscribe((item) => {
-    if (item) {
+    if (item && player) {
       player.src = item.url;
       localStorage.setItem(StorageKeys.LAST_FILE, item.path);
       if (item.time) {

@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "target": "ES6",
+        "lib": ["es6", "WebWorker"],
+        "outDir": "../public",
+        "moduleResolution": "Node",
+        "module": "ES6"
+    },
+    "include": ["*.ts"],
+    
+}

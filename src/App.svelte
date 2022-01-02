@@ -19,7 +19,7 @@
   import { StorageKeys } from "./types/enums";
   import Breadcrumb from "./components/Breadcrumb.svelte";
   import { otherTheme } from "./util";
-import Player from "./components/Player.svelte";
+  import Player from "./components/Player.svelte";
 
   const themePreference = localStorage.getItem(StorageKeys.THEME);
   if (themePreference) {
@@ -106,8 +106,8 @@ import Player from "./components/Player.svelte";
       <Browser />
     </div>
     <div class="player">
-		<Player/>
-	</div>
+      <Player />
+    </div>
   {/if}
 </main>
 
@@ -120,14 +120,14 @@ import Player from "./components/Player.svelte";
   }
 
   .head {
-	  flex: 0 1 auto;
+    flex: 0 1 auto;
   }
   .browser {
-	  flex: 1 1 auto;
-	  overflow-y: scroll;
+    flex: 1 1 auto;
+    overflow-y: scroll;
   }
   .player {
-	  flex: 0 1 auto;
-	  border-top: 1px solid var(--color)
+    flex: 0 1 auto;
+    border-top: 1px solid var(--color);
   }
 </style>
