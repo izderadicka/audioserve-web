@@ -1,3 +1,6 @@
+import type { Cache } from ".";
+import type { CachedItem } from "./types";
+
 export function createCache() {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open("audio-cache");
@@ -19,6 +22,21 @@ export function createCache() {
   });
 }
 
-export class DbCache {
-  constructor(private db: IDBDatabase) {}
+export class DbCache implements Cache{
+  private queue: any[];
+  constructor(private db: IDBDatabase) {
+
+    this.maxParallelLoads=2;
+
+  }
+    getCachedUrl(url: string): CachedItem {
+        throw new Error("Method not implemented.");
+    }
+    cacheAhead(url: string): Promise<CachedItem> {
+        throw new Error("Method not implemented.");
+    }
+    cancelPendingLoad(url: string): boolean {
+        throw new Error("Method not implemented.");
+    }
+    maxParallelLoads: number;
 }
