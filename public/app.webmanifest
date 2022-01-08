@@ -1,0 +1,17 @@
+{
+    "name": "Audioserve Web Client",
+    "short_name": "audioserve",
+    "description": "Audioserve Web Client - stream audio from your folders - experimental",
+    "icons": [
+      {
+        "src": "favicon.png",
+        "sizes": "128x128",
+        "type": "image/png"
+      }
+    ],
+    "start_url": "/index.html",
+    "display": "fullscreen",
+    "theme_color": "#B12A34",
+    "background_color": "#B12A34"
+  }
+  
