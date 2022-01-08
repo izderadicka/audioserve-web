@@ -3,6 +3,7 @@
 
   import {
     apiConfig,
+    currentFolder,
     playItem,
     playList,
     selectedCollection,
@@ -15,20 +16,24 @@
   $: formattedDuration = formatTime(duration);
   let currentTime: number;
   $: formattedCurrentTime = formatTime(currentTime);
-  $: if (currentTime != undefined) localStorage.setItem(StorageKeys.LAST_POSITION, currentTime.toString());
+  $: if (currentTime != undefined)
+    localStorage.setItem(StorageKeys.LAST_POSITION, currentTime.toString());
   let paused: boolean;
 
   let player: HTMLAudioElement;
 
   let file = "";
   let folder = "";
+  let folderPosition = 0;
+
+  $: folderSize = $playList?.files.length || 0;
 
   const unsubscribe = playItem.subscribe((item) => {
     if (item && player) {
       player.src = item.url;
       localStorage.setItem(StorageKeys.LAST_FILE, item.path);
       if (item.time) {
-          currentTime = item.time;
+        currentTime = item.time;
       }
       if (item.startPlay) {
         player.play();
@@ -37,6 +42,7 @@
         duration = item.duration;
       }
       file = item.name;
+      folderPosition = item.position;
       folder = $playList.folder;
     }
   });
@@ -55,8 +61,12 @@
 
   function tryNextFile() {
     let pos = $playItem.position;
-    if (pos < $playList.files.length - 1) {
-      const nextPosition = pos + 1;
+    const nextPosition = pos + 1;
+    playPosition(nextPosition);
+  }
+
+  function playPosition(nextPosition: number) {
+    if (nextPosition >= 0 && nextPosition < $playList.files.length) {
       const nextFile = $playList.files[nextPosition];
       const url =
         $apiConfig.basePath +
@@ -75,19 +85,36 @@
     }
   }
 
+  function navigateToFolder() {
+    const col = $playList.collection;
+    const folder = $playList.folder;
+    $selectedCollection = col;
+    $currentFolder = folder;
+  }
+
+  function playPrevious() {
+    playPosition($playItem.position - 1);
+  }
+
+  function playNext() {
+    playPosition($playItem.position + 1);
+  }
+
   onDestroy(unsubscribe);
 </script>
 
 <div class="info">
   <div>
-    <label for="file-name">File (<span>X</span>/<span>Y</span>): </label>
+    <label for="file-name"
+      >File (<span>{folderSize?folderPosition+1:0}</span>/<span>{folderSize}</span>):
+    </label>
     <span id="file-name">{file}</span>
-    <button id="prev-file">▲</button>
-    <button id="next-file">▼</button>
+    <button id="prev-file" on:click={playPrevious}>▲</button>
+    <button id="next-file" on:click={playNext}>▼</button>
   </div>
   <div>
     <label for="folder-name">Folder: </label>
-    <span id="folder-name">{folder}</span>
+    <span id="folder-name" on:click={navigateToFolder}>{folder}</span>
   </div>
 </div>
 <div class="player">
@@ -139,6 +166,14 @@
 </div>
 
 <style>
+  #prev-file,
+  #next-file {
+    font-size: 1.5em;
+    margin-left: 0.5em;
+  }
+  #folder-name {
+    cursor: pointer;
+  }
   #play-icon path {
     fill: var(--primary);
   }

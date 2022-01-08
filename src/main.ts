@@ -1,6 +1,6 @@
 import App from "./App.svelte";
 
-if ("serviceWorker" in navigator) {
+if (false && "serviceWorker" in navigator) {
   navigator.serviceWorker
     .register("./service-worker.js", { scope: "./" })
     .catch((error) => {
