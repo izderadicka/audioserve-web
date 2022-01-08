@@ -11,7 +11,7 @@
     transcodings,
     selectedCollection,
   } from "./state/stores";
-  import { onMount } from "svelte";
+  import { onMount, setContext } from "svelte";
   import { CollectionsApi, Configuration } from "./client";
   import { deleteCookie } from "./util/auth";
   import CollectionSelector from "./components/CollectionSelector.svelte";
@@ -20,7 +20,11 @@
   import Breadcrumb from "./components/Breadcrumb.svelte";
   import { otherTheme } from "./util";
   import Player from "./components/Player.svelte";
+import type { Cache } from "./cache";
 
+
+  export let cache: Cache;
+  setContext("cache", cache);
   const themePreference = localStorage.getItem(StorageKeys.THEME);
   if (themePreference) {
     document.querySelector("html").setAttribute("data-theme", themePreference);

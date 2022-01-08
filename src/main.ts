@@ -1,4 +1,5 @@
 import App from "./App.svelte";
+import { createCache } from "./cache";
 
 if (false && "serviceWorker" in navigator) {
   navigator.serviceWorker
@@ -37,9 +38,17 @@ if ("storage" in navigator) {
     .then((estimate) => console.log("Available storage:", estimate));
 }
 
-const app = new App({
-  target: document.body,
-  props: {},
-});
+let app;
+
+createCache().then((cache) => {
+
+	app = new App({
+		target: document.body,
+		props: {cache},
+	  });
+
+})
+
+
 
 export default app;
