@@ -7,11 +7,14 @@
   } from "../state/stores";
 
   import { formatTime } from "../util";
+  import Cached from 'svelte-material-icons/Cached.svelte'
 
   export let name: string;
   export let duration: number;
   export let bitrate: number;
   export let position: number;
+  export let cached: boolean = false;
+
   let formattedDuration = formatTime(duration);
   $: isPlaying =
     $playItem && $playList &&
@@ -26,9 +29,17 @@
   <span class="file-name">{name}</span>
   <span class="time">({formattedDuration})</span>
   <span class="bitrate">{bitrate}kbps</span>
+  <div class="icons">
+    {#if cached}<Cached/>{/if}
+  </div>
 </div>
 
 <style>
+
+  .icons {
+    float: right;
+  }
+  
   .active {
       background-color: var(--primary-focus);
   }

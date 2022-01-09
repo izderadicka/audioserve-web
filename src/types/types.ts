@@ -1,5 +1,9 @@
 import type { AudioFile } from "../client";
 
+export interface AudioFileExt extends AudioFile {
+    cached?: boolean
+}
+
 export interface CurrentPlayItem {
     url: string,
     duration: number,
@@ -11,7 +15,12 @@ export interface CurrentPlayItem {
 }
 
 export interface CurrentPlayList {
-    files: AudioFile[],
+    files: AudioFileExt[],
     collection: number,
     folder: string
+}
+
+export interface AppConfig {
+    maxParallelDownload: number,
+    cacheAheadFiles: number
 }

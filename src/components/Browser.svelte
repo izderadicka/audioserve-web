@@ -1,9 +1,11 @@
 <script lang="ts">
   import { onDestroy, onMount } from "svelte";
+import type { Unsubscriber } from "svelte/store";
 
   import type { AudioFile, Subfolder } from "../client";
   import {
     apiConfig,
+    cachedItem,
     colApi,
     currentFolder,
     isAuthenticated,
@@ -12,10 +14,12 @@
     selectedCollection,
   } from "../state/stores";
   import { StorageKeys } from "../types/enums";
+import type { AudioFileExt } from "../types/types";
+import { audioFileUrl, splitUrl } from "../util";
 import FileItem from "./FileItem.svelte";
 
   let subfolders: Subfolder[] = [];
-  let files: AudioFile[] = [];
+  let files: AudioFileExt[] = [];
   let folderPath: string | undefined;
 
   async function loadFolder(folder: string) {
@@ -63,12 +67,7 @@ import FileItem from "./FileItem.svelte";
   function startPlaying(position: number, startPlay = true, time?: number) {
     return () => {
       const file = files[position];
-      const fileURL =
-        $apiConfig.basePath +
-        "/" +
-        $selectedCollection +
-        "/audio/" +
-        encodeURI(file.path);
+      const fileURL = audioFileUrl(file);
       const duration = file.meta?.duration;
       console.debug("Action to start to play: " + fileURL);
       $playList = {
@@ -88,7 +87,9 @@ import FileItem from "./FileItem.svelte";
     };
   }
 
-  const unsubsribe = selectedCollection.subscribe((col) => {
+  const unsubsribe: Unsubscriber[] = [];
+
+ unsubsribe.push(selectedCollection.subscribe((col) => {
     if (col != undefined) {
       if (folderPath === undefined) {
         // restore last path from localStorage
@@ -107,14 +108,32 @@ import FileItem from "./FileItem.svelte";
         $selectedCollection.toString()
       );
     }
-  });
+  }));
 
   $: if ($currentFolder != undefined) {
     loadFolder($currentFolder);
   }
 
+ unsubsribe.push(cachedItem.subscribe((item) =>
+ {
+   if (item) {
+    console.log("File cached", item);
+    // update folder
+    const {collection, path} = splitUrl(item.originalUrl);
+    if (collection === $selectedCollection) {
+      const position = files.findIndex((f) => f.path == path)
+      if (position>=0) {
+        let f = files[position];
+        f.cached = true;
+        files[position] = f;
+      }
+    }
+   }
+ }
+ ))
+
   onMount(async () => {});
-  onDestroy(unsubsribe);
+  onDestroy(() => unsubsribe.forEach( u => u()));
 </script>
 
 {#if subfolders.length > 0}
@@ -133,7 +152,7 @@ import FileItem from "./FileItem.svelte";
     <ul>
       {#each files as file, pos}
         <li on:click={startPlaying(pos)}><FileItem name="{file.name}" duration="{file.meta.duration}" 
-            bitrate="{file.meta.bitrate}" position="{pos}"/></li>
+            bitrate="{file.meta.bitrate}" position="{pos}" cached={file.cached}/></li>
       {/each}
     </ul>
   </details>

@@ -33,7 +33,12 @@ export class DbCache implements Cache{
         throw new Error("Method not implemented.");
     }
     cacheAhead(url: string): Promise<CachedItem> {
-        throw new Error("Method not implemented.");
+        console.log(`Wnat to precache ${url}`)
+        return Promise.resolve({
+            isCached: true,
+            originalUrl: url,
+            cachedUrl: url
+        });
     }
     cancelPendingLoad(url: string): boolean {
         throw new Error("Method not implemented.");

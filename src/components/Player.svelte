@@ -1,8 +1,11 @@
 <script lang="ts">
-  import { onDestroy } from "svelte";
+  import { getContext, onDestroy } from "svelte";
+import type { Cache } from "../cache";
 
   import {
     apiConfig,
+    cachedItem,
+    config,
     currentFolder,
     playItem,
     playList,
@@ -10,8 +13,9 @@
   } from "../state/stores";
   import { StorageKeys } from "../types/enums";
 
-  import { formatTime } from "../util";
+  import { audioFileUrl, formatTime } from "../util";
 
+  const cache: Cache = getContext('cache');
   let duration: number;
   $: formattedDuration = formatTime(duration);
   let currentTime: number;
@@ -25,6 +29,7 @@
   let file = "";
   let folder = "";
   let folderPosition = 0;
+  let collection:number;
 
   $: folderSize = $playList?.files.length || 0;
 
@@ -44,8 +49,25 @@
       file = item.name;
       folderPosition = item.position;
       folder = $playList.folder;
+      collection = $playList.collection;
+      tryCacheAhead(folderPosition);
     }
   });
+
+  function tryCacheAhead(pos: number) {
+    const cacheAheadCount = $config.cacheAheadFiles;
+    for (let newPos = pos+1; newPos<= pos+cacheAheadCount; newPos++) {
+      if (newPos<$playList.files.length) {
+        const nextFile = $playList.files[newPos];
+        if (!nextFile.cached) {
+          const url = audioFileUrl(nextFile, collection)
+          cache.cacheAhead(url).then((cached)=>{
+            $cachedItem=cached;
+          }).catch((e)=>console.error("Caching file failed"))
+        }
+      }
+    }
+  }
 
   function playPause() {
     if (paused) {
@@ -65,15 +87,11 @@
     playPosition(nextPosition);
   }
 
+
   function playPosition(nextPosition: number) {
     if (nextPosition >= 0 && nextPosition < $playList.files.length) {
       const nextFile = $playList.files[nextPosition];
-      const url =
-        $apiConfig.basePath +
-        "/" +
-        $playList.collection +
-        "/audio/" +
-        encodeURI(nextFile.path);
+      const url = audioFileUrl(nextFile, $playList.collection);
       $playItem = {
         url,
         duration: nextFile.meta?.duration,
