@@ -23,17 +23,25 @@ export function createCache() {
 }
 
 export class DbCache implements Cache{
-  private queue: any[];
+  private queue: [];
+  private running: []
   constructor(private db: IDBDatabase) {
 
     this.maxParallelLoads=2;
 
   }
+    async _fetchUrl(url: string) {
+        
+        const request = new Request(url, {credentials: "include"});
+    }
     getCachedUrl(url: string): CachedItem {
         throw new Error("Method not implemented.");
     }
     cacheAhead(url: string): Promise<CachedItem> {
-        console.log(`Wnat to precache ${url}`)
+        console.log(`Want to precache ${url}`)
+
+
+
         return Promise.resolve({
             isCached: true,
             originalUrl: url,
