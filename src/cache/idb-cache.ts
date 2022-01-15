@@ -1,4 +1,5 @@
 import type { Cache } from ".";
+import { audioFilePath, splitUrl } from "../util";
 import type { CachedItem } from "./types";
 
 const CACHE_DB = "audio-cache";
@@ -80,6 +81,29 @@ export class DbCache implements Cache {
     })
   }
 
+  private getRange(pathPrefix: string) : Promise<StoredItem[]> {
+    const upperBound = pathPrefix.substring(0, pathPrefix.length-1) + 
+      String.fromCharCode(pathPrefix.charCodeAt(pathPrefix.length-1)+1);
+    return new Promise((resolve, reject) => {
+      const result = [];
+      const transaction = this.db.transaction(AUDIO_FILES_STORE);
+      const range = IDBKeyRange.bound(pathPrefix, upperBound, false, true);
+      const req = transaction.objectStore(AUDIO_FILES_STORE).openCursor(range);
+
+      req.onsuccess = (evt: any) => {
+        const cursor = evt.target.result;
+        if (cursor) {
+          result.push(cursor.value);
+          cursor.continue();
+        } else {
+          resolve(result)
+        }
+
+      }
+      req.onerror = () => reject(req.error);
+    })
+  }
+
   private async fetchNext() {
     if (this.running.length < this.maxParallelLoads) {
       const req = this.queue.shift();
@@ -129,6 +153,17 @@ export class DbCache implements Cache {
      })
    
   }
+
+  getCachedPaths(collection: number, folder: string): Promise<string[]> {
+    const fullPath = audioFilePath(collection, folder);
+    return this.getRange(fullPath).then((list) => {
+      return list.map((i) => {
+        return splitUrl(i.info.originalUrl).path
+      })
+    })
+  }
+
+
 
   cacheAhead(url: string): Promise<CachedItem> {
     console.log(`Want to precache ${url}`, this);

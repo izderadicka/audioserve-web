@@ -1,6 +1,8 @@
 <script lang="ts">
-  import { onDestroy, onMount } from "svelte";
+  import { getContext, onDestroy, onMount } from "svelte";
+import { debug } from "svelte/internal";
 import type { Unsubscriber } from "svelte/store";
+import type { Cache } from "../cache";
 
   import type { AudioFile, Subfolder } from "../client";
   import {
@@ -18,6 +20,8 @@ import type { AudioFileExt } from "../types/types";
 import { audioFileUrl, splitPath, splitUrl } from "../util";
 import FileItem from "./FileItem.svelte";
 
+  const cache: Cache = getContext('cache');
+
   let subfolders: Subfolder[] = [];
   let files: AudioFileExt[] = [];
   let folderPath: string | undefined;
@@ -28,7 +32,14 @@ import FileItem from "./FileItem.svelte";
         colId: $selectedCollection,
         path: folder,
       });
-      files = audioFolder.files!;
+      const cachedPaths = await cache.getCachedPaths($selectedCollection, folder);
+      console.debug("Cached files for this folder", cachedPaths);
+      files = audioFolder.files!.map((file: AudioFileExt) => {
+        if (cachedPaths.indexOf(file.path) >=0) {
+          file.cached=true;
+        }
+        return file;
+      });
       subfolders = audioFolder.subfolders!;
       localStorage.setItem(StorageKeys.LAST_FOLDER, folder);
       // restore last played file, if possible

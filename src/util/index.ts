@@ -38,6 +38,10 @@ export function audioFileUrl(file: AudioFile, collection?:number) {
   return url;
 }
 
+export function audioFilePath(collection: number, folder: string) {
+  return `/${collection}/audio/${encodeURI(folder)}`;
+}
+
 export function splitUrl(url: string) {
     const parsedUrl = new URL(url);
     const path = decodeURI(parsedUrl.pathname);

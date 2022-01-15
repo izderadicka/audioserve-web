@@ -8,6 +8,7 @@ export interface CachedItem{
 export interface Cache {
 
     getCachedUrl(url: string): Promise<CachedItem|null>;
+    getCachedPaths(collection: number, folder: string): Promise<string[]>;
     cacheAhead(url:string): Promise<CachedItem>;
     cancelPendingLoad(url: string): boolean;
     maxParallelLoads: number;
