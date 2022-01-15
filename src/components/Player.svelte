@@ -33,11 +33,19 @@ import type { Cache } from "../cache";
 
   $: folderSize = $playList?.files.length || 0;
 
-  const unsubscribe = playItem.subscribe((item) => {
+  const unsubscribe = playItem.subscribe(async (item) => {
     if (item && player) {
-      player.src = item.url;
+      let source;
+      if (item.cached) {
+        const cachedItem = await cache.getCachedUrl(item.url)!;
+        source = cachedItem.cachedUrl;
+        console.debug("Playing cached item", source);
+      } else {
+        source = item.url;
+      }
+      player.src = source;
       localStorage.setItem(StorageKeys.LAST_FILE, item.path);
-      if (item.time) {
+      if (item.time != null) {
         currentTime = item.time;
       }
       if (item.startPlay) {
@@ -63,7 +71,7 @@ import type { Cache } from "../cache";
           const url = audioFileUrl(nextFile, collection)
           cache.cacheAhead(url).then((cached)=>{
             $cachedItem=cached;
-          }).catch((e)=>console.error("Caching file failed"))
+          }).catch((e)=>console.error("Caching file failed",e))
         }
       }
     }
@@ -97,6 +105,7 @@ import type { Cache } from "../cache";
         duration: nextFile.meta?.duration,
         name: nextFile.name,
         path: nextFile.path,
+        cached: nextFile.cached,
         position: nextPosition,
         startPlay: true,
       };

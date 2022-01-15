@@ -11,6 +11,7 @@ export interface CurrentPlayItem {
     path: string,
     position: number,
     startPlay: boolean,
+    cached: boolean,
     time?: number,
 }
 

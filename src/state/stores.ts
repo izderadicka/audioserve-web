@@ -18,6 +18,6 @@ export const playList: Writable<CurrentPlayList> = writable(undefined);
 export const colApi = derived(apiConfig, ($apiConfig) => new CollectionsApi($apiConfig));
 
 export const config: Writable<AppConfig> = writable({
-    maxParallelDownload: 2,
-    cacheAheadFiles: 2
+    maxParallelDownload: 1,
+    cacheAheadFiles: 3
 });

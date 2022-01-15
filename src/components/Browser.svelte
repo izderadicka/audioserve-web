@@ -15,7 +15,7 @@ import type { Unsubscriber } from "svelte/store";
   } from "../state/stores";
   import { StorageKeys } from "../types/enums";
 import type { AudioFileExt } from "../types/types";
-import { audioFileUrl, splitUrl } from "../util";
+import { audioFileUrl, splitPath, splitUrl } from "../util";
 import FileItem from "./FileItem.svelte";
 
   let subfolders: Subfolder[] = [];
@@ -80,6 +80,7 @@ import FileItem from "./FileItem.svelte";
         duration,
         name: file.name,
         path: file.path,
+        cached: file.cached,
         position,
         startPlay,
         time
@@ -120,6 +121,8 @@ import FileItem from "./FileItem.svelte";
     console.log("File cached", item);
     // update folder
     const {collection, path} = splitUrl(item.originalUrl);
+
+    // update folder
     if (collection === $selectedCollection) {
       const position = files.findIndex((f) => f.path == path)
       if (position>=0) {
@@ -128,6 +131,19 @@ import FileItem from "./FileItem.svelte";
         files[position] = f;
       }
     }
+    // update playlist 
+    const {folder, file} = splitPath(path);
+    if ($playList.collection == collection && $playList.folder == folder) {
+      playList.update((pl) => {
+
+        const position = pl.files.findIndex((f) => f.path == path)
+      if (position>=0) {
+        pl.files[position].cached = true;
+      }
+        return pl
+      })
+    }
+    
    }
  }
  ))
@@ -151,7 +167,7 @@ import FileItem from "./FileItem.svelte";
     <summary>Files</summary>
     <ul>
       {#each files as file, pos}
-        <li on:click={startPlaying(pos)}><FileItem name="{file.name}" duration="{file.meta.duration}" 
+        <li on:click={startPlaying(pos,true, 0)}><FileItem name="{file.name}" duration="{file.meta.duration}" 
             bitrate="{file.meta.bitrate}" position="{pos}" cached={file.cached}/></li>
       {/each}
     </ul>

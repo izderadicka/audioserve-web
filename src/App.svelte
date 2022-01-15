@@ -10,6 +10,7 @@
     collections,
     transcodings,
     selectedCollection,
+config,
   } from "./state/stores";
   import { onMount, setContext } from "svelte";
   import { CollectionsApi, Configuration } from "./client";
@@ -24,6 +25,7 @@ import type { Cache } from "./cache";
 
 
   export let cache: Cache;
+  cache.maxParallelLoads = $config.maxParallelDownload;
   setContext("cache", cache);
   const themePreference = localStorage.getItem(StorageKeys.THEME);
   if (themePreference) {

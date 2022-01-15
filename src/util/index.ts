@@ -47,3 +47,12 @@ export function splitUrl(url: string) {
         path: comps.slice(3).join('/')
     }
 }
+
+export function splitPath(path: string) {
+  const parts = path.split('/');
+  const file = parts.pop();
+  return {
+    folder: parts.join('/'),
+    file
+  }
+}
