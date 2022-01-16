@@ -7,7 +7,8 @@
   } from "../state/stores";
 
   import { formatTime } from "../util";
-  import Cached from 'svelte-material-icons/Cached.svelte'
+  import Cached from 'svelte-material-icons/Cached.svelte';
+  import Play from 'svelte-material-icons/Play.svelte';
 
   export let name: string;
   export let duration: number;
@@ -25,7 +26,7 @@
 </script>
 
 <div class:active="{isPlaying}">
-  {#if isPlaying}<span class="playing">▶ </span>{/if}
+  {#if isPlaying}<Play size="2rem"/>{/if}
   <span class="file-name">{name}</span>
   <span class="time">({formattedDuration})</span>
   <span class="bitrate">{bitrate}kbps</span>
