@@ -52,11 +52,15 @@ export function splitUrl(url: string) {
     }
 }
 
-export function splitPath(path: string) {
-  const parts = path.split('/');
-  const file = parts.pop();
-  return {
-    folder: parts.join('/'),
-    file
-  }
+export function splitPath(path: string) : {folder?: string, file:string}{
+  const idx = path.lastIndexOf('/');
+  if (idx>=0) {
+    return {
+      folder: path.substring(0,idx),
+      file: path.substring(idx+1)
+    }
+  } else {}
+    return {
+      file: path
+    }
 }

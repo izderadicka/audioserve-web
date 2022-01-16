@@ -12,6 +12,7 @@ function broadcastMessage(msg?: string) {
     })
 }
 
+const DEVELOPMENT=true
 const staticResources = [
     '/',
     '/index.html',
@@ -26,7 +27,7 @@ const cacheName = "static-v1";
 self.addEventListener('install', (evt) => {
     evt.waitUntil(
         caches.open(cacheName).then((cache) => {
-          return cache.addAll(staticResources);
+          return cache.addAll(DEVELOPMENT?[]:staticResources);
         }).then(() => console.log("Installation successful"))
       );
     

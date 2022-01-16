@@ -1,7 +1,7 @@
 import App from "./App.svelte";
 import { createCache } from "./cache";
 
-if (false && "serviceWorker" in navigator) {
+if ("serviceWorker" in navigator) {
   navigator.serviceWorker
     .register("./service-worker.js", { scope: "./" })
     .catch((error) => {

@@ -1,9 +1,10 @@
 import type { Cache } from ".";
-import { audioFilePath, splitUrl } from "../util";
+import { audioFilePath, splitPath, splitUrl } from "../util";
 import type { CachedItem } from "./types";
 
 const CACHE_DB = "audio-cache";
 const AUDIO_FILES_STORE = "audio-files";
+const FOLDER_INDEX = "folder";
 
 export function createCache() {
   return new Promise((resolve, reject) => {
@@ -18,6 +19,7 @@ export function createCache() {
       const db: IDBDatabase = evt.target.result;
       if (!db.objectStoreNames.contains(AUDIO_FILES_STORE)) {
         const os = db.createObjectStore(AUDIO_FILES_STORE, { keyPath: "path" });
+        os.createIndex(FOLDER_INDEX, "folder", {unique: false});
         os.transaction.oncomplete = (ev) => {
           console.log("Created object store audio-files");
         };
@@ -27,12 +29,15 @@ export function createCache() {
 }
 
 class StoredItem {
+  public folder:string;
   constructor(
     public info: CachedItem,
     public blob: Blob,
     public path: string,
     public timestamp: Date
-  ) {}
+  ) {
+    this.folder= splitPath(path).folder!;
+  }
 }
 
 class QueueItem {
@@ -81,14 +86,12 @@ export class DbCache implements Cache {
     })
   }
 
-  private getRange(pathPrefix: string) : Promise<StoredItem[]> {
-    const upperBound = pathPrefix.substring(0, pathPrefix.length-1) + 
-      String.fromCharCode(pathPrefix.charCodeAt(pathPrefix.length-1)+1);
+  private getAllForFolder(folder: string) : Promise<StoredItem[]> {
+    
     return new Promise((resolve, reject) => {
       const result = [];
       const transaction = this.db.transaction(AUDIO_FILES_STORE);
-      const range = IDBKeyRange.bound(pathPrefix, upperBound, false, true);
-      const req = transaction.objectStore(AUDIO_FILES_STORE).openCursor(range);
+      const req = transaction.objectStore(AUDIO_FILES_STORE).index(FOLDER_INDEX).openCursor(folder);
 
       req.onsuccess = (evt: any) => {
         const cursor = evt.target.result;
@@ -156,7 +159,7 @@ export class DbCache implements Cache {
 
   getCachedPaths(collection: number, folder: string): Promise<string[]> {
     const fullPath = audioFilePath(collection, folder);
-    return this.getRange(fullPath).then((list) => {
+    return this.getAllForFolder(fullPath).then((list) => {
       return list.map((i) => {
         return splitUrl(i.info.originalUrl).path
       })
