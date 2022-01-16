@@ -7,6 +7,7 @@ function broadcastMessage(msg) {
         }
     });
 }
+const DEVELOPMENT = true;
 const staticResources = [
     '/',
     '/index.html',
@@ -18,7 +19,7 @@ const staticResources = [
 const cacheName = "static-v1";
 self.addEventListener('install', (evt) => {
     evt.waitUntil(caches.open(cacheName).then((cache) => {
-        return cache.addAll(staticResources);
+        return cache.addAll(DEVELOPMENT ? ['/favicon.png',] : staticResources);
     }).then(() => console.log("Installation successful")));
 });
 self.addEventListener('activate', (evt) => {
@@ -39,6 +40,7 @@ self.addEventListener('push', (evt) => {
 });
 self.addEventListener('fetch', (evt) => {
     evt.respondWith(caches.match(evt.request).then((response) => {
+        console.log("FETCH: ", evt.request, response);
         return response || fetch(evt.request);
     }));
 });
