@@ -5,3 +5,9 @@ export enum StorageKeys {
   LAST_POSITION = "AUDIOSERVE_LAST_POSITION",
   THEME = "AUDIOSERVE_THEME",
 }
+
+export enum FolderType {
+  REGULAR,
+  SEARCH,
+  RECENT
+}

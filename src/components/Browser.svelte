@@ -15,7 +15,7 @@ import type { Cache } from "../cache";
     playList,
     selectedCollection,
   } from "../state/stores";
-  import { StorageKeys } from "../types/enums";
+  import { FolderType, StorageKeys } from "../types/enums";
 import type { AudioFileExt } from "../types/types";
 import { audioFileUrl, splitPath, splitUrl } from "../util";
 import FileItem from "./FileItem.svelte";
@@ -25,6 +25,21 @@ import FileItem from "./FileItem.svelte";
   let subfolders: Subfolder[] = [];
   let files: AudioFileExt[] = [];
   let folderPath: string | undefined;
+
+  async function searchFor(query: string) {
+    try {
+      const result = await $colApi.colIdSearchGet({
+        colId: $selectedCollection,
+        q: query
+      });
+
+      subfolders = result.subfolders;
+      files = [];
+
+    } catch (err) {
+
+    }
+  }
 
   async function loadFolder(folder: string) {
     try {
@@ -64,7 +79,7 @@ import FileItem from "./FileItem.svelte";
     } catch (resp) {
       console.error("Cannot load folder", resp);
       if (resp.status === 404) {
-        $currentFolder = "";
+        $currentFolder = {value:"", type: FolderType.REGULAR};
       } else if (resp.status === 401) {
         $isAuthenticated = false;
       }
@@ -72,7 +87,7 @@ import FileItem from "./FileItem.svelte";
   }
 
   function navigateTo(folder: string) {
-    return () => ($currentFolder = folder);
+    return () => ($currentFolder = {value:folder, type:FolderType.REGULAR});
   }
 
   function startPlaying(position: number, startPlay = true, time?: number) {
@@ -84,7 +99,7 @@ import FileItem from "./FileItem.svelte";
       $playList = {
         files,
         collection: $selectedCollection,
-        folder: $currentFolder,
+        folder: $currentFolder.value,
       };
       $playItem = {
         url: fileURL,
@@ -105,10 +120,10 @@ import FileItem from "./FileItem.svelte";
     if (col != undefined) {
       if (folderPath === undefined) {
         // restore last path from localStorage
-        $currentFolder = localStorage.getItem(StorageKeys.LAST_FOLDER) || "";
+        $currentFolder = {value:localStorage.getItem(StorageKeys.LAST_FOLDER) || "", type: FolderType.REGULAR};
       } else {
         // go to root of other collection
-        $currentFolder = "";
+        $currentFolder = {value:"", type: FolderType.REGULAR};
         if (folderPath === "") {
           // TODO: fix it by having currentFolder as object
           // have to enforce reload
@@ -123,7 +138,11 @@ import FileItem from "./FileItem.svelte";
   }));
 
   $: if ($currentFolder != undefined) {
-    loadFolder($currentFolder);
+    if ($currentFolder.type === FolderType.REGULAR) {
+        loadFolder($currentFolder.value);
+    } else if ($currentFolder.type === FolderType.SEARCH) {
+       searchFor($currentFolder.value);
+    }
   }
 
  unsubsribe.push(cachedItem.subscribe((item) =>

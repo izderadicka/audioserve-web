@@ -11,7 +11,7 @@ import type { Cache } from "../cache";
     playList,
     selectedCollection,
   } from "../state/stores";
-  import { StorageKeys } from "../types/enums";
+  import { FolderType, StorageKeys } from "../types/enums";
 
   import { audioFileUrl, formatTime } from "../util";
 
@@ -116,7 +116,7 @@ import type { Cache } from "../cache";
     const col = $playList.collection;
     const folder = $playList.folder;
     $selectedCollection = col;
-    $currentFolder = folder;
+    $currentFolder = {value:folder, type: FolderType.REGULAR};
   }
 
   function playPrevious() {

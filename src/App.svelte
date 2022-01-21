@@ -11,13 +11,14 @@
     transcodings,
     selectedCollection,
 config,
+currentFolder,
   } from "./state/stores";
   import { onMount, setContext } from "svelte";
   import { CollectionsApi, Configuration } from "./client";
   import { deleteCookie } from "./util/auth";
   import CollectionSelector from "./components/CollectionSelector.svelte";
   import Browser from "./components/Browser.svelte";
-  import { StorageKeys } from "./types/enums";
+  import { FolderType, StorageKeys } from "./types/enums";
   import Breadcrumb from "./components/Breadcrumb.svelte";
   import { otherTheme } from "./util";
   import Player from "./components/Player.svelte";
@@ -68,6 +69,15 @@ import type { Cache } from "./cache";
     }
   }
 
+  let searchValue: string;
+
+  function checkSearch(evt:KeyboardEvent) {
+    if (evt.key === 'Enter' && searchValue.length>0) {
+      console.debug("Start search for "+searchValue);
+      $currentFolder = {value: searchValue, type: FolderType.SEARCH}
+    } 
+  }
+
   onMount(async () => {
     try {
       await loadCollections();
@@ -100,10 +110,13 @@ import type { Cache } from "./cache";
         </ul>
       </nav>
       <div class="search-bar grid">
-        <CollectionSelector /><input
+        <CollectionSelector />
+        <input
           type="text"
           name="search"
           placeholder="Search"
+          on:keyup="{checkSearch}"
+          bind:value="{searchValue}"
         />
       </div>
       <Breadcrumb />

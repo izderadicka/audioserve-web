@@ -1,8 +1,14 @@
 import type { AudioFile } from "../client";
+import type { FolderType } from "./enums";
 
 export interface AudioFileExt extends AudioFile {
     cached?: boolean
 }
+
+export interface CurrentFolder {
+    value: string,
+    type: FolderType
+} 
 
 export interface CurrentPlayItem {
     url: string,

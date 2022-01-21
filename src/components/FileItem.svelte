@@ -9,6 +9,7 @@
   import { formatTime } from "../util";
   import Cached from 'svelte-material-icons/Cached.svelte';
   import Play from 'svelte-material-icons/Play.svelte';
+import { FolderType } from "../types/enums";
 
   export let name: string;
   export let duration: number;
@@ -21,7 +22,8 @@
     $playItem && $playList &&
     $playItem.position === position &&
     $playItem.name === name &&
-    $playList.folder === $currentFolder &&
+    $playList.folder === $currentFolder.value &&
+    $currentFolder.type === FolderType.REGULAR &&
     $playList.collection === $selectedCollection;
 </script>
 
