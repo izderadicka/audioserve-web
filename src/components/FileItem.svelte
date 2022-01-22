@@ -50,7 +50,4 @@ import { FolderType } from "../types/enums";
     font-weight: bold;
     font-size: 1.2rem;
   }
-  .playing {
-    font-size: 1.3rem;
-  }
 </style>

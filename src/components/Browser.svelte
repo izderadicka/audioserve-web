@@ -19,6 +19,7 @@ import type { Cache } from "../cache";
 import type { AudioFileExt } from "../types/types";
 import { audioFileUrl, splitPath, splitUrl } from "../util";
 import FileItem from "./FileItem.svelte";
+import FolderItem from "./FolderItem.svelte";
 
   const cache: Cache = getContext('cache');
 
@@ -187,7 +188,8 @@ import FileItem from "./FileItem.svelte";
     <summary>Subfolders</summary>
     <ul>
       {#each subfolders as fld}
-        <li on:click={navigateTo(fld.path)}>{fld.name}</li>
+        <li on:click={navigateTo(fld.path)}><FolderItem subfolder="{fld}" 
+          extended="{$currentFolder.type != FolderType.REGULAR}"/></li>
       {/each}
     </ul>
   </details>
@@ -220,6 +222,6 @@ import FileItem from "./FileItem.svelte";
   }
 
   ul li:hover {
-      color: var(--primary);
+      color: var(--primary) !important;
   }
 </style>
