@@ -6,7 +6,6 @@ import type { Cache } from "../cache";
 
   import type { AudioFile, Subfolder } from "../client";
   import {
-    apiConfig,
     cachedItem,
     colApi,
     currentFolder,
@@ -16,8 +15,9 @@ import type { Cache } from "../cache";
     selectedCollection,
   } from "../state/stores";
   import { FolderType, StorageKeys } from "../types/enums";
+import { PlayItem } from "../types/play-item";
 import type { AudioFileExt } from "../types/types";
-import { audioFileUrl, splitPath, splitUrl } from "../util";
+import { splitPath, splitUrl } from "../util";
 import FileItem from "./FileItem.svelte";
 import FolderItem from "./FolderItem.svelte";
 
@@ -94,24 +94,19 @@ import FolderItem from "./FolderItem.svelte";
   function startPlaying(position: number, startPlay = true, time?: number) {
     return () => {
       const file = files[position];
-      const fileURL = audioFileUrl(file);
-      const duration = file.meta?.duration;
-      console.debug("Action to start to play: " + fileURL);
+      const item = new PlayItem({
+        file,
+        position,
+        startPlay,
+        time
+      });
+      console.debug("Action to start to play: " + item.url);
       $playList = {
         files,
         collection: $selectedCollection,
         folder: $currentFolder.value,
       };
-      $playItem = {
-        url: fileURL,
-        duration,
-        name: file.name,
-        path: file.path,
-        cached: file.cached,
-        position,
-        startPlay,
-        time
-      };
+      $playItem = item;
     };
   }
 

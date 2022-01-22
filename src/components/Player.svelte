@@ -12,8 +12,9 @@ import type { Cache } from "../cache";
     selectedCollection,
   } from "../state/stores";
   import { FolderType, StorageKeys } from "../types/enums";
+import { PlayItem } from "../types/play-item";
 
-  import { audioFileUrl, formatTime } from "../util";
+  import {formatTime } from "../util";
 
   const cache: Cache = getContext('cache');
   let duration: number;
@@ -68,7 +69,7 @@ import type { Cache } from "../cache";
       if (newPos<$playList.files.length) {
         const nextFile = $playList.files[newPos];
         if (!nextFile.cached) {
-          const url = audioFileUrl(nextFile, collection)
+          const url = PlayItem.constructURL(nextFile, collection)
           cache.cacheAhead(url).then((cached)=>{
             $cachedItem=cached;
           }).catch((e)=>console.error("Caching file failed",e))
@@ -99,16 +100,13 @@ import type { Cache } from "../cache";
   function playPosition(nextPosition: number) {
     if (nextPosition >= 0 && nextPosition < $playList.files.length) {
       const nextFile = $playList.files[nextPosition];
-      const url = audioFileUrl(nextFile, $playList.collection);
-      $playItem = {
-        url,
-        duration: nextFile.meta?.duration,
-        name: nextFile.name,
-        path: nextFile.path,
-        cached: nextFile.cached,
+      const item = new PlayItem({
+        file: nextFile,
         position: nextPosition,
         startPlay: true,
-      };
+        collection: $playList.collection
+      })
+      $playItem = item;
     }
   }
 

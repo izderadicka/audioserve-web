@@ -31,13 +31,6 @@ export function formatTime(dur: number) {
   }
 }
 
-export function audioFileUrl(file: AudioFile, collection?:number) {
-  const basePath = get(apiConfig).basePath;
-  const col = collection ?? get(selectedCollection);
-  const url = basePath + "/" + col + "/audio/" + encodeURI(file.path);
-  return url;
-}
-
 export function audioFilePath(collection: number, folder: string) {
   return `/${collection}/audio/${encodeURI(folder)}`;
 }

@@ -10,17 +10,6 @@ export interface CurrentFolder {
     type: FolderType
 } 
 
-export interface CurrentPlayItem {
-    url: string,
-    duration: number,
-    name: string,
-    path: string,
-    position: number,
-    startPlay: boolean,
-    cached: boolean,
-    time?: number,
-}
-
 export interface CurrentPlayList {
     files: AudioFileExt[],
     collection: number,
@@ -29,5 +18,6 @@ export interface CurrentPlayList {
 
 export interface AppConfig {
     maxParallelDownload: number,
-    cacheAheadFiles: number
+    cacheAheadFiles: number,
+    transcodingTolerance: number
 }
