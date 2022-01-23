@@ -14,8 +14,8 @@
   import { clickOutside } from "../util/dom";
   const dispatch = createEventDispatcher();
 
+  let menuVisible = false;
   let menuButton: HTMLAnchorElement;
-
   let transcodingNames: TranscodingName[] = [];
 
   $: if ($transcodings) {
@@ -41,33 +41,18 @@
     }
   }
 
-  let theme: string;
-
   function menuClick(evt) {
     menuVisible = false;
     const item = evt.target.dataset.menu;
     dispatch("menu", item);
   }
-
-  let menuVisible = false;
-
-  function toggle() {
-    if (!menuVisible) {
-      theme = capitalize(otherTheme());
-      menuVisible = true;
-    } else {
-      menuVisible = false;
-    }
-  }
-
-  const clickOutsideMenu = clickOutside("main-menu-button");
 </script>
 
 <div class="dropdown">
   <!-- svelte-ignore a11y-invalid-attribute -->
   <a
     href="#"
-    on:click|preventDefault={toggle}
+    on:click|preventDefault={() => menuVisible = !menuVisible}
     aria-label="Menu"
     bind:this={menuButton}
     id="main-menu-button"
@@ -91,8 +76,8 @@
       /><line x1="3" y1="18" x2="21" y2="18" /></svg
     ></a
   >
-  
-  <div use:clickOutsideMenu on:outclick={() => (menuVisible = false)}>
+  {#if menuVisible}
+  <div use:clickOutside={menuButton} on:outclick={() => (menuVisible = false)}>
     <aside class="dropdown-content" style={menuVisible ? "" : "display:none"}>
       <nav>
         <!-- svelte-ignore a11y-invalid-attribute -->
@@ -106,7 +91,7 @@
             <a
               href="#"
               data-menu="switch-theme"
-              on:click|preventDefault={menuClick}>{theme} Theme</a
+              on:click|preventDefault={menuClick}>{capitalize(otherTheme())} Theme</a
             >
           </li>
           <li>
@@ -134,7 +119,9 @@
       </nav>
     </aside>
   </div>
+  {/if}
 </div>
+
 
 <style>
   .option {
