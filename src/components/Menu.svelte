@@ -11,10 +11,10 @@
     transcodingNameToCode,
   } from "../types/enums";
   import { capitalize, otherTheme } from "../util";
-  import { clickOutside } from "../util/dom";
   const dispatch = createEventDispatcher();
 
   let menuButton: HTMLAnchorElement;
+  let mainMenu: HTMLElement;
 
   let transcodingNames: TranscodingName[] = [];
 
@@ -51,16 +51,24 @@
 
   let menuVisible = false;
 
+  function listenForOutclik(event: Event) {
+		if (!mainMenu.contains(event.target as Node) && !menuButton.contains(event.target as Node)) {
+			  toggle()
+        
+		}
+	};
+
   function toggle() {
     if (!menuVisible) {
       theme = capitalize(otherTheme());
       menuVisible = true;
+      document.addEventListener('click', listenForOutclik)
     } else {
       menuVisible = false;
+      document.removeEventListener('click', listenForOutclik);
     }
   }
 
-  const clickOutsideMenu = clickOutside("main-menu-button");
 </script>
 
 <div class="dropdown">
@@ -92,7 +100,7 @@
     ></a
   >
   
-  <div use:clickOutsideMenu on:outclick={() => (menuVisible = false)}>
+  <div bind:this="{mainMenu}">
     <aside class="dropdown-content" style={menuVisible ? "" : "display:none"}>
       <nav>
         <!-- svelte-ignore a11y-invalid-attribute -->
