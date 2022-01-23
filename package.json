@@ -28,7 +28,7 @@
     "typescript": "^4.0.0"
   },
   "dependencies": {
-    "@picocss/pico": "^1.4.2",
+    "@picocss/pico": "^1.4.3",
     "base64-js": "^1.5.1",
     "isomorphic-fetch": "^3.0.0",
     "sirv-cli": "^1.0.0",
