@@ -11,6 +11,7 @@
     transcodingNameToCode,
   } from "../types/enums";
   import { capitalize, otherTheme } from "../util";
+import { clickOutside } from "../util/dom";
   const dispatch = createEventDispatcher();
 
   let menuVisible = false;
