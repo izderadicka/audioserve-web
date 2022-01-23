@@ -12,6 +12,7 @@ export interface PlayItemParams {
 }
 
 export class PlayItem {
+
   url: string;
   duration: number;
   name: string;
@@ -60,4 +61,60 @@ export class PlayItem {
     }
     return url;
   }
+
+  // This is much more complicated, then I thought
+  // 1) For reliable format support probably  webm/audio has to be used
+  // 2) MP3 works only in chrome :-(
+  // 3) If try to feed all audiofile, chrome fails on full buffer
+  // This means much more work is needed -  MediaSource will have to be available to player, which 
+  // will manage cache buffer and will have to call remove for old parts
+  // On the other hand there is big potential for loading only required parts of audio, 
+  // Media source can handle widows of audio frames.
+  // I guess to really leverage it on will must read the specification.
+         
+  createMediaSourceUrl() {
+    const mediaSource = new MediaSource();
+    mediaSource.addEventListener('sourceopen', (evt) => {
+        console.debug("Media source opened", evt);
+        fetch(this.url, {credentials: 'include'})
+        .then((resp) => {
+            if (resp.status>=400) {
+                throw new Error("Error response from server: "+resp.status)
+            }
+            let mime = resp.headers.get("Content-Type");
+            // if (mime =="audio/ogg") {
+            //     mime= "audio/webm; codecs=opus"
+            // }
+            if (! MediaSource.isTypeSupported(mime)) {
+                throw new Error(`Mime type ${mime} is not supported as MediaSource`);
+            }
+            const mediaBuffer = mediaSource.addSourceBuffer(mime);
+            const inputStream = resp.body.getReader();
+            
+            let reader = ({done, value}:{done:boolean, value:any}) => {
+                if (done) {
+                    console.debug("End of stream for "+ this.url);
+                } else {
+                    console.debug(`Read ${value.length} bytes`);
+                    mediaBuffer.appendBuffer(value);
+
+                }
+            };
+            inputStream.read().then(reader);
+            mediaBuffer.addEventListener('updateend', () => 
+                inputStream.read().then(reader)
+            )
+            mediaBuffer.addEventListener('error', (e) => {
+                console.error("Media stream error", e);
+            })
+        }
+        )
+        .catch((e) => {
+            console.error("Media source error", e);
+            mediaSource.endOfStream('network');
+        })
+    })
+
+    return URL.createObjectURL(mediaSource);
+}
 }
