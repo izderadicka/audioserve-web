@@ -1,5 +1,5 @@
 import type { AudioFile } from "../client";
-import type { FolderType } from "./enums";
+import type { FolderType, TranscodingCode } from "./enums";
 
 export interface AudioFileExt extends AudioFile {
     cached?: boolean
@@ -20,4 +20,10 @@ export interface AppConfig {
     maxParallelDownload: number,
     cacheAheadFiles: number,
     transcodingTolerance: number
+}
+
+export interface TranscodingDetail {
+    code: TranscodingCode;
+    bitrate: number;
+    name?: string;
 }

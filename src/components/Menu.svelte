@@ -1,34 +1,45 @@
 <script lang="ts">
+  
   import { createEventDispatcher } from "svelte";
-import type { Transcoding } from "../client";
+  import type { Transcoding } from "../client";
   import { selectedTranscoding, transcodings } from "../state/stores";
-import { TranscodingCode, transcodingCodeToName, TranscodingName, transcodingNameToCode } from "../types/enums";
+  import {
+    StorageKeys,
+    TranscodingCode,
+    transcodingCodeToName,
+    TranscodingName,
+    transcodingNameToCode,
+  } from "../types/enums";
   import { capitalize, otherTheme } from "../util";
+  import { clickOutside } from "../util/dom";
   const dispatch = createEventDispatcher();
 
+  let menuButton: HTMLAnchorElement;
+
   let transcodingNames: TranscodingName[] = [];
-  
+
   $: if ($transcodings) {
     transcodingNames = ["None", "Low", "Medium", "High"];
   }
 
   $: transcoding = transcodingCodeToName($selectedTranscoding);
-   
+
   function updateTranscoding() {
     $selectedTranscoding = transcodingNameToCode(transcoding);
-    console.debug('Transcoding changed to ', $selectedTranscoding, transcoding);
+    localStorage.setItem(StorageKeys.TRANSCODING, $selectedTranscoding);
+    menuVisible = false;
+    console.debug("Transcoding changed to ", $selectedTranscoding, transcoding);
   }
 
   function getBitrate(transcodingName: TranscodingName) {
-      if (transcodingName === 'None' || ! $transcodings) {
-        return ""
-      } else {
-        const key = transcodingName.toLocaleLowerCase();
-        const transcodingInfo: Transcoding = $transcodings[key];
-        return `(${transcodingInfo.bitrate} kbps)`
-      }
-
+    if (transcodingName === "None" || !$transcodings) {
+      return "";
+    } else {
+      const key = transcodingName.toLocaleLowerCase();
+      const transcodingInfo: Transcoding = $transcodings[key];
+      return `(${transcodingInfo.bitrate} kbps)`;
     }
+  }
 
   let theme: string;
 
@@ -43,14 +54,23 @@ import { TranscodingCode, transcodingCodeToName, TranscodingName, transcodingNam
   function toggle() {
     if (!menuVisible) {
       theme = capitalize(otherTheme());
+      menuVisible = true;
+    } else {
+      menuVisible = false;
     }
-    menuVisible = !menuVisible;
   }
+
+  const clickOutsideMenu = clickOutside("main-menu-button");
 </script>
 
 <div class="dropdown">
   <!-- svelte-ignore a11y-invalid-attribute -->
-  <a href="#" on:click|preventDefault={toggle} aria-label="Menu"
+  <a
+    href="#"
+    on:click|preventDefault={toggle}
+    aria-label="Menu"
+    bind:this={menuButton}
+    id="main-menu-button"
     ><svg
       aria-hidden="true"
       focusable="false"
@@ -71,7 +91,8 @@ import { TranscodingCode, transcodingCodeToName, TranscodingName, transcodingNam
       /><line x1="3" y1="18" x2="21" y2="18" /></svg
     ></a
   >
-  <div>
+  
+  <div use:clickOutsideMenu on:outclick={() => (menuVisible = false)}>
     <aside class="dropdown-content" style={menuVisible ? "" : "display:none"}>
       <nav>
         <!-- svelte-ignore a11y-invalid-attribute -->
@@ -99,8 +120,8 @@ import { TranscodingCode, transcodingCodeToName, TranscodingName, transcodingNam
                       name="transcoding"
                       value={transcodingName}
                       id={"radio-" + transcodingName}
-                      bind:group="{transcoding}"
-                      on:change="{updateTranscoding}"
+                      bind:group={transcoding}
+                      on:change={updateTranscoding}
                     /><label for={"radio-" + transcodingName}
                       >{transcodingName} {getBitrate(transcodingName)}</label
                     >

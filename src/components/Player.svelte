@@ -1,6 +1,8 @@
 <script lang="ts">
   import { getContext, onDestroy } from "svelte";
-import type { Cache } from "../cache";
+  import type { Cache } from "../cache";
+  import Transcoded from "svelte-material-icons/ArrowCollapseVertical.svelte";
+  import Cached from "svelte-material-icons/Cached.svelte";
 
   import {
     apiConfig,
@@ -12,25 +14,33 @@ import type { Cache } from "../cache";
     selectedCollection,
   } from "../state/stores";
   import { FolderType, StorageKeys } from "../types/enums";
-import { PlayItem } from "../types/play-item";
+  import { PlayItem } from "../types/play-item";
 
-  import {formatTime } from "../util";
+  import { formatTime } from "../util";
 
-  const cache: Cache = getContext('cache');
+  const cache: Cache = getContext("cache");
+
   let duration: number;
-  $: formattedDuration = formatTime(duration);
+  let expectedDuration: number;
+  $: if (isFinite(duration) && duration > expectedDuration) {
+    expectedDuration = duration
+  }
+  $: formattedDuration = formatTime(expectedDuration);
+
   let currentTime: number;
   $: formattedCurrentTime = formatTime(currentTime);
   $: if (currentTime != undefined)
     localStorage.setItem(StorageKeys.LAST_POSITION, currentTime.toString());
-  let paused: boolean;
 
+  let paused: boolean;
   let player: HTMLAudioElement;
 
   let file = "";
   let folder = "";
   let folderPosition = 0;
-  let collection:number;
+  let collection: number;
+  let transcoded: boolean = false;
+  let cached: boolean = false;
 
   $: folderSize = $playList?.files.length || 0;
 
@@ -41,22 +51,29 @@ import { PlayItem } from "../types/play-item";
         const cachedItem = await cache.getCachedUrl(item.url)!;
         source = cachedItem.cachedUrl;
         console.debug("Playing cached item", source);
+        cached = true;
       } else {
         source = item.url;
+        cached = false;
       }
       player.src = source;
       localStorage.setItem(StorageKeys.LAST_FILE, item.path);
       if (item.time != null) {
         currentTime = item.time;
       }
+
+      expectedDuration = item.duration;
+      duration = 0;
+
       if (item.startPlay) {
         player.play();
       } else {
         paused = true;
-        duration = item.duration;
+        
       }
       file = item.name;
       folderPosition = item.position;
+      transcoded = item.transcoded;
       folder = $playList.folder;
       collection = $playList.collection;
       tryCacheAhead(folderPosition);
@@ -65,14 +82,21 @@ import { PlayItem } from "../types/play-item";
 
   function tryCacheAhead(pos: number) {
     const cacheAheadCount = $config.cacheAheadFiles;
-    for (let newPos = pos+1; newPos<= pos+cacheAheadCount; newPos++) {
-      if (newPos<$playList.files.length) {
+    for (let newPos = pos + 1; newPos <= pos + cacheAheadCount; newPos++) {
+      if (newPos < $playList.files.length) {
         const nextFile = $playList.files[newPos];
         if (!nextFile.cached) {
-          const url = PlayItem.constructURL(nextFile, collection)
-          cache.cacheAhead(url).then((cached)=>{
-            $cachedItem=cached;
-          }).catch((e)=>console.error("Caching file failed",e))
+          const item = new PlayItem({
+            file: nextFile,
+            collection,
+            position: newPos,
+          });
+          cache
+            .cacheAhead(item.url)
+            .then((cached) => {
+              $cachedItem = cached;
+            })
+            .catch((e) => console.error("Caching file failed", e));
         }
       }
     }
@@ -96,7 +120,6 @@ import { PlayItem } from "../types/play-item";
     playPosition(nextPosition);
   }
 
-
   function playPosition(nextPosition: number) {
     if (nextPosition >= 0 && nextPosition < $playList.files.length) {
       const nextFile = $playList.files[nextPosition];
@@ -104,8 +127,8 @@ import { PlayItem } from "../types/play-item";
         file: nextFile,
         position: nextPosition,
         startPlay: true,
-        collection: $playList.collection
-      })
+        collection: $playList.collection,
+      });
       $playItem = item;
     }
   }
@@ -114,7 +137,7 @@ import { PlayItem } from "../types/play-item";
     const col = $playList.collection;
     const folder = $playList.folder;
     $selectedCollection = col;
-    $currentFolder = {value:folder, type: FolderType.REGULAR};
+    $currentFolder = { value: folder, type: FolderType.REGULAR };
   }
 
   function playPrevious() {
@@ -131,8 +154,15 @@ import { PlayItem } from "../types/play-item";
 <div class="info">
   <div>
     <label for="file-name"
-      >File (<span>{folderSize?folderPosition+1:0}</span>/<span>{folderSize}</span>):
+      >File (<span>{folderSize ? folderPosition + 1 : 0}</span>/<span
+        >{folderSize}</span
+      >):
     </label>
+    {#if cached}
+      <Cached />
+    {:else if transcoded}
+      <Transcoded />
+    {/if}
     <span id="file-name">{file}</span>
     <button id="prev-file" on:click={playPrevious}>▲</button>
     <button id="next-file" on:click={playNext}>▼</button>
@@ -181,7 +211,7 @@ import { PlayItem } from "../types/play-item";
       type="range"
       id="playback-progress"
       min="0"
-      max={duration}
+      max={expectedDuration}
       bind:value={currentTime}
     />
   </div>

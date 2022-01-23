@@ -1,7 +1,4 @@
-import { get } from "svelte/store";
-import type { AudioFile } from "../client";
-import { apiConfig, selectedCollection } from "../state/stores";
-import { StorageKeys } from "../types/enums";
+import { StorageKeys} from "../types/enums";
 
 export function otherTheme() {
   const currentTheme = localStorage.getItem(StorageKeys.THEME) || "light";
