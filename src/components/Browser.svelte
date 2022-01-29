@@ -9,6 +9,7 @@ import type { Cache } from "../cache";
     cachedItem,
     colApi,
     currentFolder,
+    group,
     isAuthenticated,
     playItem,
     playList,
@@ -47,7 +48,7 @@ import FolderItem from "./FolderItem.svelte";
       const audioFolder = await $colApi.colIdFolderPathGet({
         colId: $selectedCollection,
         path: folder,
-        group: localStorage.getItem(StorageKeys.GROUP)
+        group: $group
       });
       const cachedPaths = await cache.getCachedPaths($selectedCollection, folder);
       console.debug("Cached files for this folder", cachedPaths);

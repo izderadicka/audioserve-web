@@ -7,6 +7,7 @@ import type { AppConfig, CurrentFolder, CurrentPlayList, TranscodingDetail } fro
 
 export const isAuthenticated = writable(true);
 export const apiConfig = writable(new Configuration());
+export const group = writable(localStorage.getItem(StorageKeys.GROUP));
 export const collections: Writable<CollectionsInfo|undefined> = writable();
 export const selectedCollection: Writable<number|undefined> = writable();
 

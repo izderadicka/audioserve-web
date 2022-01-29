@@ -1,6 +1,6 @@
 <script lang=ts>
 
-import { apiConfig, isAuthenticated } from '../state/stores';
+import { apiConfig, group, isAuthenticated } from '../state/stores';
 import {AuthenticationApi} from '../client/apis'
 import { encodeSecret } from '../util/auth';
 import { Configuration } from '../client';
@@ -27,6 +27,7 @@ import { StorageKeys } from '../types/enums';
                 }));
                 if (playbackGroup) {
                     localStorage.setItem(StorageKeys.GROUP, playbackGroup);
+                    $group = playbackGroup;
                 } else {
                     localStorage.removeItem(StorageKeys.GROUP);
                 }
