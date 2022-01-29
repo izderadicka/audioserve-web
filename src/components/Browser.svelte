@@ -32,7 +32,8 @@ import FolderItem from "./FolderItem.svelte";
     try {
       const result = await $colApi.colIdSearchGet({
         colId: $selectedCollection,
-        q: query
+        q: query,
+        group: $group
       });
 
       subfolders = result.subfolders;

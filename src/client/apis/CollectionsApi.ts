@@ -68,12 +68,14 @@ export interface ColIdFolderPathGetRequest {
 
 export interface ColIdRecentGetRequest {
     colId: number;
+    group?: string;
 }
 
 export interface ColIdSearchGetRequest {
     colId: number;
     q: string;
     ord?: ColIdSearchGetOrdEnum;
+    group?: string;
 }
 
 /**
@@ -371,6 +373,10 @@ export class CollectionsApi extends runtime.BaseAPI {
 
         const queryParameters: any = {};
 
+        if (requestParameters.group !== undefined) {
+            queryParameters['group'] = requestParameters.group;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
 
         if (this.configuration && this.configuration.accessToken) {
@@ -415,6 +421,10 @@ export class CollectionsApi extends runtime.BaseAPI {
 
         if (requestParameters.ord !== undefined) {
             queryParameters['ord'] = requestParameters.ord;
+        }
+
+        if (requestParameters.group !== undefined) {
+            queryParameters['group'] = requestParameters.group;
         }
 
         if (requestParameters.q !== undefined) {
