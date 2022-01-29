@@ -4,9 +4,10 @@ import { apiConfig, isAuthenticated } from '../state/stores';
 import {AuthenticationApi} from '../client/apis'
 import { encodeSecret } from '../util/auth';
 import { Configuration } from '../client';
+import { StorageKeys } from '../types/enums';
 
     let sharedSecret:string;
-    let playbackGroup:string;
+    let playbackGroup:string = localStorage.getItem(StorageKeys.GROUP);
     let loginError = false;
 
     async function login() {
@@ -23,7 +24,12 @@ import { Configuration } from '../client';
                     basePath: cfg.basePath,
                     credentials: cfg.credentials,
                     //accessToken: token // TBD enable access token 
-                }))
+                }));
+                if (playbackGroup) {
+                    localStorage.setItem(StorageKeys.GROUP, playbackGroup);
+                } else {
+                    localStorage.removeItem(StorageKeys.GROUP);
+                }
             } catch (e) {
                 console.error("Login error", e);
                 loginError = true;
