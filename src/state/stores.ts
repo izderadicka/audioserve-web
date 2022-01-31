@@ -1,6 +1,7 @@
 import { writable, derived, Writable, Readable } from "svelte/store";
 import type { CachedItem } from "../cache";
 import { CollectionsApi, CollectionsInfo, Configuration, Transcoding, TranscodingsInfo } from "../client";
+import { PlaybackSync } from "../client-position/playback-sync";
 import { StorageKeys, TranscodingCode, transcodingCodeToName, transcodingNameToCode } from "../types/enums";
 import type { PlayItem } from "../types/play-item";
 import type { AppConfig, CurrentFolder, CurrentPlayList, TranscodingDetail } from "../types/types";
@@ -44,5 +45,15 @@ export const colApi = derived(apiConfig, ($apiConfig) => new CollectionsApi($api
 export const config: Writable<AppConfig> = writable({
     maxParallelDownload: 1,
     cacheAheadFiles: 3,
-    transcodingTolerance: 0.15
+    transcodingTolerance: 0.15,
+    positionReportingPeriod: 10
 });
+
+export const positionWsApi: Readable<PlaybackSync> = derived([config, apiConfig, group], ([$config, $apiConfig, $group]) => {
+    return new PlaybackSync({
+        development: true,
+        developmentPort: 3000,
+        positionReportingPeriod: $config.positionReportingPeriod
+
+    })
+})

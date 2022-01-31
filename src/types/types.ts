@@ -19,7 +19,8 @@ export interface CurrentPlayList {
 export interface AppConfig {
     maxParallelDownload: number,
     cacheAheadFiles: number,
-    transcodingTolerance: number
+    transcodingTolerance: number,
+    positionReportingPeriod: number
 }
 
 export interface TranscodingDetail {

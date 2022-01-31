@@ -23,15 +23,12 @@
   let duration: number;
   let expectedDuration: number;
   $: if (isFinite(duration) && duration > expectedDuration) {
-    expectedDuration = duration
+    expectedDuration = duration;
   }
   $: formattedDuration = formatTime(expectedDuration);
 
   let currentTime: number;
-  $: formattedCurrentTime = formatTime(currentTime);
-  $: if (currentTime != undefined)
-    localStorage.setItem(StorageKeys.LAST_POSITION, currentTime.toString());
-
+  let reportedTime: number = -1;
   let paused: boolean;
   let player: HTMLAudioElement;
 
@@ -42,7 +39,30 @@
   let transcoded: boolean = false;
   let cached: boolean = false;
 
+
+  $: formattedCurrentTime = formatTime(currentTime);
+  $: if (currentTime != undefined) {
+    localStorage.setItem(StorageKeys.LAST_POSITION, currentTime.toString());
+    if (Math.round(currentTime) % 10 === 0) {
+      reportPosition()
+    }
+  }
+
   $: folderSize = $playList?.files.length || 0;
+
+  function reportPosition(force?:boolean) {
+    if (paused && ! force) return;
+    const roundedTime = Math.round(currentTime);
+    if (roundedTime !== reportedTime) {
+      reportedTime = roundedTime;
+    console.debug(
+        `Reporting time ${Math.round(currentTime)} on ${collection}/${folder}/${file}`
+      );
+    }
+    
+
+
+  }
 
   const unsubscribe = playItem.subscribe(async (item) => {
     if (item && player) {
@@ -65,12 +85,13 @@
 
       expectedDuration = item.duration;
       duration = 0;
+      reportedTime = -1;
 
       if (item.startPlay) {
         player.play();
+        reportPosition();
       } else {
         paused = true;
-        
       }
       file = item.name;
       folderPosition = item.position;
@@ -104,6 +125,7 @@
   }
 
   function playPause() {
+    reportPosition(true);
     if (paused) {
       player.play();
     } else {
