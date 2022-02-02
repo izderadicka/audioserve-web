@@ -19,6 +19,7 @@ export interface PlaybackSyncConfig {
     development?: boolean;
     developmentPort: number;
     positionReportingPeriod: number;
+    group?: string;
 
 }
 
@@ -53,6 +54,8 @@ export class PlaybackSync {
         this._groupPrefix = null;
         this.failures = 0;
         this._enabled = true;
+        this._groupPrefix = config.group;
+        this.config = config;
     }
 
     get groupPrefix() {
@@ -130,7 +133,7 @@ export class PlaybackSync {
         this.socket = null;;
     }
 
-    enqueuePosition(filePath, position, timestamp = null) {
+    enqueuePosition(filePath: string, position:number, timestamp: Date  = null) {
         if (this.pendingPositionTimeout) {
             window.clearTimeout(this.pendingPositionTimeout);
             this.pendingPositionTimeout = null;
@@ -153,7 +156,7 @@ export class PlaybackSync {
         filePath = this.groupPrefix + filePath;
         if (this.filePath && this.lastSend && filePath == this.filePath) {
 
-            if ((Date.now() - this.lastSend!.timestamp.getTime() > this.config.positionReportingPeriod) ||
+            if ((Date.now() - this.lastSend!.timestamp.getTime() >= this.config.positionReportingPeriod) ||
                 (1000* Math.abs(position - this.lastSend.position)) > this.config.positionReportingPeriod) {
                 this.sendMessage(position);
             } else {
@@ -170,7 +173,7 @@ export class PlaybackSync {
         }
     }
 
-    sendMessage(position: number, filePath?: string, timestamp?: Date) {
+    private sendMessage(position: number, filePath?: string, timestamp?: Date) {
         if (this.active) {
             let msg = position.toString() + "|";
             if (filePath) msg += filePath;
@@ -216,7 +219,7 @@ export class PlaybackSync {
 
     }
 
-    _makeQueryPromise() {
+    private _makeQueryPromise() {
         return new Promise((resolve, reject) => {
             this.pendingQueryAnswer = resolve;
             this.pendingQueryReject = reject;

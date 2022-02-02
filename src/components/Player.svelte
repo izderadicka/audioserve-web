@@ -9,8 +9,10 @@
     cachedItem,
     config,
     currentFolder,
+    group,
     playItem,
     playList,
+    positionWsApi,
     selectedCollection,
   } from "../state/stores";
   import { FolderType, StorageKeys } from "../types/enums";
@@ -39,29 +41,30 @@
   let transcoded: boolean = false;
   let cached: boolean = false;
 
-
   $: formattedCurrentTime = formatTime(currentTime);
   $: if (currentTime != undefined) {
     localStorage.setItem(StorageKeys.LAST_POSITION, currentTime.toString());
-    if (Math.round(currentTime) % 10 === 0) {
-      reportPosition()
+    if (roundedTime() % 10 === 0) {
+      reportPosition();
     }
   }
 
   $: folderSize = $playList?.files.length || 0;
 
-  function reportPosition(force?:boolean) {
-    if (paused && ! force) return;
-    const roundedTime = Math.round(currentTime);
-    if (roundedTime !== reportedTime) {
-      reportedTime = roundedTime;
-    console.debug(
-        `Reporting time ${Math.round(currentTime)} on ${collection}/${folder}/${file}`
+  function roundedTime() {
+    return Math.floor(currentTime);
+  }
+
+  function reportPosition(force?: boolean) {
+    if (paused && !force) return;
+    const time = roundedTime();
+    if (time !== reportedTime) {
+      $positionWsApi.enqueuePosition(`/${collection}/${folder}/${file}`, time);
+      console.debug(
+        `Reporting time ${time}/${currentTime}/${reportedTime} on ${collection}/${folder}/${file}`
       );
+      reportedTime = time;
     }
-    
-
-
   }
 
   const unsubscribe = playItem.subscribe(async (item) => {

@@ -53,7 +53,8 @@ export const positionWsApi: Readable<PlaybackSync> = derived([config, apiConfig,
     return new PlaybackSync({
         development: true,
         developmentPort: 3000,
-        positionReportingPeriod: $config.positionReportingPeriod
+        positionReportingPeriod: $config.positionReportingPeriod,
+        group: $group
 
     })
 })
