@@ -14,72 +14,52 @@
 
 import { exists, mapValues } from '../runtime';
 /**
- * Playback position
+ * Last shared playback position within a folder.
+ * Only available if group parameter was used and there are some audiofiles in the folder.
  * @export
- * @interface Position
+ * @interface PositionShort
  */
-export interface Position {
+export interface PositionShort {
     /**
      * Position timestamp - unix time in ms
      * Timestamp is generated on server, so if you post new  position 
      * it is used to check, if there is not newer position, 
      * but actual value then is assigned by server
      * @type {number}
-     * @memberof Position
+     * @memberof PositionShort
      */
     timestamp: number;
     /**
-     * Collection number (index in names from response in /collections endpoint)
-     * @type {number}
-     * @memberof Position
-     */
-    collection: number;
-    /**
-     * Audio folder path
-     * @type {string}
-     * @memberof Position
-     */
-    folder: string;
-    /**
      * Audio file (or chapter)
      * @type {string}
-     * @memberof Position
+     * @memberof PositionShort
      */
-    file: string;
-    /**
-     * Folder was listened to the end
-     * @type {boolean}
-     * @memberof Position
-     */
-    folderFinished?: boolean;
+    path: string;
     /**
      * Position in audiofile in seconds
      * @type {number}
-     * @memberof Position
+     * @memberof PositionShort
      */
     position: number;
 }
 
-export function PositionFromJSON(json: any): Position {
-    return PositionFromJSONTyped(json, false);
+export function PositionShortFromJSON(json: any): PositionShort {
+    return PositionShortFromJSONTyped(json, false);
 }
 
-export function PositionFromJSONTyped(json: any, ignoreDiscriminator: boolean): Position {
+export function PositionShortFromJSONTyped(json: any, ignoreDiscriminator: boolean): PositionShort {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
         'timestamp': json['timestamp'],
-        'collection': json['collection'],
-        'folder': json['folder'],
-        'file': json['file'],
-        'folderFinished': !exists(json, 'folder_finished') ? undefined : json['folder_finished'],
+        'path': json['path'],
         'position': json['position'],
     };
 }
 
-export function PositionToJSON(value?: Position | null): any {
+export function PositionShortToJSON(value?: PositionShort | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -89,10 +69,7 @@ export function PositionToJSON(value?: Position | null): any {
     return {
         
         'timestamp': value.timestamp,
-        'collection': value.collection,
-        'folder': value.folder,
-        'file': value.file,
-        'folder_finished': value.folderFinished,
+        'path': value.path,
         'position': value.position,
     };
 }

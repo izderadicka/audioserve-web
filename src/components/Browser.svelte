@@ -5,7 +5,7 @@
   import type { Cache } from "../cache";
   import Play from 'svelte-material-icons/Play.svelte';
 
-  import type { AudioFile, Subfolder } from "../client";
+  import type { AudioFile, PositionShort, Subfolder } from "../client";
   import {
     cachedItem,
     colApi,
@@ -19,15 +19,17 @@
   import { FolderType, StorageKeys } from "../types/enums";
   import { PlayItem } from "../types/play-item";
   import type { AudioFileExt } from "../types/types";
-  import { splitPath, splitUrl } from "../util";
+  import { formatTime, splitPath, splitUrl } from "../util";
   import FileItem from "./FileItem.svelte";
   import FolderItem from "./FolderItem.svelte";
+import { format } from "url";
 
   const cache: Cache = getContext("cache");
 
   let subfolders: Subfolder[] = [];
   let files: AudioFileExt[] = [];
   let folderPath: string | undefined;
+  let sharedPosition: PositionShort | null;
 
   async function searchFor(query: string) {
     try {
@@ -62,6 +64,7 @@
       });
       subfolders = audioFolder.subfolders!;
       localStorage.setItem(StorageKeys.LAST_FOLDER, folder);
+      sharedPosition = audioFolder.position;
       // restore last played file, if possible
       if (folderPath === undefined) {
         const prevFile = localStorage.getItem(StorageKeys.LAST_FILE);
@@ -97,6 +100,13 @@
 
   function navigateTo(folder: string) {
     return () => ($currentFolder = { value: folder, type: FolderType.REGULAR });
+  }
+
+  function playSharedPosition() {
+    const idx = files.findIndex((f) => f.path === sharedPosition.path);
+    if (idx >= 0) {
+      startPlaying(idx, true, sharedPosition.position)();
+    }
   }
 
   function startPlaying(position: number, startPlay = true, time?: number) {
@@ -226,10 +236,11 @@
     {/if}
   </div>
   <div class="browser-sidebar">
+    {#if sharedPosition}
     <div class="last-position">
-      <h6>Last Remote Position</h6>
-      <button><Play/> {"usak"} at {"23:23"}</button>
+      <button on:click="{playSharedPosition}"><Play/> {splitPath(sharedPosition.path).file} at {formatTime(sharedPosition.position)}</button>
     </div>
+    {/if}
     <details id="last-remote-position" open>
     </details>
   </div>
@@ -252,12 +263,13 @@
 
   .browser-sidebar {
     min-width: 360px;
+    padding-right: 1rem;
   }
 
   @media (max-width: 770px) {
     
     #browser {
-        flex-direction: column;
+        flex-direction: column-reverse;
     }
   }
   summary {

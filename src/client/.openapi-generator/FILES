@@ -10,6 +10,7 @@ models/AudioFileSection.ts
 models/AudioFolder.ts
 models/CollectionsInfo.ts
 models/Position.ts
+models/PositionShort.ts
 models/SearchResult.ts
 models/SharedSecret.ts
 models/Subfolder.ts
