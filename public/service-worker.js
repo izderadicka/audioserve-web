@@ -1,3 +1,4 @@
+
 function broadcastMessage(msg) {
     self.clients.matchAll().then((clients) => {
         console.log(`Got (${msg}) ${clients.length} clients`);
@@ -44,4 +45,3 @@ self.addEventListener('fetch', (evt) => {
         return response || fetch(evt.request);
     }));
 });
-

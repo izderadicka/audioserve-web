@@ -1,4 +1,7 @@
+// @ts-ignore
 declare var self: ServiceWorkerGlobalScope;
+export default undefined;
+
 
 function broadcastMessage(msg?: string) {
     self.clients.matchAll().then((clients) => {
@@ -66,4 +69,3 @@ self.addEventListener('fetch', (evt: FetchEvent) => {
       );
 })
 
-export default undefined;
