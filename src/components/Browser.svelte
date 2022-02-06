@@ -3,7 +3,7 @@
   import { debug } from "svelte/internal";
   import type { Unsubscriber } from "svelte/store";
   import type { Cache } from "../cache";
-  import Play from 'svelte-material-icons/Play.svelte';
+  import ContinuePlay from 'svelte-material-icons/PlayCircleOutline.svelte';
 
   import type { AudioFile, PositionShort, Subfolder } from "../client";
   import {
@@ -238,7 +238,7 @@ import { format } from "url";
   <div class="browser-sidebar">
     {#if sharedPosition}
     <div class="last-position">
-      <button on:click="{playSharedPosition}"><Play/> {splitPath(sharedPosition.path).file} at {formatTime(sharedPosition.position)}</button>
+      <button on:click="{playSharedPosition}"><ContinuePlay size="2rem"/> {splitPath(sharedPosition.path).file} at {formatTime(sharedPosition.position)}</button>
     </div>
     {/if}
     <details id="last-remote-position" open>
