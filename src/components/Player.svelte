@@ -162,13 +162,13 @@
     playPosition(nextPosition);
   }
 
-  function playPosition(nextPosition: number) {
+  function playPosition(nextPosition: number, startPlay = true) {
     if (nextPosition >= 0 && nextPosition < $playList.files.length) {
       const nextFile = $playList.files[nextPosition];
       const item = new PlayItem({
         file: nextFile,
         position: nextPosition,
-        startPlay: true,
+        startPlay,
         collection: $playList.collection,
       });
       $playItem = item;
@@ -183,11 +183,11 @@
   }
 
   function playPrevious() {
-    playPosition($playItem.position - 1);
+    playPosition($playItem.position - 1, !paused);
   }
 
   function playNext() {
-    playPosition($playItem.position + 1);
+    playPosition($playItem.position + 1, !paused);
   }
 
   onDestroy(unsubscribe);
