@@ -1,8 +1,10 @@
 <script lang="ts">
   import { getContext, onDestroy } from "svelte";
   import type { Cache } from "../cache";
-  import Transcoded from "svelte-material-icons/ArrowCollapseVertical.svelte";
-  import Cached from "svelte-material-icons/Cached.svelte";
+  import TranscodedIcon from "svelte-material-icons/ArrowCollapseVertical.svelte";
+  import CachedIcon from "svelte-material-icons/Cached.svelte";
+  import FolderIcon from "svelte-material-icons/FolderOutline.svelte";
+  import FileIcon from "svelte-material-icons/FileMusicOutline.svelte";
 
   import {
     apiConfig,
@@ -21,6 +23,15 @@
   import { formatTime } from "../util";
 
   const cache: Cache = getContext("cache");
+  const fileIconSize = "1.5rem";
+
+  let previousTime: number; // sum of time of previous items
+  $: folderTime =
+    (isFinite(previousTime) ? previousTime : 0) +
+    (isFinite(currentTime) ? currentTime : 0);
+  $: formattedFolderTime = formatTime(folderTime);
+  let totalFolderTime: number;
+  $: formattedTotalFolderTime = formatTime(totalFolderTime);
 
   let duration: number;
   let expectedDuration: number;
@@ -101,6 +112,11 @@
       transcoded = item.transcoded;
       folder = $playList.folder;
       collection = $playList.collection;
+      previousTime = $playList.files
+        .slice(0, item.position)
+        .reduce((acc, af) => acc + af.meta.duration, 0);
+      totalFolderTime = $playList.totalTime;
+
       tryCacheAhead(folderPosition);
     }
   });
@@ -178,24 +194,31 @@
 </script>
 
 <div class="info">
-  <div>
+  <div id="folder-info">
+    <label for="folder-name" class="icon"
+      ><FolderIcon size={fileIconSize} /></label
+    >
+    <span id="folder-name" on:click={navigateToFolder}>{folder}</span>
+  </div>
+  <div id="total-progress">
+    <div class="play-time">{formattedFolderTime}</div>
+    <progress value={folderTime} max={totalFolderTime} />
+    <div class="total-time">{formattedTotalFolderTime}</div>
+  </div>
+  <div id="file-info">
     <label for="file-name"
-      >File (<span>{folderSize ? folderPosition + 1 : 0}</span>/<span
-        >{folderSize}</span
-      >):
+      ><FileIcon size={fileIconSize} />(<span
+        >{folderSize ? folderPosition + 1 : 0}</span
+      >/<span>{folderSize}</span>)
     </label>
-    {#if cached}
-      <Cached />
-    {:else if transcoded}
-      <Transcoded />
-    {/if}
-    <span id="file-name">{file}</span>
     <button id="prev-file" on:click={playPrevious}>▲</button>
     <button id="next-file" on:click={playNext}>▼</button>
-  </div>
-  <div>
-    <label for="folder-name">Folder: </label>
-    <span id="folder-name" on:click={navigateToFolder}>{folder}</span>
+    {#if cached}
+      <CachedIcon />
+    {:else if transcoded}
+      <TranscodedIcon />
+    {/if}
+    <span id="file-name">{file}</span>
   </div>
 </div>
 <div class="player">
@@ -247,10 +270,20 @@
 </div>
 
 <style>
+  #total-progress {
+    display: flex;
+    flex-flow: row;
+    align-items: center;
+  }
+  progress {
+    height: 3px;
+    margin-left: 1rem;
+    margin-top: 0.5rem;
+  }
   #prev-file,
   #next-file {
     font-size: 1.5em;
-    margin-left: 0.5em;
+    margin-left: 0.3em;
   }
   #folder-name {
     cursor: pointer;

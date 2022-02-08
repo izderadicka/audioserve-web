@@ -29,6 +29,7 @@ import { format } from "url";
   let subfolders: Subfolder[] = [];
   let files: AudioFileExt[] = [];
   let folderPath: string | undefined;
+  let folderTime: number;
   let sharedPosition: PositionShort | null;
 
   async function searchFor(query: string) {
@@ -65,6 +66,7 @@ import { format } from "url";
       subfolders = audioFolder.subfolders!;
       localStorage.setItem(StorageKeys.LAST_FOLDER, folder);
       sharedPosition = audioFolder.position;
+      folderTime = audioFolder.totalTime;
       // restore last played file, if possible
       if (folderPath === undefined) {
         const prevFile = localStorage.getItem(StorageKeys.LAST_FILE);
@@ -123,6 +125,7 @@ import { format } from "url";
         files,
         collection: $selectedCollection,
         folder: $currentFolder.value,
+        totalTime: folderTime,
       };
       $playItem = item;
     };
@@ -247,8 +250,9 @@ import { format } from "url";
 </div>
 
 <style>
-  h6 {
-    margin-bottom: 0.5em;
+  
+  .browser-sidebar button {
+    overflow: hidden;
   }
   #browser {
     display: flex;
