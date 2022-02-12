@@ -26,6 +26,8 @@ import { format } from "url";
 
   const cache: Cache = getContext("cache");
 
+  export let container: HTMLDivElement;
+
   let subfolders: Subfolder[] = [];
   let files: AudioFileExt[] = [];
   let folderPath: string | undefined;
@@ -231,6 +233,7 @@ import { format } from "url";
                 bitrate={file.meta.bitrate}
                 position={pos}
                 cached={file.cached}
+                container={container}
               />
             </li>
           {/each}

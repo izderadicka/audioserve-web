@@ -41,6 +41,8 @@ import type { Cache } from "./cache";
     })
   );
 
+  let container: HTMLDivElement;
+
   async function loadCollections() {
     const cols = await $colApi.collectionsGet();
     console.debug("Got collections list", cols);
@@ -121,8 +123,8 @@ import type { Cache } from "./cache";
       </div>
       <Breadcrumb />
     </div>
-    <div class="browser">
-      <Browser />
+    <div class="browser" bind:this={container}>
+      <Browser container={container}/>
     </div>
     <div class="player">
       <Player />
@@ -144,6 +146,7 @@ import type { Cache } from "./cache";
   .browser {
     flex: 1 1 auto;
     overflow-y: scroll;
+    position: relative;
   }
   .player {
     flex: 0 1 auto;
