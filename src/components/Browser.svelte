@@ -22,7 +22,7 @@
   import { formatTime, splitPath, splitUrl } from "../util";
   import FileItem from "./FileItem.svelte";
   import FolderItem from "./FolderItem.svelte";
-import { format } from "url";
+import Description from "./Description.svelte";
 
   const cache: Cache = getContext("cache");
 
@@ -33,6 +33,8 @@ import { format } from "url";
   let folderPath: string | undefined;
   let folderTime: number;
   let sharedPosition: PositionShort | null;
+  
+  let descriptionPath: string;
 
   async function searchFor(query: string) {
     try {
@@ -44,6 +46,12 @@ import { format } from "url";
 
       subfolders = result.subfolders;
       files = [];
+
+      // Other properties are not relevant and should be reset
+      sharedPosition = undefined;
+      folderTime = undefined;
+      descriptionPath = undefined;
+
     } catch (err) {}
   }
 
@@ -69,6 +77,8 @@ import { format } from "url";
       localStorage.setItem(StorageKeys.LAST_FOLDER, folder);
       sharedPosition = audioFolder.position;
       folderTime = audioFolder.totalTime;
+      descriptionPath = audioFolder.description?.path;
+
       // restore last played file, if possible
       if (folderPath === undefined) {
         const prevFile = localStorage.getItem(StorageKeys.LAST_FILE);
@@ -243,11 +253,23 @@ import { format } from "url";
   </div>
   <div class="browser-sidebar">
     {#if sharedPosition}
-    <div class="last-position">
+    <div class="last-position" id="last-remote-position" >
       <button on:click="{playSharedPosition}"><ContinuePlay size="2rem"/> {splitPath(sharedPosition.path).file} at {formatTime(sharedPosition.position)}</button>
     </div>
     {/if}
-    <details id="last-remote-position" open>
+    <details open>
+      <summary>Info</summary>
+      <div id="folder-cover">
+
+      </div>
+      <div id="folder-tags">
+
+      </div>
+      <div id="folder-description">
+        {#if descriptionPath} 
+        <Description descriptionPath="{descriptionPath}"/>
+        {/if}
+      </div>
     </details>
   </div>
 </div>

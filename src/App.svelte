@@ -10,8 +10,8 @@
     collections,
     transcodings,
     selectedCollection,
-config,
-currentFolder,
+    config,
+    currentFolder,
   } from "./state/stores";
   import { onMount, setContext } from "svelte";
   import { CollectionsApi, Configuration } from "./client";
@@ -22,8 +22,7 @@ currentFolder,
   import Breadcrumb from "./components/Breadcrumb.svelte";
   import { otherTheme } from "./util";
   import Player from "./components/Player.svelte";
-import type { Cache } from "./cache";
-
+  import type { Cache } from "./cache";
 
   export let cache: Cache;
   cache.maxParallelLoads = $config.maxParallelDownload;
@@ -73,11 +72,11 @@ import type { Cache } from "./cache";
 
   let searchValue: string;
 
-  function checkSearch(evt:KeyboardEvent) {
-    if (evt.key === 'Enter' && searchValue.length>0) {
-      console.debug("Start search for "+searchValue);
-      $currentFolder = {value: searchValue, type: FolderType.SEARCH}
-    } 
+  function checkSearch(evt: KeyboardEvent) {
+    if (evt.key === "Enter" && searchValue.length > 0) {
+      console.debug("Start search for " + searchValue);
+      $currentFolder = { value: searchValue, type: FolderType.SEARCH };
+    }
   }
 
   onMount(async () => {
@@ -117,14 +116,14 @@ import type { Cache } from "./cache";
           type="text"
           name="search"
           placeholder="Search"
-          on:keyup="{checkSearch}"
-          bind:value="{searchValue}"
+          on:keyup={checkSearch}
+          bind:value={searchValue}
         />
       </div>
       <Breadcrumb />
     </div>
     <div class="browser" bind:this={container}>
-      <Browser container={container}/>
+      <Browser {container} />
     </div>
     <div class="player">
       <Player />
