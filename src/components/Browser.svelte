@@ -23,6 +23,7 @@
   import FileItem from "./FileItem.svelte";
   import FolderItem from "./FolderItem.svelte";
 import Description from "./Description.svelte";
+import Cover from "./Cover.svelte";
 
   const cache: Cache = getContext("cache");
 
@@ -35,6 +36,7 @@ import Description from "./Description.svelte";
   let sharedPosition: PositionShort | null;
   
   let descriptionPath: string;
+  let coverPath: string;
 
   async function searchFor(query: string) {
     try {
@@ -51,6 +53,7 @@ import Description from "./Description.svelte";
       sharedPosition = undefined;
       folderTime = undefined;
       descriptionPath = undefined;
+      coverPath: undefined;
 
     } catch (err) {}
   }
@@ -78,6 +81,7 @@ import Description from "./Description.svelte";
       sharedPosition = audioFolder.position;
       folderTime = audioFolder.totalTime;
       descriptionPath = audioFolder.description?.path;
+      coverPath = audioFolder.cover?.path;
 
       // restore last played file, if possible
       if (folderPath === undefined) {
@@ -260,7 +264,9 @@ import Description from "./Description.svelte";
     <details open>
       <summary>Info</summary>
       <div id="folder-cover">
-
+        {#if coverPath}
+          <Cover coverPath="{coverPath}"/>
+        {/if}
       </div>
       <div id="folder-tags">
 
@@ -291,7 +297,7 @@ import Description from "./Description.svelte";
   }
 
   .browser-sidebar {
-    min-width: 360px;
+    width:66%;
     padding-right: 1rem;
   }
 
@@ -299,6 +305,9 @@ import Description from "./Description.svelte";
     
     #browser {
         flex-direction: column-reverse;
+    }
+    .browser-sidebar {
+      width: 100%;
     }
   }
   summary {
