@@ -56,14 +56,18 @@ self.addEventListener('message', (evt: MessageEvent) => {
 })
 
 self.addEventListener('push', (evt) => {
-    console.log("Got push", evt);
+    console.log("Got push message", evt.data.text());
 })
 
 self.addEventListener('fetch', (evt: FetchEvent) => {
     
     evt.respondWith(
         caches.match(evt.request).then((response) => {
-          console.log("FETCH: ", evt.request, response);
+          console.log(`FETCH: ${evt.request.url}`, evt.request, response);
+          const rangeHeader = evt.request.headers.get('range');
+          if (rangeHeader) {
+            console.log("RANGE: ", rangeHeader);
+          }
           return response || fetch(evt.request);
         })
       );
