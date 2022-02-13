@@ -6,7 +6,7 @@ const CACHE_DB = "audio-cache";
 const AUDIO_FILES_STORE = "audio-files";
 const FOLDER_INDEX = "folder";
 
-export function createCache() {
+export function createCache(): Promise<Cache> {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(CACHE_DB);
     req.onerror = reject;

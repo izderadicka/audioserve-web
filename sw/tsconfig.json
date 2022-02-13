@@ -4,8 +4,10 @@
         "lib": ["es6", "WebWorker"],
         "outDir": "../public",
         "moduleResolution": "Node",
-        "module": "ES6"
+        "module": "ES6",
+        "types": []
     },
     "include": ["*.ts"],
+    "exclude": ["node_modules/*", "../node_modules/*"]
     
 }
