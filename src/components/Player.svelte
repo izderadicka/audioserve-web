@@ -170,6 +170,7 @@
         position: nextPosition,
         startPlay,
         collection: $playList.collection,
+        time: 0
       });
       $playItem = item;
     }
