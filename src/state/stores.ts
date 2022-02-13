@@ -35,7 +35,6 @@ export const selectedTranscodingDetails: Readable<TranscodingDetail> = derived([
     
 })
 export const currentFolder: Writable<CurrentFolder|undefined> = writable(undefined);
-export const cachedItem: Writable<CachedItem|undefined> = writable(undefined);
 
 export const playItem: Writable<PlayItem> = writable(undefined);
 export const playList: Writable<CurrentPlayList> = writable(undefined);

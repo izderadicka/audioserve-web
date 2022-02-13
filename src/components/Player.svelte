@@ -8,7 +8,6 @@
 
   import {
     apiConfig,
-    cachedItem,
     config,
     currentFolder,
     group,
@@ -134,9 +133,6 @@
           });
           cache
             .cacheAhead(item.url)
-            .then((cached) => {
-              $cachedItem = cached;
-            })
             .catch((e) => console.error("Caching file failed", e));
         }
       }

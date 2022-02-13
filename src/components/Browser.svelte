@@ -1,13 +1,11 @@
 <script lang="ts">
   import { getContext, onDestroy, onMount } from "svelte";
-  import { debug } from "svelte/internal";
   import type { Unsubscriber } from "svelte/store";
-  import type { Cache } from "../cache";
-  import ContinuePlay from 'svelte-material-icons/PlayCircleOutline.svelte';
+  import { Cache, CacheEvent, EventType } from "../cache";
+  import ContinuePlay from "svelte-material-icons/PlayCircleOutline.svelte";
 
   import type { AudioFile, PositionShort, Subfolder } from "../client";
   import {
-    cachedItem,
     colApi,
     currentFolder,
     group,
@@ -22,8 +20,8 @@
   import { formatTime, splitPath, splitUrl } from "../util";
   import FileItem from "./FileItem.svelte";
   import FolderItem from "./FolderItem.svelte";
-import Description from "./Description.svelte";
-import Cover from "./Cover.svelte";
+  import Description from "./Description.svelte";
+  import Cover from "./Cover.svelte";
 
   const cache: Cache = getContext("cache");
 
@@ -34,7 +32,7 @@ import Cover from "./Cover.svelte";
   let folderPath: string | undefined;
   let folderTime: number;
   let sharedPosition: PositionShort | null;
-  
+
   let descriptionPath: string;
   let coverPath: string;
 
@@ -54,7 +52,6 @@ import Cover from "./Cover.svelte";
       folderTime = undefined;
       descriptionPath = undefined;
       coverPath: undefined;
-
     } catch (err) {}
   }
 
@@ -183,39 +180,44 @@ import Cover from "./Cover.svelte";
     }
   }
 
-  unsubsribe.push(
-    cachedItem.subscribe((item) => {
-      if (item) {
-        console.log("File cached", item);
-        // update folder
-        const { collection, path } = splitUrl(item.originalUrl);
+  function handleCacheEvent(evt: CacheEvent) {
+    const item = evt.item;
+    if (item) {
+      const cached = evt.kind === EventType.FileCached;
+      console.log("File cached", item);
+      // update folder
+      const { collection, path } = splitUrl(item.originalUrl);
 
-        // update folder
-        if (collection === $selectedCollection) {
-          const position = files.findIndex((f) => f.path == path);
-          if (position >= 0) {
-            let f = files[position];
-            f.cached = true;
-            files[position] = f;
-          }
-        }
-        // update playlist
-        const { folder, file } = splitPath(path);
-        if ($playList.collection == collection && $playList.folder == folder) {
-          playList.update((pl) => {
-            const position = pl.files.findIndex((f) => f.path == path);
-            if (position >= 0) {
-              pl.files[position].cached = true;
-            }
-            return pl;
-          });
+      // update folder
+      if (collection === $selectedCollection) {
+        const position = files.findIndex((f) => f.path == path);
+        if (position >= 0) {
+          let f = files[position];
+          f.cached = cached;
+          files[position] = f;
         }
       }
-    })
-  );
+      // update playlist
+      const { folder, file } = splitPath(path);
+      if ($playList.collection == collection && $playList.folder == folder) {
+        playList.update((pl) => {
+          const position = pl.files.findIndex((f) => f.path == path);
+          if (position >= 0) {
+            pl.files[position].cached = cached;
+          }
+          return pl;
+        });
+      }
+    }
+  }
+
+  cache.addListener(handleCacheEvent);
 
   onMount(async () => {});
-  onDestroy(() => unsubsribe.forEach((u) => u()));
+  onDestroy(() => {
+    unsubsribe.forEach((u) => u());
+    cache.removeListener(handleCacheEvent);
+  });
 </script>
 
 <div id="browser">
@@ -247,7 +249,7 @@ import Cover from "./Cover.svelte";
                 bitrate={file.meta.bitrate}
                 position={pos}
                 cached={file.cached}
-                container={container}
+                {container}
               />
             </li>
           {/each}
@@ -257,23 +259,26 @@ import Cover from "./Cover.svelte";
   </div>
   <div class="browser-sidebar">
     {#if sharedPosition}
-    <div class="last-position" id="last-remote-position" >
-      <button on:click="{playSharedPosition}"><ContinuePlay size="2rem"/> {splitPath(sharedPosition.path).file} at {formatTime(sharedPosition.position)}</button>
-    </div>
+      <div class="last-position" id="last-remote-position">
+        <button on:click={playSharedPosition}
+          ><ContinuePlay size="2rem" />
+          {splitPath(sharedPosition.path).file} at {formatTime(
+            sharedPosition.position
+          )}</button
+        >
+      </div>
     {/if}
     <details open>
       <summary>Info</summary>
       <div id="folder-cover">
         {#if coverPath}
-          <Cover coverPath="{coverPath}"/>
+          <Cover {coverPath} />
         {/if}
       </div>
-      <div id="folder-tags">
-
-      </div>
+      <div id="folder-tags" />
       <div id="folder-description">
-        {#if descriptionPath} 
-        <Description descriptionPath="{descriptionPath}"/>
+        {#if descriptionPath}
+          <Description {descriptionPath} />
         {/if}
       </div>
     </details>
@@ -281,7 +286,6 @@ import Cover from "./Cover.svelte";
 </div>
 
 <style>
-  
   .browser-sidebar button {
     overflow: hidden;
   }
@@ -291,20 +295,19 @@ import Cover from "./Cover.svelte";
     flex-direction: row;
   }
 
- .main-browser-panel {
+  .main-browser-panel {
     width: 100%;
     margin-right: 3em;
   }
 
   .browser-sidebar {
-    width:66%;
+    width: 66%;
     padding-right: 1rem;
   }
 
   @media (max-width: 770px) {
-    
     #browser {
-        flex-direction: column-reverse;
+      flex-direction: column-reverse;
     }
     .browser-sidebar {
       width: 100%;

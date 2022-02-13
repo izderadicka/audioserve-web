@@ -1,4 +1,4 @@
-import type { Cache } from ".";
+import { Cache, CacheEventHandler, EventType } from ".";
 import { audioFilePath, splitPath, splitUrl } from "../util";
 import type { CachedItem } from "./types";
 
@@ -56,6 +56,7 @@ class RunningItem {
 }
 
 export class DbCache implements Cache {
+  private listeners: CacheEventHandler[] = [];
   private queue: QueueItem[] = [];
   private running: RunningItem[] = [];
   maxParallelLoads: number;
@@ -174,10 +175,26 @@ export class DbCache implements Cache {
     return new Promise((resolve, reject) => {
       this.queue.push(new QueueItem(request, resolve, reject));
       this.fetchNext();
+    }).then((cachedItem:CachedItem)=> {
+      this.listeners.forEach((l) => l({kind: EventType.FileCached, item: cachedItem}))
+      return cachedItem
     });
   }
 
   cancelPendingLoad(url: string): boolean {
     throw new Error("Method not implemented.");
+  }
+
+  addListener(l: CacheEventHandler) {
+    this.listeners.push(l);
+
+  }
+  removeListener(l: CacheEventHandler) {
+    const idx = this.listeners.findIndex((item) => item === l);
+    if (idx >= 0) {
+      this.listeners.splice(idx,1);
+    }
+
+
   }
 }
