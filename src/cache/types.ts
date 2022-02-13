@@ -9,7 +9,6 @@ export interface CacheEvent {
 }
 
 export interface CachedItem{
-    isCached: boolean|null;
     cachedUrl: string;
     originalUrl: string
     

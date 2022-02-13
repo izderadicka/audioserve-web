@@ -119,7 +119,6 @@ export class DbCache implements Cache {
         if (resp.status === 200) {
           const body = await resp.blob();
           const item: CachedItem = {
-            isCached: true,
             originalUrl: req.request.url,
             cachedUrl: URL.createObjectURL(body)
           };
