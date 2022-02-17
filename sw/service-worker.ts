@@ -31,7 +31,10 @@ self.addEventListener('install', (evt) => {
     evt.waitUntil(
         caches.open(cacheName).then((cache) => {
           return cache.addAll(DEVELOPMENT?['/favicon.png',]:staticResources);
-        }).then(() => console.log("Installation successful"))
+        }).then(() => { 
+          console.log("SW Installation successful")
+          return self.skipWaiting(); // forces to immediately replace old SW 
+        })    
       );
     
 })
@@ -43,9 +46,14 @@ self.addEventListener('activate', (evt) => {
             if (key.startsWith('static-') && key != cacheName) {
               return caches.delete(key);
             }
-          })).then(() => console.log("Activation successful") );
+          }));
+        })
+        .then(() => {
+          console.log("SW Activation successful");
+          return self.clients.claim(); // and forces immediately to take over current page 
         })
       );
+    
     
    
 })

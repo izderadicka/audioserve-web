@@ -7,7 +7,7 @@
     "dev": "rollup -c -w",
     "start": "sirv public --no-clear",
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "build-sw": "tsc -p ./sw && sed -i 's/export default undefined;//' public/service-worker.js"
+    "dev-sw": "tsc -p ./sw -w"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.0.0",
