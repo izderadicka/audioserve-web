@@ -72,6 +72,25 @@ self.addEventListener("message", (evt: MessageEvent) => {
   const msg: CacheMessageRequest = evt.data;
   if (msg.kind === CacheMessageKind.Prefetch) {
     console.debug("SW PREFETCH", msg.data.url);
+    fetch(msg.data.url, {
+      credentials:'include',
+      cache: 'no-cache'
+    })
+    .then((resp) => {
+      if (resp.ok) {
+      const url = new URL(msg.data.url);
+      url.search="";
+      const keyUrl = url.toString();
+     
+      return self.caches.open(audioCache)
+        .then((cache) => {
+         return cache.put(keyUrl, resp)
+        })
+        .then(()=>  console.debug(`SW PREFETCH RESPONSE: ${resp.status} saving as ${keyUrl}`))
+      } else {
+        console.error(`Cannot cache audio ${resp.url}: STTAUS ${resp.status}`);
+      }
+    })
   }
   
 });
