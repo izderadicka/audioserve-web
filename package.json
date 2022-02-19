@@ -7,7 +7,8 @@
     "dev": "rollup -c -w",
     "start": "sirv public --no-clear",
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "dev-sw": "tsc -p ./sw -w"
+    "build-sw": "rollup -c rollup-sw.config.js ",
+    "dev-sw": "rollup -c rollup-sw.config.js  -w"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.0.0",

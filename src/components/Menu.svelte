@@ -1,5 +1,4 @@
 <script lang="ts">
-  
   import { createEventDispatcher } from "svelte";
   import type { Transcoding } from "../client";
   import { selectedTranscoding, transcodings } from "../state/stores";
@@ -11,8 +10,9 @@
     TranscodingName,
     transcodingNameToCode,
   } from "../types/enums";
-  import { capitalize, otherTheme } from "../util";
-import { clickOutside } from "../util/dom";
+  import { capitalize } from "../util";
+  import { otherTheme } from "../util/browser";
+  import { clickOutside } from "../util/dom";
   const dispatch = createEventDispatcher();
 
   let menuVisible = false;
@@ -53,57 +53,60 @@ import { clickOutside } from "../util/dom";
   <!-- svelte-ignore a11y-invalid-attribute -->
   <a
     href="#"
-    on:click|preventDefault={() => menuVisible = !menuVisible}
+    on:click|preventDefault={() => (menuVisible = !menuVisible)}
     aria-label="Menu"
     bind:this={menuButton}
-    id="main-menu-button"
-    ><Menu size="1.9rem"/></a>
+    id="main-menu-button"><Menu size="1.9rem" /></a
+  >
   {#if menuVisible}
-  <div use:clickOutside={menuButton} on:outclick={() => (menuVisible = false)}>
-    <aside class="dropdown-content" style={menuVisible ? "" : "display:none"}>
-      <nav>
-        <!-- svelte-ignore a11y-invalid-attribute -->
-        <ul>
-          <li>
-            <a href="#" data-menu="logout" on:click|preventDefault={menuClick}
-              >Logout</a
-            >
-          </li>
-          <li>
-            <a
-              href="#"
-              data-menu="switch-theme"
-              on:click|preventDefault={menuClick}>{capitalize(otherTheme())} Theme</a
-            >
-          </li>
-          <li>
-            <details open>
-              <summary>Transcoding ({transcoding})</summary>
-              <ul>
-                {#each transcodingNames as transcodingName}
-                  <li class="option">
-                    <input
-                      type="radio"
-                      name="transcoding"
-                      value={transcodingName}
-                      id={"radio-" + transcodingName}
-                      bind:group={transcoding}
-                      on:change={updateTranscoding}
-                    /><label for={"radio-" + transcodingName}
-                      >{transcodingName} {getBitrate(transcodingName)}</label
-                    >
-                  </li>
-                {/each}
-              </ul>
-            </details>
-          </li>
-        </ul>
-      </nav>
-    </aside>
-  </div>
+    <div
+      use:clickOutside={menuButton}
+      on:outclick={() => (menuVisible = false)}
+    >
+      <aside class="dropdown-content" style={menuVisible ? "" : "display:none"}>
+        <nav>
+          <!-- svelte-ignore a11y-invalid-attribute -->
+          <ul>
+            <li>
+              <a href="#" data-menu="logout" on:click|preventDefault={menuClick}
+                >Logout</a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                data-menu="switch-theme"
+                on:click|preventDefault={menuClick}
+                >{capitalize(otherTheme())} Theme</a
+              >
+            </li>
+            <li>
+              <details open>
+                <summary>Transcoding ({transcoding})</summary>
+                <ul>
+                  {#each transcodingNames as transcodingName}
+                    <li class="option">
+                      <input
+                        type="radio"
+                        name="transcoding"
+                        value={transcodingName}
+                        id={"radio-" + transcodingName}
+                        bind:group={transcoding}
+                        on:change={updateTranscoding}
+                      /><label for={"radio-" + transcodingName}
+                        >{transcodingName} {getBitrate(transcodingName)}</label
+                      >
+                    </li>
+                  {/each}
+                </ul>
+              </details>
+            </li>
+          </ul>
+        </nav>
+      </aside>
+    </div>
   {/if}
 </div>
-
 
 <style>
   .option {

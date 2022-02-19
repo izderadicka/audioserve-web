@@ -1,5 +1,17 @@
 import App from "./App.svelte";
-import { createCache } from "./cache";
+import type { Cache} from "./cache";
+import { CacheStorageCache } from "./cache/cs-cache";
+
+let app: App;
+
+function createApp(cache: Cache) {
+  app = new App({
+    target: document.body,
+    props: { cache },
+  });
+}
+
+export default app;
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker
@@ -16,19 +28,27 @@ if ("serviceWorker" in navigator) {
     console.log("Registration succeeded. Scope is " + reg.scope, ctl);
 
     if (ctl) {
-      ctl.postMessage({ txt: "Hu Ha from client" });
+      const cache = new CacheStorageCache(ctl);
+      // has to watch for changes of ServiceWorker controller
+      navigator.serviceWorker.oncontrollerchange = () => {
+        if (navigator.serviceWorker.controller) {
+        cache.updateWorker(navigator.serviceWorker.controller);
+        } else {
+          console.error("No active ServiceWorker");
+        }
+      }
+      createApp(cache);
     } else {
       console.error("Controller is not ready!!!");
     }
 
-    navigator.serviceWorker.addEventListener("message", (evt: MessageEvent) => {
-      console.log("CLIENT: Got message", evt.data, evt.source);
-      //   navigator.serviceWorker.controller.postMessage({
-      //     txt: "Reply from client, got " + JSON.stringify(evt.data),
-      //   });
-    });
+    // navigator.serviceWorker.addEventListener("message", (evt: MessageEvent) => {
+    //   console.log("CLIENT: Got message", evt.data, evt.source);
+    //   navigator.serviceWorker.controller.postMessage({
+    //     txt: "Reply from client, got " + JSON.stringify(evt.data),
+    //   });
+    // });
 
-    //
   });
 }
 
@@ -38,17 +58,4 @@ if ("storage" in navigator) {
     .then((estimate) => console.log("Available storage:", estimate));
 }
 
-let app;
-
-createCache().then((cache) => {
-
-	app = new App({
-		target: document.body,
-		props: {cache},
-	  });
-
-})
-
-
-
-export default app;
+//createDbCache().then(createApp)

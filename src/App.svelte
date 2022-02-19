@@ -20,7 +20,7 @@
   import Browser from "./components/Browser.svelte";
   import { FolderType, StorageKeys } from "./types/enums";
   import Breadcrumb from "./components/Breadcrumb.svelte";
-  import { otherTheme } from "./util";
+  import { otherTheme } from "./util/browser";
   import Player from "./components/Player.svelte";
   import type { Cache } from "./cache";
 
