@@ -79,18 +79,28 @@
     }
   }
 
+  let error: string = null;
+
   onMount(async () => {
     try {
       await loadCollections();
     } catch (e) {
-      console.error("Error loading initial lists", typeof e, e);
-      $isAuthenticated = false;
-      // try to load again after authentication
-      const unsubsribe = isAuthenticated.subscribe(async (ok) => {
-        if (ok) {
-          await loadCollections();
+      console.error("Error loading initial lists", e);
+      if (e instanceof Response) {
+        if (e.status === 401) {
+          $isAuthenticated = false;
+          // try to load again after authentication
+          const unsubsribe = isAuthenticated.subscribe(async (ok) => {
+            if (ok) {
+              await loadCollections();
+            }
+          });
+        } else {
+          error = `Unexpected respose from server: ${e.status} ${e.statusText}`;
         }
-      });
+      } else {
+        error = `Cannot contact server: ${e}`;
+      }
     }
   });
 
@@ -98,7 +108,10 @@
 </script>
 
 <main>
-  {#if !$isAuthenticated}
+  {#if error}
+  <h2>Error!</h2>
+  <p>{error}</p>
+  {:else if !$isAuthenticated}
     <Login />
   {:else}
     <div class="head">
