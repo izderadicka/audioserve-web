@@ -1,3 +1,4 @@
+const AUDIO_CACHE_NAME = "audio";
 var CacheMessageKind;
 (function (CacheMessageKind) {
     CacheMessageKind[CacheMessageKind["Prefetch"] = 1] = "Prefetch";
@@ -6,7 +7,7 @@ var CacheMessageKind;
 /// <reference no-default-lib="true"/>
 var undefined$1 = undefined;
 const cacheName = "static-v1";
-const audioCache = "audio";
+const audioCache = AUDIO_CACHE_NAME;
 self.addEventListener("install", (evt) => {
     evt.waitUntil(caches
         .open(cacheName)
@@ -65,10 +66,18 @@ self.addEventListener("fetch", (evt) => {
     const parsedUrl = new URL(evt.request.url);
     if (/^\/\d+\/audio\//.test(parsedUrl.pathname)) {
         console.log("AUDIO FILE request: ", decodeURI(parsedUrl.pathname));
+        // we are not intercepting requests with seek query
+        if (parsedUrl.searchParams.get("seek"))
+            return;
         const rangeHeader = evt.request.headers.get("range");
         if (rangeHeader) {
             console.log("RANGE: ", rangeHeader);
         }
+        evt.respondWith(caches.open(audioCache).then((cache) => cache.match(evt.request).then((resp) => {
+            if (resp)
+                console.debug(`SERVING CACHED AUDIO: ${resp.url}`);
+            return resp || fetch(evt.request);
+        })));
     }
     else {
         evt.respondWith(caches.open(cacheName).then((cache) => cache.match(evt.request).then((response) => {

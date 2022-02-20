@@ -81,10 +81,16 @@
     if (item && player) {
       let source;
       if (item.cached) {
-        const cachedItem = await cache.getCachedUrl(item.url)!;
-        source = cachedItem.cachedUrl;
-        console.debug("Playing cached item", source);
-        cached = true;
+        const cachedItem = await cache.getCachedUrl(item.url);
+        if (cachedItem) {
+          source = cachedItem.cachedUrl;
+          console.debug("Playing cached item", source);
+          cached = true;
+        } else {
+          console.error("Item was removed from cache");
+          cached = false;
+          source = item.url;
+        }
       } else {
         //const url = item.createMediaSourceUrl();
         source = item.url;
@@ -148,8 +154,24 @@
     }
   }
 
-  function playerError(evt) {
-    console.error("Player error", evt);
+  const MEDIA_ERRORS = [
+    "MEDIA_ERR_ABORTED",
+    "MEDIA_ERR_NETWORK",
+    "MEDIA_ERR_DECODE",
+    "MEDIA_ERR_SRC_NOT_SUPPORTED",
+  ];
+  const codeName = (code) => {
+    if (code > 0 && code <= MEDIA_ERRORS.length) return MEDIA_ERRORS[code - 1];
+    else return `UNKNOWN_${code}`;
+  };
+
+  function playerError() {
+    const e = player.error;
+    console.error("Player error", e);
+    const msg = e.message
+      ? `${codeName(e.code)} : ${e.message}`
+      : codeName(e.code);
+    alert("Player Error: "+ msg);
   }
 
   function tryNextFile() {
@@ -166,7 +188,7 @@
         position: nextPosition,
         startPlay,
         collection: $playList.collection,
-        time: 0
+        time: 0,
       });
       $playItem = item;
     }

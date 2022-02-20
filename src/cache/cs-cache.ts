@@ -1,32 +1,61 @@
 import type { Cache } from ".";
+import { splitPath } from "../util";
 import type { CachedItem, CacheEventHandler } from "./types";
 
+export const AUDIO_CACHE_NAME = "audio";
 export enum CacheMessageKind {
   Prefetch = 1,
 }
 
 export interface CacheMessageRequest {
-    kind: CacheMessageKind;
-    data: any
+  kind: CacheMessageKind;
+  data: any;
 }
 
 export class CacheStorageCache implements Cache {
   private pendingRequests: Map<string, any>;
   private listeners: CacheEventHandler[] = [];
 
-  constructor(private worker: ServiceWorker) {
-      
-  }
+  constructor(private worker: ServiceWorker) {}
 
   updateWorker(w: ServiceWorker) {
-      this.worker = w;
+    this.worker = w;
   }
 
   getCachedUrl(url: string): Promise<CachedItem> {
-    return Promise.resolve(null);
+    return caches.open(AUDIO_CACHE_NAME).then((cache) => {
+      return cache
+        .match(url, {
+          ignoreSearch: true,
+        })
+        .then((item) => {
+          return item
+            ? {
+                cachedUrl: item?.url,
+                originalUrl: url,
+              }
+            : null;
+        });
+    });
   }
   getCachedPaths(collection: number, folder: string): Promise<string[]> {
-    return Promise.resolve([]);
+    const collLen = collection.toString().length;
+    return caches
+      .open(AUDIO_CACHE_NAME)
+      .then((cache) => cache.keys())
+      .then((keys) => {
+        return keys
+          .map((req) => {
+            const parsedURL = new URL(req.url);
+            return decodeURI(parsedURL.pathname);
+          })
+          .filter((path) => {
+            const prefix = `/${collection}/audio/${folder}`;
+            const { folder: dir } = splitPath(path);
+            return prefix === dir;
+          })
+          .map((path) => path.substring(collLen + 8));
+      });
   }
   cacheAhead(url: string): Promise<CachedItem> {
     console.log(`Want to precache ${url}`);

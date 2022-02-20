@@ -3,7 +3,7 @@
 /// <reference lib="webworker" />
 declare var self: ServiceWorkerGlobalScope;
 
-import { CacheMessageKind, CacheMessageRequest } from "./cache/cs-cache";
+import { AUDIO_CACHE_NAME, CacheMessageKind, CacheMessageRequest } from "./cache/cs-cache";
 
 
 export default undefined;
@@ -32,7 +32,7 @@ const staticResources = [
 ];
 
 const cacheName = "static-v1";
-const audioCache = "audio";
+const audioCache = AUDIO_CACHE_NAME;
 
 self.addEventListener("install", (evt) => {
   evt.waitUntil(
@@ -103,10 +103,18 @@ self.addEventListener("fetch", (evt: FetchEvent) => {
   const parsedUrl = new URL(evt.request.url);
   if (/^\/\d+\/audio\//.test(parsedUrl.pathname)) {
     console.log("AUDIO FILE request: ", decodeURI(parsedUrl.pathname));
+    // we are not intercepting requests with seek query
+    if (parsedUrl.searchParams.get("seek")) return;
+
     const rangeHeader = evt.request.headers.get("range");
     if (rangeHeader) {
       console.log("RANGE: ", rangeHeader);
     }
+
+    evt.respondWith(caches.open(audioCache).then((cache) => cache.match(evt.request).then((resp) => {
+      if (resp) console.debug(`SERVING CACHED AUDIO: ${resp.url}`);
+      return resp || fetch(evt.request)
+    })))
   } else {
     evt.respondWith(
       caches.open(cacheName).then((cache) =>
