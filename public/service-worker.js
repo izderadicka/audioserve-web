@@ -1,9 +1,3 @@
-const AUDIO_CACHE_NAME = "audio";
-var CacheMessageKind;
-(function (CacheMessageKind) {
-    CacheMessageKind[CacheMessageKind["Prefetch"] = 1] = "Prefetch";
-})(CacheMessageKind || (CacheMessageKind = {}));
-
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation.
 
@@ -29,6 +23,25 @@ function __awaiter(thisArg, _arguments, P, generator) {
     });
 }
 
+var EventType;
+(function (EventType) {
+    EventType[EventType["FileCached"] = 0] = "FileCached";
+    EventType[EventType["FileDeleted"] = 1] = "FileDeleted";
+})(EventType || (EventType = {}));
+
+function removeQuery(url) {
+    const parsedUrl = new URL(url);
+    parsedUrl.search = "";
+    return parsedUrl.toString();
+}
+
+const AUDIO_CACHE_NAME = "audio";
+var CacheMessageKind;
+(function (CacheMessageKind) {
+    CacheMessageKind[CacheMessageKind["Prefetch"] = 1] = "Prefetch";
+    CacheMessageKind[CacheMessageKind["Cached"] = 2] = "Cached";
+})(CacheMessageKind || (CacheMessageKind = {}));
+
 function parseRange(range) {
     const r = /^bytes=(\d+)-?(\d+)?/.exec(range);
     return [Number(r[1]), r[2] ? Number(r[2]) : undefined];
@@ -52,7 +65,14 @@ function buildResponse(originalResponse, range) {
     });
 }
 
-/// <reference no-default-lib="true"/>
+function broadcastMessage(msg) {
+    self.clients.matchAll().then((clients) => {
+        for (const c of clients) {
+            console.debug(`Sending ${msg} to client ${c.type}::${c.id}`);
+            c.postMessage(msg);
+        }
+    });
+}
 const cacheName = "static-v1";
 const audioCache = AUDIO_CACHE_NAME;
 self.addEventListener("install", (evt) => {
@@ -88,22 +108,24 @@ self.addEventListener("message", (evt) => {
         fetch(msg.data.url, {
             credentials: "include",
             cache: "no-cache",
-        }).then((resp) => {
+        }).then((resp) => __awaiter(void 0, void 0, void 0, function* () {
             if (resp.ok) {
-                const url = new URL(msg.data.url);
-                url.search = "";
-                const keyUrl = url.toString();
-                return self.caches
-                    .open(audioCache)
-                    .then((cache) => {
-                    return cache.put(keyUrl, resp);
-                })
-                    .then(() => console.debug(`SW PREFETCH RESPONSE: ${resp.status} saving as ${keyUrl}`));
+                const keyUrl = removeQuery(msg.data.url);
+                const cache = yield self.caches.open(audioCache);
+                yield cache.put(keyUrl, resp);
+                broadcastMessage({
+                    kind: CacheMessageKind.Cached,
+                    data: {
+                        cachedUrl: keyUrl,
+                        originalUrl: resp.url,
+                    }
+                });
+                console.debug(`SW PREFETCH RESPONSE: ${resp.status} saving as ${keyUrl}`);
             }
             else {
-                console.error(`Cannot cache audio ${resp.url}: STTAUS ${resp.status}`);
+                console.error(`Cannot cache audio ${resp.url}: STATUS ${resp.status}`);
             }
-        });
+        }));
     }
 });
 self.addEventListener("push", (evt) => {

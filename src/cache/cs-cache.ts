@@ -1,13 +1,15 @@
 import type { Cache } from ".";
-import { splitPath } from "../util";
+import { EventType } from ".";
+import { removeQuery, splitPath } from "../util";
 import type { CachedItem, CacheEventHandler } from "./types";
 
 export const AUDIO_CACHE_NAME = "audio";
 export enum CacheMessageKind {
   Prefetch = 1,
+  Cached = 2
 }
 
-export interface CacheMessageRequest {
+export interface CacheMessage {
   kind: CacheMessageKind;
   data: any;
 }
@@ -15,8 +17,18 @@ export interface CacheMessageRequest {
 export class CacheStorageCache implements Cache {
   private pendingRequests: Map<string, any>;
   private listeners: CacheEventHandler[] = [];
+  private worker: ServiceWorker; 
 
-  constructor(private worker: ServiceWorker) {}
+  constructor(worker: ServiceWorker) {
+      this.updateWorker(worker);
+      /// @ts-ignore
+      navigator.serviceWorker.addEventListener('message', (evt) => {
+          const msg: CacheMessage = evt.data;
+          if (msg.kind === CacheMessageKind.Cached) {
+              this.listeners.forEach((l) => l({kind:EventType.FileCached, item: msg.data}))
+          }
+      })
+  }
 
   updateWorker(w: ServiceWorker) {
     this.worker = w;
@@ -24,9 +36,7 @@ export class CacheStorageCache implements Cache {
 
   getCachedUrl(url: string): Promise<CachedItem> {
     return caches.open(AUDIO_CACHE_NAME).then((cache) => {
-      const parsedUrl = new URL(url);
-      parsedUrl.search = "";
-      const cachedUrl = parsedUrl.toString();
+      const cachedUrl = removeQuery(url);
       return cache.match(cachedUrl).then((item) => {
         if (item) {
           return {

@@ -6,21 +6,20 @@ declare var self: ServiceWorkerGlobalScope;
 import {
   AUDIO_CACHE_NAME,
   CacheMessageKind,
-  CacheMessageRequest,
+  CacheMessage,
 } from "./cache/cs-cache";
+import { removeQuery } from "./util";
 import { buildResponse } from "./util/sw";
 
-// function broadcastMessage(msg?: string) {
-//     self.clients.matchAll().then((clients) => {
-//         console.log(`Got (${msg}) ${clients.length} clients`);
+function broadcastMessage(msg: CacheMessage) {
+    self.clients.matchAll().then((clients) => {
+        for (const c of clients) {
+            console.debug(`Sending ${msg} to client ${c.type}::${c.id}`);
+            c.postMessage(msg);
 
-//         for (const c of clients) {
-//             console.log(`Sending ${msg} to client ` + JSON.stringify(c));
-//             c.postMessage({txt: "Here is your worker"});
-
-//         }
-//     })
-// }
+        }
+    })
+}
 
 const DEVELOPMENT = true;
 const staticResources = [
@@ -69,31 +68,30 @@ self.addEventListener("activate", (evt) => {
   );
 });
 
-self.addEventListener("message", (evt: MessageEvent) => {
-  const msg: CacheMessageRequest = evt.data;
+self.addEventListener("message", (evt) => {
+  const msg: CacheMessage = evt.data;
   if (msg.kind === CacheMessageKind.Prefetch) {
     console.debug("SW PREFETCH", msg.data.url);
     fetch(msg.data.url, {
       credentials: "include",
       cache: "no-cache",
-    }).then((resp) => {
+    }).then(async (resp) => {
       if (resp.ok) {
-        const url = new URL(msg.data.url);
-        url.search = "";
-        const keyUrl = url.toString();
-
-        return self.caches
-          .open(audioCache)
-          .then((cache) => {
-            return cache.put(keyUrl, resp);
-          })
-          .then(() =>
-            console.debug(
-              `SW PREFETCH RESPONSE: ${resp.status} saving as ${keyUrl}`
-            )
-          );
+        const keyUrl = removeQuery(msg.data.url);
+        const cache = await self.caches.open(audioCache);
+        await cache.put(keyUrl, resp);
+        broadcastMessage({
+          kind: CacheMessageKind.Cached,
+          data: {
+           cachedUrl: keyUrl,
+           originalUrl: resp.url, 
+          }
+        })
+        console.debug(
+          `SW PREFETCH RESPONSE: ${resp.status} saving as ${keyUrl}`
+        );
       } else {
-        console.error(`Cannot cache audio ${resp.url}: STTAUS ${resp.status}`);
+        console.error(`Cannot cache audio ${resp.url}: STATUS ${resp.status}`);
       }
     });
   }
