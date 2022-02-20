@@ -4,6 +4,54 @@ var CacheMessageKind;
     CacheMessageKind[CacheMessageKind["Prefetch"] = 1] = "Prefetch";
 })(CacheMessageKind || (CacheMessageKind = {}));
 
+/*! *****************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+
+function __awaiter(thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+}
+
+function parseRange(range) {
+    const r = /^bytes=(\d+)-?(\d+)?/.exec(range);
+    return [Number(r[1]), r[2] ? Number(r[2]) : undefined];
+}
+function buildResponse(originalResponse, range) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (range) {
+            const body = yield originalResponse.blob();
+            const size = body.size;
+            const [start, end] = parseRange(range);
+            return new Response(body.slice(start, end ? end + 1 : undefined), { status: 206,
+                headers: {
+                    "Content-Range": `bytes ${start}-${end ? end : size - 1}/${size}`,
+                    "Content-Type": originalResponse.headers.get("Content-Type")
+                }
+            });
+        }
+        else {
+            return originalResponse;
+        }
+    });
+}
+
 /// <reference no-default-lib="true"/>
 var undefined$1 = undefined;
 const cacheName = "static-v1";
@@ -76,7 +124,7 @@ self.addEventListener("fetch", (evt) => {
         evt.respondWith(caches.open(audioCache).then((cache) => cache.match(evt.request).then((resp) => {
             if (resp)
                 console.debug(`SERVING CACHED AUDIO: ${resp.url}`);
-            return resp || fetch(evt.request);
+            return buildResponse(resp, rangeHeader) || fetch(evt.request);
         })));
     }
     else {

@@ -4,6 +4,7 @@
 declare var self: ServiceWorkerGlobalScope;
 
 import { AUDIO_CACHE_NAME, CacheMessageKind, CacheMessageRequest } from "./cache/cs-cache";
+import { buildResponse } from "./util/sw";
 
 
 export default undefined;
@@ -113,7 +114,7 @@ self.addEventListener("fetch", (evt: FetchEvent) => {
 
     evt.respondWith(caches.open(audioCache).then((cache) => cache.match(evt.request).then((resp) => {
       if (resp) console.debug(`SERVING CACHED AUDIO: ${resp.url}`);
-      return resp || fetch(evt.request)
+      return buildResponse(resp, rangeHeader) || fetch(evt.request)
     })))
   } else {
     evt.respondWith(
