@@ -4,9 +4,12 @@ import { removeQuery, splitPath } from "../util";
 import type { CachedItem, CacheEventHandler } from "./types";
 
 export const AUDIO_CACHE_NAME = "audio";
+export const AUDIO_CACHE_LIMIT = 1000;
+
 export enum CacheMessageKind {
   Prefetch = 1,
-  Cached = 2
+  Cached = 2,
+  Deleted = 3,
 }
 
 export interface CacheMessage {
@@ -17,17 +20,30 @@ export interface CacheMessage {
 export class CacheStorageCache implements Cache {
   private pendingRequests: Map<string, any>;
   private listeners: CacheEventHandler[] = [];
-  private worker: ServiceWorker; 
+  private worker: ServiceWorker;
 
   constructor(worker: ServiceWorker) {
-      this.updateWorker(worker);
-      /// @ts-ignore
-      navigator.serviceWorker.addEventListener('message', (evt) => {
-          const msg: CacheMessage = evt.data;
-          if (msg.kind === CacheMessageKind.Cached) {
-              this.listeners.forEach((l) => l({kind:EventType.FileCached, item: msg.data}))
-          }
-      })
+    this.updateWorker(worker);
+    /// @ts-ignore
+    navigator.serviceWorker.addEventListener("message", (evt) => {
+      const msg: CacheMessage = evt.data;
+      if (
+        msg.kind === CacheMessageKind.Cached ||
+        msg.kind == CacheMessageKind.Deleted
+      ) {
+        this.listeners.forEach((l) =>
+          l({
+            kind:
+              msg.kind === CacheMessageKind.Cached
+                ? EventType.FileCached
+                : EventType.FileDeleted,
+            item: msg.data,
+          })
+        );
+      } else {
+        console.error("Unprocessed cache message", msg);
+      }
+    });
   }
 
   updateWorker(w: ServiceWorker) {

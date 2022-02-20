@@ -7,9 +7,10 @@ import {
   AUDIO_CACHE_NAME,
   CacheMessageKind,
   CacheMessage,
+  AUDIO_CACHE_LIMIT,
 } from "./cache/cs-cache";
 import { removeQuery } from "./util";
-import { buildResponse } from "./util/sw";
+import { buildResponse, reduceCache } from "./util/sw";
 
 function broadcastMessage(msg: CacheMessage) {
     self.clients.matchAll().then((clients) => {
@@ -86,7 +87,14 @@ self.addEventListener("message", (evt) => {
            cachedUrl: keyUrl,
            originalUrl: resp.url, 
           }
-        })
+        });
+        reduceCache(cache, AUDIO_CACHE_LIMIT, (req) => broadcastMessage({
+          kind: CacheMessageKind.Deleted,
+          data: {
+            cachedUrl: req.url,
+            originalUrl: req.url
+          }
+        }))
         console.debug(
           `SW PREFETCH RESPONSE: ${resp.status} saving as ${keyUrl}`
         );

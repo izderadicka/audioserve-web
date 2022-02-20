@@ -36,10 +36,12 @@ function removeQuery(url) {
 }
 
 const AUDIO_CACHE_NAME = "audio";
+const AUDIO_CACHE_LIMIT = 1000;
 var CacheMessageKind;
 (function (CacheMessageKind) {
     CacheMessageKind[CacheMessageKind["Prefetch"] = 1] = "Prefetch";
     CacheMessageKind[CacheMessageKind["Cached"] = 2] = "Cached";
+    CacheMessageKind[CacheMessageKind["Deleted"] = 3] = "Deleted";
 })(CacheMessageKind || (CacheMessageKind = {}));
 
 function parseRange(range) {
@@ -61,6 +63,19 @@ function buildResponse(originalResponse, range) {
         }
         else {
             return originalResponse;
+        }
+    });
+}
+function reduceCache(cache, sizeLimit, onDelete) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const keys = yield cache.keys();
+        const toDelete = keys.length - sizeLimit;
+        if (toDelete > 0) {
+            const deleteList = keys.slice(0, toDelete);
+            for (const key of deleteList.reverse()) {
+                yield cache.delete(key);
+                onDelete(key);
+            }
         }
     });
 }
@@ -120,6 +135,13 @@ self.addEventListener("message", (evt) => {
                         originalUrl: resp.url,
                     }
                 });
+                reduceCache(cache, AUDIO_CACHE_LIMIT, (req) => broadcastMessage({
+                    kind: CacheMessageKind.Deleted,
+                    data: {
+                        cachedUrl: req.url,
+                        originalUrl: req.url
+                    }
+                }));
                 console.debug(`SW PREFETCH RESPONSE: ${resp.status} saving as ${keyUrl}`);
             }
             else {

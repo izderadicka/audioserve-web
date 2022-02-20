@@ -20,3 +20,16 @@ export async function buildResponse(originalResponse: Response, range: string): 
         return originalResponse
     }
 }
+
+export async function reduceCache(cache: Cache, sizeLimit: number, onDelete: (req: Request)=>void): Promise<void> {
+    const keys = await cache.keys();
+    const toDelete = keys.length - sizeLimit;
+    if (toDelete>0) {
+        const deleteList = keys.slice(0,toDelete);
+        for (const key of deleteList.reverse()) {
+            await cache.delete(key);
+            onDelete(key)
+        }
+    }
+
+}

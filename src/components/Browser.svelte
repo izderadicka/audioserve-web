@@ -185,7 +185,6 @@
     if (item) {
       const cached = evt.kind === EventType.FileCached;
       console.log("File cached", item);
-      // update folder
       const { collection, path } = splitUrl(item.originalUrl);
 
       // update folder
