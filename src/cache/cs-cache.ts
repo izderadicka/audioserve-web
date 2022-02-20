@@ -10,6 +10,7 @@ export enum CacheMessageKind {
   Prefetch = 1,
   Cached = 2,
   Deleted = 3,
+  Error = 4
 }
 
 export interface CacheMessage {
@@ -84,7 +85,7 @@ export class CacheStorageCache implements Cache {
           .map((path) => path.substring(collLen + 8));
       });
   }
-  cacheAhead(url: string): Promise<CachedItem> {
+  cacheAhead(url: string) {
     console.log(`Want to precache ${url}`);
     return new Promise((resolve, reject) => {
       this.worker.postMessage({

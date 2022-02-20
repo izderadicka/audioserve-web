@@ -138,8 +138,7 @@
             position: newPos,
           });
           cache
-            .cacheAhead(item.url)
-            .catch((e) => console.error("Caching file failed", e));
+            .cacheAhead(item.url);
         }
       }
     }

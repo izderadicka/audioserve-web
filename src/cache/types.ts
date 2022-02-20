@@ -20,7 +20,7 @@ export interface Cache {
 
     getCachedUrl(url: string): Promise<CachedItem|null>;
     getCachedPaths(collection: number, folder: string): Promise<string[]>;
-    cacheAhead(url:string): Promise<CachedItem>;
+    cacheAhead(url:string): void;
     cancelPendingLoad(url: string): boolean;
     addListener(l: CacheEventHandler):void;
     removeListener(l: CacheEventHandler): void;

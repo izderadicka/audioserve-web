@@ -10,7 +10,7 @@ import {
   AUDIO_CACHE_LIMIT,
 } from "./cache/cs-cache";
 import { removeQuery } from "./util";
-import { buildResponse, reduceCache } from "./util/sw";
+import { buildResponse, cloneRequest, envictCache } from "./util/sw";
 
 function broadcastMessage(msg: CacheMessage) {
     self.clients.matchAll().then((clients) => {
@@ -73,12 +73,13 @@ self.addEventListener("message", (evt) => {
   const msg: CacheMessage = evt.data;
   if (msg.kind === CacheMessageKind.Prefetch) {
     console.debug("SW PREFETCH", msg.data.url);
+    const keyUrl = removeQuery(msg.data.url);
+    evt.waitUntil(
     fetch(msg.data.url, {
       credentials: "include",
       cache: "no-cache",
     }).then(async (resp) => {
       if (resp.ok) {
-        const keyUrl = removeQuery(msg.data.url);
         const cache = await self.caches.open(audioCache);
         await cache.put(keyUrl, resp);
         broadcastMessage({
@@ -88,7 +89,7 @@ self.addEventListener("message", (evt) => {
            originalUrl: resp.url, 
           }
         });
-        reduceCache(cache, AUDIO_CACHE_LIMIT, (req) => broadcastMessage({
+        envictCache(cache, AUDIO_CACHE_LIMIT, (req) => broadcastMessage({
           kind: CacheMessageKind.Deleted,
           data: {
             cachedUrl: req.url,
@@ -100,8 +101,25 @@ self.addEventListener("message", (evt) => {
         );
       } else {
         console.error(`Cannot cache audio ${resp.url}: STATUS ${resp.status}`);
+        broadcastMessage({
+          kind: CacheMessageKind.Error,
+          data: {
+            cachedUrl: keyUrl,
+            originalUrl: resp.url,
+            error: new Error(`Response status error code: ${resp.status}`)
+          }
+        })
       }
-    });
+    })
+    .catch((err) => broadcastMessage({
+      kind: CacheMessageKind.Error,
+      data: {
+        cachedUrl: keyUrl,
+        originalUrl: msg.data.url,
+        error: err
+      }
+    }))
+    );
   }
 });
 
@@ -117,10 +135,6 @@ self.addEventListener("fetch", (evt: FetchEvent) => {
     if (parsedUrl.searchParams.get("seek")) return;
 
     const rangeHeader = evt.request.headers.get("range");
-    if (rangeHeader) {
-      console.log("RANGE: ", rangeHeader);
-    }
-
     evt.respondWith(
       caches.open(audioCache).then((cache) =>
         cache.match(evt.request).then((resp) => {
@@ -128,7 +142,22 @@ self.addEventListener("fetch", (evt: FetchEvent) => {
             console.debug(`SERVING CACHED AUDIO: ${resp.url}`);
             return buildResponse(resp, rangeHeader);
           } else {
-            return fetch(evt.request);
+            // let remove range header so we can cache
+            const req =cloneRequest(evt.request);
+            req.headers.delete("Range");
+            return fetch(req)
+            .then((resp) => { // if not cached we can put it 
+              const keyReq = removeQuery(evt.request.url);
+              cache.put(keyReq, resp.clone()).then(() => broadcastMessage({
+                kind: CacheMessageKind.Cached,
+                data: {
+                  originalUrl: resp.url,
+                  cachedUrl: keyReq
+                }
+              })
+              )
+              return resp;
+            });
           }
         })
       )

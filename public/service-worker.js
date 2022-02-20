@@ -42,6 +42,7 @@ var CacheMessageKind;
     CacheMessageKind[CacheMessageKind["Prefetch"] = 1] = "Prefetch";
     CacheMessageKind[CacheMessageKind["Cached"] = 2] = "Cached";
     CacheMessageKind[CacheMessageKind["Deleted"] = 3] = "Deleted";
+    CacheMessageKind[CacheMessageKind["Error"] = 4] = "Error";
 })(CacheMessageKind || (CacheMessageKind = {}));
 
 function parseRange(range) {
@@ -54,11 +55,12 @@ function buildResponse(originalResponse, range) {
             const body = yield originalResponse.blob();
             const size = body.size;
             const [start, end] = parseRange(range);
-            return new Response(body.slice(start, end ? end + 1 : undefined), { status: 206,
+            return new Response(body.slice(start, end ? end + 1 : undefined), {
+                status: 206,
                 headers: {
                     "Content-Range": `bytes ${start}-${end ? end : size - 1}/${size}`,
-                    "Content-Type": originalResponse.headers.get("Content-Type")
-                }
+                    "Content-Type": originalResponse.headers.get("Content-Type"),
+                },
             });
         }
         else {
@@ -66,17 +68,23 @@ function buildResponse(originalResponse, range) {
         }
     });
 }
-function reduceCache(cache, sizeLimit, onDelete) {
+function envictCache(cache, sizeLimit, onDelete) {
     return __awaiter(this, void 0, void 0, function* () {
         const keys = yield cache.keys();
         const toDelete = keys.length - sizeLimit;
         if (toDelete > 0) {
             const deleteList = keys.slice(0, toDelete);
             for (const key of deleteList.reverse()) {
-                yield cache.delete(key);
-                onDelete(key);
+                if (yield cache.delete(key)) {
+                    onDelete(key);
+                }
             }
         }
+    });
+}
+function cloneRequest(req) {
+    return new Request(req.url, {
+        credentials: 'include'
     });
 }
 
@@ -120,12 +128,12 @@ self.addEventListener("message", (evt) => {
     const msg = evt.data;
     if (msg.kind === CacheMessageKind.Prefetch) {
         console.debug("SW PREFETCH", msg.data.url);
-        fetch(msg.data.url, {
+        const keyUrl = removeQuery(msg.data.url);
+        evt.waitUntil(fetch(msg.data.url, {
             credentials: "include",
             cache: "no-cache",
         }).then((resp) => __awaiter(void 0, void 0, void 0, function* () {
             if (resp.ok) {
-                const keyUrl = removeQuery(msg.data.url);
                 const cache = yield self.caches.open(audioCache);
                 yield cache.put(keyUrl, resp);
                 broadcastMessage({
@@ -135,7 +143,7 @@ self.addEventListener("message", (evt) => {
                         originalUrl: resp.url,
                     }
                 });
-                reduceCache(cache, AUDIO_CACHE_LIMIT, (req) => broadcastMessage({
+                envictCache(cache, AUDIO_CACHE_LIMIT, (req) => broadcastMessage({
                     kind: CacheMessageKind.Deleted,
                     data: {
                         cachedUrl: req.url,
@@ -146,8 +154,24 @@ self.addEventListener("message", (evt) => {
             }
             else {
                 console.error(`Cannot cache audio ${resp.url}: STATUS ${resp.status}`);
+                broadcastMessage({
+                    kind: CacheMessageKind.Error,
+                    data: {
+                        cachedUrl: keyUrl,
+                        originalUrl: resp.url,
+                        error: new Error(`Response status error code: ${resp.status}`)
+                    }
+                });
             }
-        }));
+        }))
+            .catch((err) => broadcastMessage({
+            kind: CacheMessageKind.Error,
+            data: {
+                cachedUrl: keyUrl,
+                originalUrl: msg.data.url,
+                error: err
+            }
+        })));
     }
 });
 self.addEventListener("push", (evt) => {
@@ -161,16 +185,27 @@ self.addEventListener("fetch", (evt) => {
         if (parsedUrl.searchParams.get("seek"))
             return;
         const rangeHeader = evt.request.headers.get("range");
-        if (rangeHeader) {
-            console.log("RANGE: ", rangeHeader);
-        }
         evt.respondWith(caches.open(audioCache).then((cache) => cache.match(evt.request).then((resp) => {
             if (resp) {
                 console.debug(`SERVING CACHED AUDIO: ${resp.url}`);
                 return buildResponse(resp, rangeHeader);
             }
             else {
-                return fetch(evt.request);
+                // let remove range header so we can cache
+                const req = cloneRequest(evt.request);
+                req.headers.delete("Range");
+                return fetch(req)
+                    .then((resp) => {
+                    const keyReq = removeQuery(evt.request.url);
+                    cache.put(keyReq, resp.clone()).then(() => broadcastMessage({
+                        kind: CacheMessageKind.Cached,
+                        data: {
+                            originalUrl: resp.url,
+                            cachedUrl: keyReq
+                        }
+                    }));
+                    return resp;
+                });
             }
         }))
             .catch((err) => {
