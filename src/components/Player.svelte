@@ -243,6 +243,7 @@
 <div class="player">
   <audio
     preload="none"
+    crossorigin="use-credentials"
     bind:duration
     bind:currentTime
     bind:paused

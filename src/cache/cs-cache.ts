@@ -24,18 +24,19 @@ export class CacheStorageCache implements Cache {
 
   getCachedUrl(url: string): Promise<CachedItem> {
     return caches.open(AUDIO_CACHE_NAME).then((cache) => {
-      return cache
-        .match(url, {
-          ignoreSearch: true,
-        })
-        .then((item) => {
-          return item
-            ? {
-                cachedUrl: item?.url,
-                originalUrl: url,
-              }
-            : null;
-        });
+      const parsedUrl = new URL(url);
+      parsedUrl.search = "";
+      const cachedUrl = parsedUrl.toString();
+      return cache.match(cachedUrl).then((item) => {
+        if (item) {
+          return {
+            cachedUrl: cachedUrl,
+            originalUrl: item.url,
+          };
+        } else {
+          return null;
+        }
+      });
     });
   }
   getCachedPaths(collection: number, folder: string): Promise<string[]> {

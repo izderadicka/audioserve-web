@@ -53,7 +53,6 @@ function buildResponse(originalResponse, range) {
 }
 
 /// <reference no-default-lib="true"/>
-var undefined$1 = undefined;
 const cacheName = "static-v1";
 const audioCache = AUDIO_CACHE_NAME;
 self.addEventListener("install", (evt) => {
@@ -87,15 +86,15 @@ self.addEventListener("message", (evt) => {
     if (msg.kind === CacheMessageKind.Prefetch) {
         console.debug("SW PREFETCH", msg.data.url);
         fetch(msg.data.url, {
-            credentials: 'include',
-            cache: 'no-cache'
-        })
-            .then((resp) => {
+            credentials: "include",
+            cache: "no-cache",
+        }).then((resp) => {
             if (resp.ok) {
                 const url = new URL(msg.data.url);
                 url.search = "";
                 const keyUrl = url.toString();
-                return self.caches.open(audioCache)
+                return self.caches
+                    .open(audioCache)
                     .then((cache) => {
                     return cache.put(keyUrl, resp);
                 })
@@ -122,10 +121,18 @@ self.addEventListener("fetch", (evt) => {
             console.log("RANGE: ", rangeHeader);
         }
         evt.respondWith(caches.open(audioCache).then((cache) => cache.match(evt.request).then((resp) => {
-            if (resp)
+            if (resp) {
                 console.debug(`SERVING CACHED AUDIO: ${resp.url}`);
-            return buildResponse(resp, rangeHeader) || fetch(evt.request);
-        })));
+                return buildResponse(resp, rangeHeader);
+            }
+            else {
+                return fetch(evt.request);
+            }
+        }))
+            .catch((err) => {
+            console.error("SW Error", err);
+            return new Response("Service Worker Cache Error", { status: 555 });
+        }));
     }
     else {
         evt.respondWith(caches.open(cacheName).then((cache) => cache.match(evt.request).then((response) => {
@@ -134,6 +141,4 @@ self.addEventListener("fetch", (evt) => {
         })));
     }
 });
-
-export { undefined$1 as default };
 //# sourceMappingURL=service-worker.js.map

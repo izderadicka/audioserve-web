@@ -18,7 +18,7 @@ if ("serviceWorker" in navigator) {
     .register("./service-worker.js", { scope: "./", type: "module" })
     .catch((error) => {
       // registration failed
-      console.log("Registration failed with " + error);
+      console.error("Registration failed with " + error, error);
     });
 
   navigator.serviceWorker.ready.then((reg) => {

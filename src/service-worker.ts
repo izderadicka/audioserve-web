@@ -3,12 +3,12 @@
 /// <reference lib="webworker" />
 declare var self: ServiceWorkerGlobalScope;
 
-import { AUDIO_CACHE_NAME, CacheMessageKind, CacheMessageRequest } from "./cache/cs-cache";
+import {
+  AUDIO_CACHE_NAME,
+  CacheMessageKind,
+  CacheMessageRequest,
+} from "./cache/cs-cache";
 import { buildResponse } from "./util/sw";
-
-
-export default undefined;
-
 
 // function broadcastMessage(msg?: string) {
 //     self.clients.matchAll().then((clients) => {
@@ -74,26 +74,29 @@ self.addEventListener("message", (evt: MessageEvent) => {
   if (msg.kind === CacheMessageKind.Prefetch) {
     console.debug("SW PREFETCH", msg.data.url);
     fetch(msg.data.url, {
-      credentials:'include',
-      cache: 'no-cache'
-    })
-    .then((resp) => {
+      credentials: "include",
+      cache: "no-cache",
+    }).then((resp) => {
       if (resp.ok) {
-      const url = new URL(msg.data.url);
-      url.search="";
-      const keyUrl = url.toString();
-     
-      return self.caches.open(audioCache)
-        .then((cache) => {
-         return cache.put(keyUrl, resp)
-        })
-        .then(()=>  console.debug(`SW PREFETCH RESPONSE: ${resp.status} saving as ${keyUrl}`))
+        const url = new URL(msg.data.url);
+        url.search = "";
+        const keyUrl = url.toString();
+
+        return self.caches
+          .open(audioCache)
+          .then((cache) => {
+            return cache.put(keyUrl, resp);
+          })
+          .then(() =>
+            console.debug(
+              `SW PREFETCH RESPONSE: ${resp.status} saving as ${keyUrl}`
+            )
+          );
       } else {
         console.error(`Cannot cache audio ${resp.url}: STTAUS ${resp.status}`);
       }
-    })
+    });
   }
-  
 });
 
 self.addEventListener("push", (evt) => {
@@ -112,10 +115,23 @@ self.addEventListener("fetch", (evt: FetchEvent) => {
       console.log("RANGE: ", rangeHeader);
     }
 
-    evt.respondWith(caches.open(audioCache).then((cache) => cache.match(evt.request).then((resp) => {
-      if (resp) console.debug(`SERVING CACHED AUDIO: ${resp.url}`);
-      return buildResponse(resp, rangeHeader) || fetch(evt.request)
-    })))
+    evt.respondWith(
+      caches.open(audioCache).then((cache) =>
+        cache.match(evt.request).then((resp) => {
+          if (resp) {
+            console.debug(`SERVING CACHED AUDIO: ${resp.url}`);
+            return buildResponse(resp, rangeHeader);
+          } else {
+            return fetch(evt.request);
+          }
+        })
+      )
+      .catch((err) => {
+        console.error("SW Error", err);
+        return new Response("Service Worker Cache Error", {status: 555})
+      }
+    ) 
+    );
   } else {
     evt.respondWith(
       caches.open(cacheName).then((cache) =>
