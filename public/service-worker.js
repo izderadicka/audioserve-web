@@ -96,13 +96,21 @@ function broadcastMessage(msg) {
         }
     });
 }
+const staticResources = [
+    "/",
+    "/index.html",
+    "/global.css",
+    "/favicon.png",
+    "/build/bundle.css",
+    "/build/bundle.js",
+];
 const cacheName = "static-v1";
 const audioCache = AUDIO_CACHE_NAME;
 self.addEventListener("install", (evt) => {
     evt.waitUntil(caches
         .open(cacheName)
         .then((cache) => {
-        return cache.addAll(["/favicon.png"] );
+        return cache.addAll(staticResources);
     })
         .then(() => {
         console.log("SW Installation successful");

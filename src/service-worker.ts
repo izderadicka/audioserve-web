@@ -22,7 +22,9 @@ function broadcastMessage(msg: CacheMessage) {
     })
 }
 
-const DEVELOPMENT = true;
+const ENVIRONMENT = "DEVELOPMENT";
+/// @ts-ignore
+const isDevelopment = ENVIRONMENT !== "DEVELOPMENT"; 
 const staticResources = [
   "/",
   "/index.html",
@@ -40,7 +42,7 @@ self.addEventListener("install", (evt) => {
     caches
       .open(cacheName)
       .then((cache) => {
-        return cache.addAll(DEVELOPMENT ? ["/favicon.png"] : staticResources);
+        return cache.addAll(isDevelopment ? ["/favicon.png"] : staticResources);
       })
       .then(() => {
         console.log("SW Installation successful");
