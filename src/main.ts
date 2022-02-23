@@ -2,6 +2,10 @@ import App from "./App.svelte";
 import type { Cache} from "./cache";
 import { CacheStorageCache } from "./cache/cs-cache";
 
+const ENVIRONMENT = "DEVELOPMENT";
+/// @ts-ignore
+const isDevelopment = ENVIRONMENT !== "DEVELOPMENT"; 
+
 let app: App;
 
 function createApp(cache: Cache) {
