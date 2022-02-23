@@ -1,6 +1,7 @@
 /node_modules/
 /public/build/
 /build
+/public/bundle*
 
 .DS_Store
 
