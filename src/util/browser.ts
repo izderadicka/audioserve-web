@@ -6,6 +6,6 @@ export function otherTheme() {
   }
 
 export function baseUrl() {
-  const url = `${location.protocol}://${location.hostname}`;
+  const url = `${location.protocol}//${location.host}`;
   return url;
 }
