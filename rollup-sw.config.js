@@ -1,8 +1,7 @@
 import typescript from '@rollup/plugin-typescript';
 import replace from '@rollup/plugin-replace';
 //import resolve from '@rollup/plugin-node-resolve';
-
-const production = !process.env.ROLLUP_WATCH;
+import {production, VERSION, replaceConfig} from "./rollup-common";
 
 export default {
   input: 'src/service-worker.ts',
@@ -13,10 +12,7 @@ export default {
     format: 'es'
   },
   plugins: [
-  replace({
-    preventAssignment: true,
-    "DEVELOPMENT": () => production?"PRODUCTION":"DEVELOPMENT"
-  }),
+  replace(replaceConfig),
   typescript({
     sourceMap: !production,
     inlineSources: !production,

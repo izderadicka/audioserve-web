@@ -1,10 +1,9 @@
 import App from "./App.svelte";
 import type { Cache} from "./cache";
 import { CacheStorageCache } from "./cache/cs-cache";
+import {APP_VERSION, ENVIRONMENT, APP_COMMIT, isDevelopment} from './util/version'
 
-const ENVIRONMENT = "DEVELOPMENT";
-/// @ts-ignore
-const isDevelopment = ENVIRONMENT !== "DEVELOPMENT"; 
+console.log(`Running app version ${APP_VERSION}(${APP_COMMIT}) in env ${ENVIRONMENT}`);
 
 let app: App;
 

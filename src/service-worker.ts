@@ -11,6 +11,7 @@ import {
 } from "./cache/cs-cache";
 import { removeQuery } from "./util";
 import { buildResponse, cloneRequest, envictCache } from "./util/sw";
+import { APP_COMMIT, isDevelopment, ENVIRONMENT} from "./util/version";
 
 function broadcastMessage(msg: CacheMessage) {
     self.clients.matchAll().then((clients) => {
@@ -22,19 +23,16 @@ function broadcastMessage(msg: CacheMessage) {
     })
 }
 
-const ENVIRONMENT = "DEVELOPMENT";
-/// @ts-ignore
-const isDevelopment = ENVIRONMENT !== "DEVELOPMENT"; 
 const staticResources = [
   "/",
   "/index.html",
   "/global.css",
   "/favicon.png",
-  "/build/bundle.css",
-  "/build/bundle.js",
+  "/bundle.css",
+  "/bundle.js",
 ];
 
-const cacheName = "static-v1";
+const cacheName = "static-"+APP_COMMIT;
 const audioCache = AUDIO_CACHE_NAME;
 
 self.addEventListener("install", (evt) => {
@@ -45,7 +43,7 @@ self.addEventListener("install", (evt) => {
         return cache.addAll(isDevelopment ? ["/favicon.png"] : staticResources);
       })
       .then(() => {
-        console.log("SW Installation successful");
+        console.log(`SW Installation successful (dev ${isDevelopment} )`);
         return self.skipWaiting(); // forces to immediately replace old SW
       })
   );

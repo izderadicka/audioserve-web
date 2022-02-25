@@ -88,6 +88,11 @@ function cloneRequest(req) {
     });
 }
 
+const ENVIRONMENT = "DEVELOPMENT";
+const APP_COMMIT = "bcf842f1";
+/// @ts-ignore
+const isDevelopment = ENVIRONMENT === "DEVELOPMENT";
+
 function broadcastMessage(msg) {
     self.clients.matchAll().then((clients) => {
         for (const c of clients) {
@@ -96,24 +101,16 @@ function broadcastMessage(msg) {
         }
     });
 }
-const staticResources = [
-    "/",
-    "/index.html",
-    "/global.css",
-    "/favicon.png",
-    "/build/bundle.css",
-    "/build/bundle.js",
-];
-const cacheName = "static-v1";
+const cacheName = "static-" + APP_COMMIT;
 const audioCache = AUDIO_CACHE_NAME;
 self.addEventListener("install", (evt) => {
     evt.waitUntil(caches
         .open(cacheName)
         .then((cache) => {
-        return cache.addAll(staticResources);
+        return cache.addAll(["/favicon.png"] );
     })
         .then(() => {
-        console.log("SW Installation successful");
+        console.log(`SW Installation successful (dev ${isDevelopment} )`);
         return self.skipWaiting(); // forces to immediately replace old SW
     }));
 });

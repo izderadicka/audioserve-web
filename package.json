@@ -18,6 +18,7 @@
     "@tsconfig/svelte": "^2.0.0",
     "@types/jest": "^27.0.3",
     "@types/showdown": "^1.9.4",
+    "git-commit-id": "^2.0.1",
     "rollup": "^2.3.4",
     "rollup-plugin-css-only": "^3.1.0",
     "rollup-plugin-livereload": "^2.0.0",

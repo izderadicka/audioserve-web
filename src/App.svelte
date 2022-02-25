@@ -20,9 +20,10 @@
   import Browser from "./components/Browser.svelte";
   import { FolderType, StorageKeys } from "./types/enums";
   import Breadcrumb from "./components/Breadcrumb.svelte";
-  import { otherTheme } from "./util/browser";
+  import { baseUrl, otherTheme } from "./util/browser";
   import Player from "./components/Player.svelte";
   import type { Cache } from "./cache";
+  import { isDevelopment } from "./util/version";
 
   export let cache: Cache;
   cache.maxParallelLoads = $config.maxParallelDownload;
@@ -32,7 +33,7 @@
     document.querySelector("html").setAttribute("data-theme", themePreference);
   }
 
-  const API_BASE_URL = "http://localhost:3000";
+  const API_BASE_URL = isDevelopment ? "http://localhost:3000" : baseUrl();
   apiConfig.set(
     new Configuration({
       basePath: API_BASE_URL,
@@ -109,8 +110,8 @@
 
 <main>
   {#if error}
-  <h2>Error!</h2>
-  <p>{error}</p>
+    <h2>Error!</h2>
+    <p>{error}</p>
   {:else if !$isAuthenticated}
     <Login />
   {:else}

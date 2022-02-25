@@ -7,8 +7,9 @@ import sveltePreprocess from 'svelte-preprocess';
 import typescript from '@rollup/plugin-typescript';
 import css from 'rollup-plugin-css-only';
 import replace from '@rollup/plugin-replace';
+import {production, VERSION, replaceConfig} from "./rollup-common";
 
-const production = !process.env.ROLLUP_WATCH;
+console.log(`Building version ${VERSION} for ${production?"PRODUCTION":"DEVELOPMENT"}`);
 
 function serve() {
 	let server;
@@ -40,11 +41,7 @@ export default {
 		file: 'public/bundle.js'
 	},
 	plugins: [
-		replace({
-			preventAssignment: true,
-			include: "main.ts",
-			"DEVELOPMENT": () => production?"PRODUCTION":"DEVELOPMENT"
-		}),
+		replace(replaceConfig),
 		svelte({
 			preprocess: sveltePreprocess({ sourceMap: !production }),
 			compilerOptions: {
