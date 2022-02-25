@@ -2,6 +2,7 @@
 /public/build/
 /build
 /public/bundle*
+/public/service-worker.js
 
 .DS_Store
 
