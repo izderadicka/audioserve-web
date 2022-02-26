@@ -5,6 +5,7 @@ import { PlaybackSync } from "../client-position/playback-sync";
 import { StorageKeys, TranscodingCode, transcodingCodeToName, transcodingNameToCode } from "../types/enums";
 import type { PlayItem } from "../types/play-item";
 import type { AppConfig, CurrentFolder, CurrentPlayList, TranscodingDetail } from "../types/types";
+import { isDevelopment } from "../util/version";
 
 export const isAuthenticated = writable(true);
 export const apiConfig = writable(new Configuration());
@@ -50,7 +51,7 @@ export const config: Writable<AppConfig> = writable({
 
 export const positionWsApi: Readable<PlaybackSync> = derived([config, apiConfig, group], ([$config, $apiConfig, $group]) => {
     return new PlaybackSync({
-        development: true,
+        development: isDevelopment,
         developmentPort: 3000,
         positionReportingPeriod: $config.positionReportingPeriod,
         group: $group
