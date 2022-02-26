@@ -1,6 +1,10 @@
 {
-  "name": "svelte-app",
-  "version": "1.0.0",
+  "name": "audioserve-web",
+  "version": "0.0.1",
+  "author": {"name": "Ivan", "email": "ivan.zderadicka@gmail.com"},
+  "homepage": "https://github.com/izderadicka/audioserve-web",
+  "description": "New web client for audioserve (still experimental)",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "build": "rollup -c",
