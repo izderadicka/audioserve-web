@@ -60,14 +60,19 @@
   function actOnMenu(menuEvt) {
     const menuSelection: string = menuEvt.detail;
     console.debug("Menu selected", menuSelection);
-
-    if (menuSelection === "logout") {
-      $isAuthenticated = false;
-      deleteCookie();
-    } else if (menuSelection === "switch-theme") {
-      const theme = otherTheme();
-      document.querySelector("html").setAttribute("data-theme", theme);
-      localStorage.setItem(StorageKeys.THEME, theme);
+    switch (menuSelection) {
+      case "logout":
+        $isAuthenticated = false;
+        deleteCookie();
+        break;
+      case "switch-theme":
+        const theme = otherTheme();
+        document.querySelector("html").setAttribute("data-theme", theme);
+        localStorage.setItem(StorageKeys.THEME, theme);
+        break;;
+      case "clear-cache":
+        cache.clearCache().then(() => window.location.reload())
+        break;
     }
   }
 

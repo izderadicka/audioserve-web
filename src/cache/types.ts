@@ -24,6 +24,7 @@ export interface Cache {
     cancelPendingLoad(url: string): boolean;
     addListener(l: CacheEventHandler):void;
     removeListener(l: CacheEventHandler): void;
+    clearCache(): Promise<void>;
     maxParallelLoads: number;
 
 }

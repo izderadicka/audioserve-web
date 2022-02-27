@@ -107,4 +107,9 @@ export class CacheStorageCache implements Cache {
     }
   }
   maxParallelLoads: number = 2;
+
+  clearCache(): Promise<void> {
+      return caches.delete(AUDIO_CACHE_NAME)
+        .then(() => {})
+  }
 }

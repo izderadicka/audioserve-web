@@ -69,8 +69,11 @@
           <ul>
             <li>
               <a href="#" data-menu="logout" on:click|preventDefault={menuClick}
-                >Logout</a
-              >
+                >Logout</a>
+            </li>
+            <li>
+              <a href="#" data-menu="clear-cache" on:click|preventDefault={menuClick}
+                >Clear Cache</a>
             </li>
             <li>
               <a

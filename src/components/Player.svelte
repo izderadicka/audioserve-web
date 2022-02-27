@@ -20,6 +20,7 @@
   import { PlayItem } from "../types/play-item";
 
   import { formatTime } from "../util";
+import CacheIndicator from "./CacheIndicator.svelte";
 
   const cache: Cache = getContext("cache");
   const fileIconSize = "1.5rem";
@@ -43,6 +44,8 @@
   let reportedTime: number = -1;
   let paused: boolean;
   let player: HTMLAudioElement;
+  let buffered;
+  let seekable;
 
   let file = "";
   let folder = "";
@@ -246,6 +249,8 @@
     bind:duration
     bind:currentTime
     bind:paused
+    bind:buffered
+    bind:seekable
     bind:this={player}
     on:error={playerError}
     on:ended={tryNextFile}
@@ -275,6 +280,7 @@
     {formattedCurrentTime}
   </div>
   <div class="progress">
+  <div class="progress-bar">
     <input
       type="range"
       id="playback-progress"
@@ -282,6 +288,8 @@
       max={expectedDuration}
       bind:value={currentTime}
     />
+    <CacheIndicator ranges={buffered} totalTime={expectedDuration}/>
+  </div>
   </div>
   <div class="total-time">
     {formattedDuration}
@@ -298,6 +306,9 @@
     height: 3px;
     margin-left: 1rem;
     margin-top: 0.5rem;
+  }
+  .progress-bar input{
+    margin-bottom: 0;
   }
   #prev-file,
   #next-file {
