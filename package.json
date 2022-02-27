@@ -1,7 +1,10 @@
 {
   "name": "audioserve-web",
   "version": "0.0.1",
-  "author": {"name": "Ivan", "email": "ivan.zderadicka@gmail.com"},
+  "author": {
+    "name": "Ivan",
+    "email": "ivan.zderadicka@gmail.com"
+  },
   "homepage": "https://github.com/izderadicka/audioserve-web",
   "description": "New web client for audioserve (still experimental)",
   "license": "MIT",
@@ -18,28 +21,28 @@
     "@rollup/plugin-commonjs": "^17.0.0",
     "@rollup/plugin-node-resolve": "^11.0.0",
     "@rollup/plugin-replace": "^3.1.0",
-    "@rollup/plugin-typescript": "^8.0.0",
+    "@rollup/plugin-typescript": "^8.3.1",
     "@tsconfig/svelte": "^2.0.0",
-    "@types/jest": "^27.0.3",
+    "@types/jest": "^27.4.1",
     "@types/showdown": "^1.9.4",
     "git-commit-id": "^2.0.1",
-    "rollup": "^2.3.4",
+    "rollup": "^2.68.0",
     "rollup-plugin-css-only": "^3.1.0",
     "rollup-plugin-livereload": "^2.0.0",
     "rollup-plugin-svelte": "^7.0.0",
     "rollup-plugin-terser": "^7.0.0",
-    "svelte": "^3.0.0",
-    "svelte-check": "^2.0.0",
+    "svelte": "^3.46.4",
+    "svelte-check": "^2.4.5",
     "svelte-material-icons": "^1.0.3",
-    "svelte-preprocess": "^4.0.0",
+    "svelte-preprocess": "^4.10.4",
     "tslib": "^2.0.0",
-    "typescript": "^4.0.0"
+    "typescript": "^4.5.5"
   },
   "dependencies": {
-    "@picocss/pico": "^1.4.2",
+    "@picocss/pico": "^1.4.4",
     "base64-js": "^1.5.1",
     "isomorphic-fetch": "^3.0.0",
-    "showdown": "^2.0.0-alpha",
+    "showdown": "^2.0.0",
     "sirv-cli": "^1.0.0",
     "url": "^0.11.0"
   }
