@@ -192,7 +192,10 @@ export class DbCache implements Cache {
     if (idx >= 0) {
       this.listeners.splice(idx,1);
     }
+  }
 
-
+  clearCache(): Promise<void> {
+      //TODO: Implement
+      throw Error("Not implemented")
   }
 }
