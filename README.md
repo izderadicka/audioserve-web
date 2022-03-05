@@ -9,6 +9,8 @@ My idea is that this application should fully replace mobile (Android), client.
 
 As per now it's definitely 'Work In Progress',  some basic things are working, but many things are still missing and there are many issues, so it's now available rather for testing, then for regular use.  But I'm definitely **interested in feedback** so you can log issues on this project.
 
+For now works better in Chrome/Chromium.
+
 ## How to use?
 
 You will need audioserve server running somewhere with this client. There are multiple options:
