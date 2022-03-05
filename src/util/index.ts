@@ -51,8 +51,25 @@ export function splitPath(path: string): { folder?: string; file: string } {
       file: path.substring(idx + 1),
     };
   } else {
+    return {
+      file: path,
+    };
   }
-  return {
-    file: path,
-  };
+}
+
+export function splitExt(name: string): {
+  baseName: string;
+  extension?: string;
+} {
+  const idx = name.lastIndexOf(".");
+  if (idx >= 0) {
+    return {
+      baseName: name.substring(0, idx),
+      extension: name.substring(idx+1)
+    }
+  } else {
+    return {
+      baseName: name
+    }
+  }
 }
