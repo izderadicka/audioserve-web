@@ -22,6 +22,7 @@ You will need audioserve server running somewhere with this client. There are mu
 ```
 npm install && npm run build && npm run build-sw
 ```
+then either copy instead of classic web client, or use argument `--client-dir` to use directory with with client.
 
 - build your own audioserve image with `--build-arg NEW_CLIENT=1`
 
