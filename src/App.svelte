@@ -16,6 +16,7 @@
     config,
     currentFolder,
     windowSize,
+playItem,
   } from "./state/stores";
   import { onMount, setContext } from "svelte";
   import { CollectionsApi, Configuration } from "./client";
@@ -28,6 +29,7 @@
   import Player from "./components/Player.svelte";
   import type { Cache } from "./cache";
   import { isDevelopment } from "./util/version";
+import { PlayItem } from "./types/play-item";
 
   export let cache: Cache;
   cache.maxParallelLoads = $config.maxParallelDownload;
@@ -227,9 +229,11 @@
     <div class="browser" bind:this={container}>
       <Browser {container} />
     </div>
+    {#if $playItem}
     <div class="player">
       <Player />
     </div>
+    {/if}
   {/if}
 </main>
 

@@ -355,4 +355,10 @@ import CacheIndicator from "./CacheIndicator.svelte";
   .info {
     margin-top: 0.5em;
   }
+
+  @media (max-height: 400px) {
+    .info {
+      display: none;
+    }
+  }
 </style>
