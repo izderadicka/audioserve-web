@@ -310,6 +310,7 @@ import CacheIndicator from "./CacheIndicator.svelte";
   .progress-bar input{
     margin-bottom: 0;
   }
+
   #prev-file,
   #next-file {
     font-size: 1.5em;
