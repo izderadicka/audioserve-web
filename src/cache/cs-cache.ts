@@ -8,9 +8,12 @@ export const AUDIO_CACHE_LIMIT = 1000;
 
 export enum CacheMessageKind {
   Prefetch = 1,
-  Cached = 2,
-  Deleted = 3,
-  Error = 4
+  PrefetchCached = 10,
+  ActualCached = 11,
+  Deleted = 20,
+  PrefetchError = 30,
+  ActualError = 31,
+  OtherError = 39
 }
 
 export interface CacheMessage {
@@ -19,36 +22,44 @@ export interface CacheMessage {
 }
 
 export class CacheStorageCache implements Cache {
-  private pendingRequests: Map<string, any>;
+  private queue: string[] = [];
+  private processing = 0;
   private listeners: CacheEventHandler[] = [];
   private worker: ServiceWorker;
 
   constructor(worker: ServiceWorker) {
     this.updateWorker(worker);
     /// @ts-ignore
-    navigator.serviceWorker.addEventListener("message", (evt) => {
-      const msg: CacheMessage = evt.data;
-      if (
-        msg.kind === CacheMessageKind.Cached ||
-        msg.kind == CacheMessageKind.Deleted
-      ) {
-        this.listeners.forEach((l) =>
-          l({
-            kind:
-              msg.kind === CacheMessageKind.Cached
-                ? EventType.FileCached
-                : EventType.FileDeleted,
-            item: msg.data,
-          })
-        );
-      } else {
-        console.error("Unprocessed cache message", msg);
-      }
-    });
+    navigator.serviceWorker.addEventListener("message", (evt) =>
+      this.processMessageEvent(evt)
+    );
   }
 
   updateWorker(w: ServiceWorker) {
     this.worker = w;
+  }
+
+  private processMessageEvent(evt: MessageEvent) {
+    const msg: CacheMessage = evt.data;
+    if (
+      msg.kind === CacheMessageKind.PrefetchCached ||
+      msg.kind === CacheMessageKind.ActualCached
+    ) {
+      this.notifyListeners(EventType.FileCached, msg.data)
+    } else if (msg.kind === CacheMessageKind.Deleted) {
+      this.notifyListeners(EventType.FileDeleted, msg.data)
+    } else {
+      console.error("Cache error message", msg);
+    }
+
+    // Process next queued prefetch
+    if (
+      msg.kind === CacheMessageKind.PrefetchCached ||
+      msg.kind === CacheMessageKind.PrefetchError
+    ) {
+      this.processing = this.processing>0?this.processing-1:0;
+      this.processQueue();
+    }
   }
 
   getCachedUrl(url: string): Promise<CachedItem> {
@@ -85,18 +96,35 @@ export class CacheStorageCache implements Cache {
           .map((path) => path.substring(collLen + 8));
       });
   }
+
   cacheAhead(url: string) {
-    console.log(`Want to precache ${url}`);
-    return new Promise((resolve, reject) => {
+    console.debug(`Want to prefetch ${url}`);
+    if (this.queue.indexOf(url) >= 0) {
+      console.debug(`Already  in prefetch queue`);
+    } else {
+      this.queue.push(url);
+      if (this.processing < this.maxParallelLoads) {
+        this.processQueue();
+      }
+    }
+  }
+
+  private processQueue(): void {
+    const url = this.queue.shift();
+    if (url) {
       this.worker.postMessage({
         kind: CacheMessageKind.Prefetch,
         data: { url },
       });
-    });
+      this.processing += 1;
+    }
   }
+
   cancelPendingLoad(url: string): boolean {
     throw new Error("Method not implemented.");
   }
+
+
   addListener(l: CacheEventHandler) {
     this.listeners.push(l);
   }
@@ -106,10 +134,20 @@ export class CacheStorageCache implements Cache {
       this.listeners.splice(idx, 1);
     }
   }
-  maxParallelLoads: number = 2;
+
+  private notifyListeners(kind: EventType, item: CachedItem): void {
+    this.listeners.forEach((l) =>
+        l({
+          kind,
+          item
+        })
+      );
+
+  }
+
+  maxParallelLoads: number = 1;
 
   clearCache(): Promise<void> {
-      return caches.delete(AUDIO_CACHE_NAME)
-        .then(() => {})
+    return caches.delete(AUDIO_CACHE_NAME).then(() => {});
   }
 }

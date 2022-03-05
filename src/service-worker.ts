@@ -69,6 +69,18 @@ self.addEventListener("activate", (evt) => {
   );
 });
 
+function notifyAudioCached(cache: Cache, msg: CacheMessage) {
+  broadcastMessage(msg);
+  envictCache(cache, AUDIO_CACHE_LIMIT, (req) => broadcastMessage({
+    kind: CacheMessageKind.Deleted,
+    data: {
+      cachedUrl: req.url,
+      originalUrl: req.url
+    }
+  }))
+
+}
+
 self.addEventListener("message", (evt) => {
   const msg: CacheMessage = evt.data;
   if (msg.kind === CacheMessageKind.Prefetch) {
@@ -82,27 +94,20 @@ self.addEventListener("message", (evt) => {
       if (resp.ok) {
         const cache = await self.caches.open(audioCache);
         await cache.put(keyUrl, resp);
-        broadcastMessage({
-          kind: CacheMessageKind.Cached,
+        notifyAudioCached(cache, {
+          kind: CacheMessageKind.PrefetchCached,
           data: {
            cachedUrl: keyUrl,
            originalUrl: resp.url, 
           }
         });
-        envictCache(cache, AUDIO_CACHE_LIMIT, (req) => broadcastMessage({
-          kind: CacheMessageKind.Deleted,
-          data: {
-            cachedUrl: req.url,
-            originalUrl: req.url
-          }
-        }))
         console.debug(
           `SW PREFETCH RESPONSE: ${resp.status} saving as ${keyUrl}`
         );
       } else {
         console.error(`Cannot cache audio ${resp.url}: STATUS ${resp.status}`);
         broadcastMessage({
-          kind: CacheMessageKind.Error,
+          kind: CacheMessageKind.PrefetchError,
           data: {
             cachedUrl: keyUrl,
             originalUrl: resp.url,
@@ -112,7 +117,7 @@ self.addEventListener("message", (evt) => {
       }
     })
     .catch((err) => broadcastMessage({
-      kind: CacheMessageKind.Error,
+      kind: CacheMessageKind.PrefetchError,
       data: {
         cachedUrl: keyUrl,
         originalUrl: msg.data.url,
@@ -148,8 +153,8 @@ self.addEventListener("fetch", (evt: FetchEvent) => {
             return fetch(req)
             .then((resp) => { // if not cached we can put it 
               const keyReq = removeQuery(evt.request.url);
-              cache.put(keyReq, resp.clone()).then(() => broadcastMessage({
-                kind: CacheMessageKind.Cached,
+              cache.put(keyReq, resp.clone()).then(() => notifyAudioCached(cache, {
+                kind: CacheMessageKind.ActualCached,
                 data: {
                   originalUrl: resp.url,
                   cachedUrl: keyReq

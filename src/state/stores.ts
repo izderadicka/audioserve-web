@@ -44,7 +44,7 @@ export const colApi = derived(apiConfig, ($apiConfig) => new CollectionsApi($api
 
 export const config: Writable<AppConfig> = writable({
     maxParallelDownload: 1,
-    cacheAheadFiles: 1,
+    cacheAheadFiles: 3,
     transcodingTolerance: 0.15,
     positionReportingPeriod: 10
 });

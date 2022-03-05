@@ -104,17 +104,9 @@ import CacheIndicator from "./CacheIndicator.svelte";
       if (item.time != null) {
         currentTime = item.time;
       }
-
       expectedDuration = item.duration;
       duration = 0;
       reportedTime = -1;
-
-      if (item.startPlay) {
-        player.play();
-        reportPosition();
-      } else {
-        paused = true;
-      }
       file = item.name;
       folderPosition = item.position;
       transcoded = item.transcoded;
@@ -125,7 +117,14 @@ import CacheIndicator from "./CacheIndicator.svelte";
         .reduce((acc, af) => acc + af.meta.duration, 0);
       totalFolderTime = $playList.totalTime;
 
-      tryCacheAhead(folderPosition);
+      if (item.startPlay) {
+        player.play();
+        reportPosition();
+        tryCacheAhead(folderPosition);
+      } else {
+        paused = true;
+      }
+
     }
   });
 
@@ -151,6 +150,7 @@ import CacheIndicator from "./CacheIndicator.svelte";
     reportPosition(true);
     if (paused) {
       player.play();
+      tryCacheAhead(folderPosition);
     } else {
       player.pause();
     }
