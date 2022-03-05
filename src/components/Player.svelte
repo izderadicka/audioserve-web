@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getContext, onDestroy } from "svelte";
+  import { getContext, onDestroy, onMount } from "svelte";
   import type { Cache } from "../cache";
   import TranscodedIcon from "svelte-material-icons/ArrowCollapseVertical.svelte";
   import CachedIcon from "svelte-material-icons/Cached.svelte";
@@ -80,7 +80,7 @@ import CacheIndicator from "./CacheIndicator.svelte";
     }
   }
 
-  const unsubscribe = playItem.subscribe(async (item) => {
+  async function startPlay(item: PlayItem): Promise<void> {
     if (item && player) {
       let source;
       if (item.cached) {
@@ -126,7 +126,9 @@ import CacheIndicator from "./CacheIndicator.svelte";
       }
 
     }
-  });
+  }
+
+  const unsubscribe = playItem.subscribe(startPlay);
 
   function tryCacheAhead(pos: number) {
     const cacheAheadCount = $config.cacheAheadFiles;
@@ -210,6 +212,12 @@ import CacheIndicator from "./CacheIndicator.svelte";
   function playNext() {
     playPosition($playItem.position + 1, !paused);
   }
+
+  onMount(async () => {
+    if ($playItem) {
+      await startPlay($playItem)
+    }
+  })
 
   onDestroy(unsubscribe);
 </script>
