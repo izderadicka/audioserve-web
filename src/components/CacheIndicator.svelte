@@ -1,5 +1,6 @@
 <script lang="ts">
 import { onMount } from "svelte";
+import { windowSize } from "../state/stores";
 
 
   export let offset = 0;
@@ -35,6 +36,8 @@ import { onMount } from "svelte";
       indicator.appendChild(bar);
     }
   }
+
+  windowSize.subscribe(() => { if (indicator) update()});
 
   $: if (ranges) update()
 </script>

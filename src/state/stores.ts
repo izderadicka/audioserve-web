@@ -1,4 +1,4 @@
-import { writable, derived, Writable, Readable } from "svelte/store";
+import { writable, derived, Writable, Readable, readable } from "svelte/store";
 import type { CachedItem } from "../cache";
 import { CollectionsApi, CollectionsInfo, Configuration, Transcoding, TranscodingsInfo } from "../client";
 import { PlaybackSync } from "../client-position/playback-sync";
@@ -57,4 +57,14 @@ export const positionWsApi: Readable<PlaybackSync> = derived([config, apiConfig,
         group: $group
 
     })
+})
+function getWindowSize() {
+    return {
+        width: window.innerWidth,
+        height: window.innerHeight
+    }
+}
+
+export const windowSize = readable(getWindowSize(), set => {
+    window.addEventListener('resize', () => set(getWindowSize()))
 })
