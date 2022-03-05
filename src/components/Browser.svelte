@@ -17,7 +17,7 @@
   import { FolderType, StorageKeys } from "../types/enums";
   import { PlayItem } from "../types/play-item";
   import type { AudioFileExt } from "../types/types";
-  import { formatTime, splitPath, splitUrl } from "../util";
+  import { formatTime, splitExt, splitPath, splitUrl } from "../util";
   import FileItem from "./FileItem.svelte";
   import FolderItem from "./FolderItem.svelte";
   import Description from "./Description.svelte";
@@ -261,7 +261,7 @@
       <div class="last-position" id="last-remote-position">
         <button on:click={playSharedPosition}
           ><ContinuePlay size="2rem" />
-          {splitPath(sharedPosition.path).file} at {formatTime(
+          {splitExt(splitPath(sharedPosition.path).file).baseName} at {formatTime(
             sharedPosition.position
           )}</button
         >
