@@ -2,6 +2,9 @@
   import "@picocss/pico";
   import Login from "./components/Login.svelte";
   import Menu from "./components/Menu.svelte";
+  import SearchIcon from "svelte-material-icons/Magnify.svelte";
+  import CollectionsIcon from "svelte-material-icons/LibraryShelves.svelte";
+  import CloseIcon from "svelte-material-icons/Close.svelte";
 
   import {
     apiConfig,
@@ -12,6 +15,7 @@
     selectedCollection,
     config,
     currentFolder,
+    windowSize,
   } from "./state/stores";
   import { onMount, setContext } from "svelte";
   import { CollectionsApi, Configuration } from "./client";
@@ -69,9 +73,9 @@
         const theme = otherTheme();
         document.querySelector("html").setAttribute("data-theme", theme);
         localStorage.setItem(StorageKeys.THEME, theme);
-        break;;
+        break;
       case "clear-cache":
-        cache.clearCache().then(() => window.location.reload())
+        cache.clearCache().then(() => window.location.reload());
         break;
     }
   }
@@ -111,6 +115,55 @@
   });
 
   $: console.debug("Selected collection is " + $selectedCollection);
+
+  let showSearch = true;
+  let showCollectionSelect = true;
+  let showLogo = true;
+  let smallScreen = false;
+
+  windowSize.subscribe((sz) => {
+    if (sz.width <= 770) {
+      showSearch = false;
+      showCollectionSelect = false;
+      smallScreen = true;
+      showLogo = true;
+    } else {
+      showSearch = true;
+      showCollectionSelect = true;
+      smallScreen = false;
+      showLogo = true;
+    }
+  });
+
+  function toggleCollectionsSelect() {
+    if (showCollectionSelect) {
+      showCollectionSelect = false;
+      showSearch = false;
+      showLogo = true;
+    } else {
+      showCollectionSelect = true;
+      showSearch = false;
+      showLogo = false;
+    }
+  }
+
+  function toggleSearch() {
+    if (showSearch) {
+      showSearch = false;
+      showCollectionSelect = false;
+      showLogo = true;
+    } else {
+      showSearch = true;
+      showCollectionSelect = false;
+      showLogo = false;
+    }
+  }
+
+  function closeNavInput() {
+    showSearch = false;
+    showCollectionSelect = false;
+    showLogo = true;
+  }
 </script>
 
 <main>
@@ -122,23 +175,53 @@
   {:else}
     <div class="head">
       <nav class="nav-bar">
-        <ul>
-          <li><h4><a href="/">audioserve</a></h4></li>
-        </ul>
-        <ul>
-          <li><Menu on:menu={actOnMenu} /></li>
+        {#if showLogo}
+          <ul>
+            <li><h4><a href="/">audioserve</a></h4></li>
+          </ul>
+        {/if}
+        <ul class="right-bar">
+          <li class="search-bar-box">
+            <div class="search-bar">
+              {#if showCollectionSelect}
+                <CollectionSelector />
+                {#if smallScreen}
+                  <span on:click={closeNavInput}
+                    ><CloseIcon size="1.6rem" /></span
+                  >
+                {/if}
+              {/if}
+
+              {#if showSearch}
+                <input
+                  type="text"
+                  name="search"
+                  placeholder="Search"
+                  on:keyup={checkSearch}
+                  bind:value={searchValue}
+                />
+                {#if smallScreen}
+                  <span on:click={closeNavInput}
+                    ><CloseIcon size="1.6rem" /></span
+                  >
+                {/if}
+              {/if}
+            </div>
+          </li>
+          <li class="icons">
+            {#if !showCollectionSelect}
+              <span on:click={toggleCollectionsSelect}
+                ><CollectionsIcon size="1.5rem" /></span
+              >
+            {/if}
+            {#if !showSearch}
+              <span on:click={toggleSearch}><SearchIcon size="1.5rem" /></span>
+            {/if}
+            <Menu on:menu={actOnMenu} />
+          </li>
         </ul>
       </nav>
-      <div class="search-bar grid">
-        <CollectionSelector />
-        <input
-          type="text"
-          name="search"
-          placeholder="Search"
-          on:keyup={checkSearch}
-          bind:value={searchValue}
-        />
-      </div>
+
       <Breadcrumb />
     </div>
     <div class="browser" bind:this={container}>
@@ -151,6 +234,22 @@
 </main>
 
 <style>
+  .right-bar {
+    flex-grow: 1;
+  }
+
+  .search-bar {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .search-bar-box {
+    flex-grow: 1;
+  }
+
+  .search-bar-box input {
+    margin-bottom: 0;
+  }
   main {
     padding: 16px;
     display: flex;

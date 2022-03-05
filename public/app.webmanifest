@@ -11,6 +11,7 @@
     ],
     "start_url": "/index.html",
     "display": "standalone",
+    "orientation": "natural",
     "theme_color": "black",
     "background_color": "black"
   }

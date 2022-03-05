@@ -25,3 +25,6 @@
     >
   {/each}
 </select>
+
+<style>
+</style>
