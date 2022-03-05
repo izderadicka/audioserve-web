@@ -310,6 +310,7 @@
     }
     .browser-sidebar {
       width: 100%;
+      padding-right: 0;
     }
   }
   summary {
