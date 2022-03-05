@@ -30,6 +30,7 @@ const staticResources = [
   "/favicon.png",
   "/bundle.css",
   "/bundle.js",
+  "/app.webmanifest",
 ];
 
 const cacheName = "static-"+APP_COMMIT;
