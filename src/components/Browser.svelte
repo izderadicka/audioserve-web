@@ -265,6 +265,7 @@
       </details>
     {/if}
   </div>
+  {#if $currentFolder && $currentFolder.type === FolderType.REGULAR}
   <div class="browser-sidebar">
     {#if sharedPosition}
       <div class="last-position" id="last-remote-position">
@@ -291,6 +292,7 @@
       </div>
     </details>
   </div>
+  {/if}
 </div>
 
 <style>
