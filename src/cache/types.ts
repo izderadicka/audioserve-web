@@ -21,7 +21,7 @@ export interface Cache {
     getCachedUrl(url: string): Promise<CachedItem|null>;
     getCachedPaths(collection: number, folder: string): Promise<string[]>;
     cacheAhead(url:string): void;
-    cancelPendingLoad(url: string): boolean;
+    cancelPendingLoads(pathPrefix: string, includingRunning?: boolean): void;
     addListener(l: CacheEventHandler):void;
     removeListener(l: CacheEventHandler): void;
     clearCache(): Promise<void>;

@@ -8,6 +8,7 @@ export const AUDIO_CACHE_LIMIT = 1000;
 
 export enum CacheMessageKind {
   Prefetch = 1,
+  AbortLoads = 2,
   PrefetchCached = 10,
   ActualCached = 11,
   Skipped = 12, // As is already being loaded
@@ -126,8 +127,22 @@ export class CacheStorageCache implements Cache {
     }
   }
 
-  cancelPendingLoad(url: string): boolean {
-    throw new Error("Method not implemented.");
+  cancelPendingLoads(pathPrefix: string, includingRunning?: boolean): void {
+    if (!pathPrefix) {
+      this.queue = [];
+    } else {
+      this.queue = this.queue.filter((url) => {
+        const path  = new URL(url).pathname;
+        return !path.startsWith(pathPrefix);
+      })
+    }
+
+    if (includingRunning) {
+      this.worker.postMessage({
+        kind: CacheMessageKind.AbortLoads,
+        data: {pathPrefix}
+      })
+    }
   }
 
 

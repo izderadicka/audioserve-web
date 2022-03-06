@@ -1,3 +1,9 @@
+/*
+* This is an attempt to make cache fully in client process using IndexedDB and Blobs.
+* Service Worker approach is probably better, so just keeping this in case it can be used later.
+* Main disadvantage is that it cannot cache file in playback.
+*/
+
 import { Cache, CacheEventHandler, EventType } from ".";
 import { audioFilePath, splitPath, splitUrl } from "../util";
 import type { CachedItem } from "./types";
@@ -179,7 +185,7 @@ export class DbCache implements Cache {
     });
   }
 
-  cancelPendingLoad(url: string): boolean {
+  cancelPendingLoads(pathPrefix: string, includingRunning?: boolean): void {
     throw new Error("Method not implemented.");
   }
 

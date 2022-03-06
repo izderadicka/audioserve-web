@@ -11,16 +11,15 @@ import {
 } from "./cache/cs-cache";
 import { removeQuery } from "./util";
 import { buildResponse, cloneRequest, evictCache } from "./util/sw";
-import { APP_COMMIT, isDevelopment, ENVIRONMENT} from "./util/version";
+import { APP_COMMIT, isDevelopment, ENVIRONMENT } from "./util/version";
 
 function broadcastMessage(msg: CacheMessage) {
-    self.clients.matchAll().then((clients) => {
-        for (const c of clients) {
-            console.debug(`Sending ${msg} to client ${c.type}::${c.id}`);
-            c.postMessage(msg);
-
-        }
-    })
+  self.clients.matchAll().then((clients) => {
+    for (const c of clients) {
+      console.debug(`Sending ${msg} to client ${c.type}::${c.id}`);
+      c.postMessage(msg);
+    }
+  });
 }
 
 const staticResources = [
@@ -33,7 +32,7 @@ const staticResources = [
   "/app.webmanifest",
 ];
 
-const cacheName = "static-"+APP_COMMIT;
+const cacheName = "static-" + APP_COMMIT;
 const audioCache = AUDIO_CACHE_NAME;
 
 self.addEventListener("install", (evt) => {
@@ -72,17 +71,16 @@ self.addEventListener("activate", (evt) => {
 
 function notifyAudioCached(cache: Cache, msg: CacheMessage) {
   broadcastMessage(msg);
-  evictCache(cache, AUDIO_CACHE_LIMIT, (req) => broadcastMessage({
-    kind: CacheMessageKind.Deleted,
-    data: {
-      cachedUrl: req.url,
-      originalUrl: req.url
-    }
-  }))
-
+  evictCache(cache, AUDIO_CACHE_LIMIT, (req) =>
+    broadcastMessage({
+      kind: CacheMessageKind.Deleted,
+      data: {
+        cachedUrl: req.url,
+        originalUrl: req.url,
+      },
+    })
+  );
 }
-
-
 
 const runningLoads: Map<string, AbortController> = new Map();
 
@@ -98,57 +96,69 @@ self.addEventListener("message", (evt) => {
         kind: CacheMessageKind.Skipped,
         data: {
           cachedUrl: keyUrl,
-          originalUrl: msg.data.url
-        }
+          originalUrl: msg.data.url,
+        },
       });
-      return
+      return;
     } else {
       abort = new AbortController();
       runningLoads.set(keyUrl, abort);
     }
 
     evt.waitUntil(
-    fetch(msg.data.url, {
-      credentials: "include",
-      cache: "no-cache",
-      signal: abort.signal,
-    }).then(async (resp) => {
-      if (resp.ok) {
-        runningLoads
-        const cache = await self.caches.open(audioCache);
-        await cache.put(keyUrl, resp);
-        notifyAudioCached(cache, {
-          kind: CacheMessageKind.PrefetchCached,
-          data: {
-           cachedUrl: keyUrl,
-           originalUrl: resp.url, 
-          }
-        });
-        console.debug(
-          `SW PREFETCH RESPONSE: ${resp.status} saving as ${keyUrl}`
-        );
-      } else {
-        console.error(`Cannot cache audio ${resp.url}: STATUS ${resp.status}`);
-        broadcastMessage({
-          kind: CacheMessageKind.PrefetchError,
-          data: {
-            cachedUrl: keyUrl,
-            originalUrl: resp.url,
-            error: new Error(`Response status error code: ${resp.status}`)
+      fetch(msg.data.url, {
+        credentials: "include",
+        cache: "no-cache",
+        signal: abort.signal,
+      })
+        .then(async (resp) => {
+          if (resp.ok) {
+            runningLoads;
+            const cache = await self.caches.open(audioCache);
+            await cache.put(keyUrl, resp);
+            notifyAudioCached(cache, {
+              kind: CacheMessageKind.PrefetchCached,
+              data: {
+                cachedUrl: keyUrl,
+                originalUrl: resp.url,
+              },
+            });
+            console.debug(
+              `SW PREFETCH RESPONSE: ${resp.status} saving as ${keyUrl}`
+            );
+          } else {
+            console.error(
+              `Cannot cache audio ${resp.url}: STATUS ${resp.status}`
+            );
+            broadcastMessage({
+              kind: CacheMessageKind.PrefetchError,
+              data: {
+                cachedUrl: keyUrl,
+                originalUrl: resp.url,
+                error: new Error(`Response status error code: ${resp.status}`),
+              },
+            });
           }
         })
-      }
-    })
-    .catch((err) => broadcastMessage({
-      kind: CacheMessageKind.PrefetchError,
-      data: {
-        cachedUrl: keyUrl,
-        originalUrl: msg.data.url,
-        error: err
-      }
-    }))
-    .then(() => runningLoads.delete(keyUrl))
+        .catch((err) =>
+          broadcastMessage({
+            kind: CacheMessageKind.PrefetchError,
+            data: {
+              cachedUrl: keyUrl,
+              originalUrl: msg.data.url,
+              error: err,
+            },
+          })
+        )
+        .then(() => runningLoads.delete(keyUrl))
     );
+  } else if (msg.kind === CacheMessageKind.AbortLoads) {
+    const pathPrefix = msg.data.pathPrefix;
+    for (const url of runningLoads.keys()) {
+      if (!pathPrefix || new URL(url).pathname.startsWith(pathPrefix)) {
+        runningLoads.get(url).abort()
+      }
+    }
   }
 });
 
@@ -159,42 +169,52 @@ self.addEventListener("push", (evt) => {
 self.addEventListener("fetch", (evt: FetchEvent) => {
   const parsedUrl = new URL(evt.request.url);
   if (/^\/\d+\/audio\//.test(parsedUrl.pathname)) {
-    console.log("AUDIO FILE request: ", decodeURI(parsedUrl.pathname));
+    console.debug("AUDIO FILE request: ", decodeURI(parsedUrl.pathname));
     // we are not intercepting requests with seek query
     if (parsedUrl.searchParams.get("seek")) return;
 
     const rangeHeader = evt.request.headers.get("range");
     evt.respondWith(
-      caches.open(audioCache).then((cache) =>
-        cache.match(evt.request).then((resp) => {
-          if (resp) {
-            console.debug(`SERVING CACHED AUDIO: ${resp.url}`);
-            return buildResponse(resp, rangeHeader);
-          } else {
-            // let remove range header so we can cache
-            const req =cloneRequest(evt.request);
-            req.headers.delete("Range");
-            return fetch(req)
-            .then((resp) => { // if not cached we can put it 
+      caches
+        .open(audioCache)
+        .then((cache) =>
+          cache.match(evt.request).then((resp) => {
+            if (resp) {
+              console.debug(`SERVING CACHED AUDIO: ${resp.url}`);
+              return buildResponse(resp, rangeHeader);
+            } else {
               const keyReq = removeQuery(evt.request.url);
-              cache.put(keyReq, resp.clone()).then(() => notifyAudioCached(cache, {
-                kind: CacheMessageKind.ActualCached,
-                data: {
-                  originalUrl: resp.url,
-                  cachedUrl: keyReq
-                }
-              })
-              )
-              return resp;
-            });
-          }
+              if (runningLoads.has(keyReq)) {
+                console.debug(`Not caching direct request ${keyReq} as it is already in progress elsewhere`)
+                return fetch(evt.request);
+              } else {
+                const req = cloneRequest(evt.request);
+                const abort = new AbortController();
+                runningLoads.set(keyReq, abort);
+                req.headers.delete("Range"); // let remove range header so we can cache whole file
+                return fetch(req, {signal: abort.signal}).then((resp) => {
+                  // if not cached we can put it
+                  const keyReq = removeQuery(evt.request.url);
+                  cache.put(keyReq, resp.clone()).then(() =>
+                    notifyAudioCached(cache, {
+                      kind: CacheMessageKind.ActualCached,
+                      data: {
+                        originalUrl: resp.url,
+                        cachedUrl: keyReq,
+                      },
+                    })
+                  )
+                  .finally(() => runningLoads.delete(keyReq));
+                  return resp;
+                })
+              }
+            }
+          })
+        )
+        .catch((err) => {
+          console.error("SW Error", err);
+          return new Response("Service Worker Cache Error", { status: 555 });
         })
-      )
-      .catch((err) => {
-        console.error("SW Error", err);
-        return new Response("Service Worker Cache Error", {status: 555})
-      }
-    ) 
     );
   } else {
     evt.respondWith(

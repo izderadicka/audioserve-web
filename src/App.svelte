@@ -16,10 +16,10 @@
     config,
     currentFolder,
     windowSize,
-playItem,
+    playItem,
   } from "./state/stores";
   import { onMount, setContext } from "svelte";
-  import { CollectionsApi, Configuration } from "./client";
+  import { Configuration } from "./client";
   import { deleteCookie } from "./util/auth";
   import CollectionSelector from "./components/CollectionSelector.svelte";
   import Browser from "./components/Browser.svelte";
@@ -29,7 +29,6 @@ playItem,
   import Player from "./components/Player.svelte";
   import type { Cache } from "./cache";
   import { isDevelopment } from "./util/version";
-import { PlayItem } from "./types/play-item";
 
   export let cache: Cache;
   cache.maxParallelLoads = $config.maxParallelDownload;
@@ -77,7 +76,10 @@ import { PlayItem } from "./types/play-item";
         localStorage.setItem(StorageKeys.THEME, theme);
         break;
       case "clear-cache":
-        cache.clearCache().then(() => window.location.reload());
+        cache.clearCache().then(() => {
+          cache.cancelPendingLoads("", true);
+          window.location.reload();
+        });
         break;
     }
   }
@@ -230,9 +232,9 @@ import { PlayItem } from "./types/play-item";
       <Browser {container} />
     </div>
     {#if $playItem}
-    <div class="player">
-      <Player />
-    </div>
+      <div class="player">
+        <Player />
+      </div>
     {/if}
   {/if}
 </main>
