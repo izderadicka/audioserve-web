@@ -71,7 +71,7 @@
     <div class="meta">
       <span class="time">{formattedDuration}</span>
       <span class="bitrate">{bitrate}kbps</span>
-      <span class="extension">{extension}</span>
+      {#if extension}<span class="extension">{extension}</span>{/if}
     </div>
   </div>
   <div class="icons">

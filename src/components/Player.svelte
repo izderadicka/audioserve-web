@@ -19,7 +19,7 @@
   import { FolderType, StorageKeys } from "../types/enums";
   import { PlayItem } from "../types/play-item";
 
-  import { formatTime } from "../util";
+  import { formatTime, splitExt } from "../util";
 import CacheIndicator from "./CacheIndicator.svelte";
 
   const cache: Cache = getContext("cache");
@@ -47,7 +47,8 @@ import CacheIndicator from "./CacheIndicator.svelte";
   let buffered;
   let seekable;
 
-  let file = "";
+  let fileDisplayName = "";
+  let filePath: string;
   let folder = "";
   let folderPosition = 0;
   let collection: number;
@@ -72,9 +73,10 @@ import CacheIndicator from "./CacheIndicator.svelte";
     if (paused && !force) return;
     const time = roundedTime();
     if (time !== reportedTime) {
-      $positionWsApi.enqueuePosition(`/${collection}/${folder}/${file}`, time);
+      const fullPath = `/${collection}/${filePath}`
+      $positionWsApi.enqueuePosition(fullPath, time);
       console.debug(
-        `Reporting time ${time}/${currentTime}/${reportedTime} on ${collection}/${folder}/${file}`
+        `Reporting time ${time}/${currentTime}/${reportedTime} on ${fullPath}`
       );
       reportedTime = time;
     }
@@ -107,7 +109,8 @@ import CacheIndicator from "./CacheIndicator.svelte";
       expectedDuration = item.duration;
       duration = 0;
       reportedTime = -1;
-      file = item.name;
+      fileDisplayName = splitExt(item.name).baseName;
+      filePath = item.path;
       folderPosition = item.position;
       transcoded = item.transcoded;
       folder = $playList.folder;
@@ -247,7 +250,7 @@ import CacheIndicator from "./CacheIndicator.svelte";
     {:else if transcoded}
       <TranscodedIcon />
     {/if}
-    <span id="file-name">{file}</span>
+    <span id="file-name">{fileDisplayName}</span>
   </div>
 </div>
 <div class="player">

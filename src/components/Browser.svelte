@@ -32,6 +32,7 @@
   let folderPath: string | undefined;
   let folderTime: number;
   let sharedPosition: PositionShort | null;
+  let sharePositionDisplayName: string;
 
   let descriptionPath: string;
   let coverPath: string;
@@ -67,6 +68,7 @@
         folder
       );
       console.debug("Cached files for this folder", cachedPaths);
+      
       files = audioFolder.files!.map((file: AudioFileExt) => {
         if (cachedPaths.indexOf(file.path) >= 0) {
           file.cached = true;
@@ -76,6 +78,13 @@
       subfolders = audioFolder.subfolders!;
       localStorage.setItem(StorageKeys.LAST_FOLDER, folder);
       sharedPosition = audioFolder.position;
+      sharePositionDisplayName = null;
+      files.forEach((f) => {
+        if (f.path === sharedPosition.path) {
+          sharePositionDisplayName = splitExt(f.name).baseName
+        }
+      })
+
       folderTime = audioFolder.totalTime;
       descriptionPath = audioFolder.description?.path;
       coverPath = audioFolder.cover?.path;
@@ -261,7 +270,7 @@
       <div class="last-position" id="last-remote-position">
         <button on:click={playSharedPosition}
           ><ContinuePlay size="2rem" />
-          {splitExt(splitPath(sharedPosition.path).file).baseName} at {formatTime(
+          {sharePositionDisplayName} at {formatTime(
             sharedPosition.position
           )}</button
         >
