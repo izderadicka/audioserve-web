@@ -23,7 +23,7 @@ export async function buildResponse(
   }
 }
 
-export async function envictCache(
+export async function evictCache(
   cache: Cache,
   sizeLimit: number,
   onDelete: (req: Request) => void

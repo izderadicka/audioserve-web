@@ -10,7 +10,7 @@ import {
   AUDIO_CACHE_LIMIT,
 } from "./cache/cs-cache";
 import { removeQuery } from "./util";
-import { buildResponse, cloneRequest, envictCache } from "./util/sw";
+import { buildResponse, cloneRequest, evictCache } from "./util/sw";
 import { APP_COMMIT, isDevelopment, ENVIRONMENT} from "./util/version";
 
 function broadcastMessage(msg: CacheMessage) {
@@ -72,7 +72,7 @@ self.addEventListener("activate", (evt) => {
 
 function notifyAudioCached(cache: Cache, msg: CacheMessage) {
   broadcastMessage(msg);
-  envictCache(cache, AUDIO_CACHE_LIMIT, (req) => broadcastMessage({
+  evictCache(cache, AUDIO_CACHE_LIMIT, (req) => broadcastMessage({
     kind: CacheMessageKind.Deleted,
     data: {
       cachedUrl: req.url,
@@ -82,17 +82,39 @@ function notifyAudioCached(cache: Cache, msg: CacheMessage) {
 
 }
 
+
+
+const runningLoads: Map<string, AbortController> = new Map();
+
 self.addEventListener("message", (evt) => {
   const msg: CacheMessage = evt.data;
   if (msg.kind === CacheMessageKind.Prefetch) {
     console.debug("SW PREFETCH", msg.data.url);
     const keyUrl = removeQuery(msg.data.url);
+    let abort: AbortController;
+
+    if (runningLoads.has(keyUrl)) {
+      broadcastMessage({
+        kind: CacheMessageKind.Skipped,
+        data: {
+          cachedUrl: keyUrl,
+          originalUrl: msg.data.url
+        }
+      });
+      return
+    } else {
+      abort = new AbortController();
+      runningLoads.set(keyUrl, abort);
+    }
+
     evt.waitUntil(
     fetch(msg.data.url, {
       credentials: "include",
       cache: "no-cache",
+      signal: abort.signal,
     }).then(async (resp) => {
       if (resp.ok) {
+        runningLoads
         const cache = await self.caches.open(audioCache);
         await cache.put(keyUrl, resp);
         notifyAudioCached(cache, {
@@ -125,6 +147,7 @@ self.addEventListener("message", (evt) => {
         error: err
       }
     }))
+    .then(() => runningLoads.delete(keyUrl))
     );
   }
 });

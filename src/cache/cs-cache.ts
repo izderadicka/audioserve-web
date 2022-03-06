@@ -10,6 +10,7 @@ export enum CacheMessageKind {
   Prefetch = 1,
   PrefetchCached = 10,
   ActualCached = 11,
+  Skipped = 12, // As is already being loaded
   Deleted = 20,
   PrefetchError = 30,
   ActualError = 31,
@@ -45,9 +46,13 @@ export class CacheStorageCache implements Cache {
       msg.kind === CacheMessageKind.PrefetchCached ||
       msg.kind === CacheMessageKind.ActualCached
     ) {
-      this.notifyListeners(EventType.FileCached, msg.data)
+      this.notifyListeners(EventType.FileCached, msg.data);
+      // delete any pending prefetch from queue
+      this.queue = this.queue.filter( (item) => !item.startsWith(msg.data.cachedUrl));
     } else if (msg.kind === CacheMessageKind.Deleted) {
       this.notifyListeners(EventType.FileDeleted, msg.data)
+    } else if (msg.kind === CacheMessageKind.Skipped) {
+      console.debug(`Prefetch of  ${msg.data.originalUrl} skipped as is already being loaded`);
     } else {
       console.error("Cache error message", msg);
     }
@@ -55,7 +60,8 @@ export class CacheStorageCache implements Cache {
     // Process next queued prefetch
     if (
       msg.kind === CacheMessageKind.PrefetchCached ||
-      msg.kind === CacheMessageKind.PrefetchError
+      msg.kind === CacheMessageKind.PrefetchError ||
+      msg.kind === CacheMessageKind.Skipped
     ) {
       this.processing = this.processing>0?this.processing-1:0;
       this.processQueue();
