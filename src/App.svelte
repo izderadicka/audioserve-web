@@ -127,10 +127,13 @@
 
   windowSize.subscribe((sz) => {
     if (sz.width <= 770) {
-      showSearch = false;
-      showCollectionSelect = false;
+      if (!smallScreen) {
+        showSearch = false;
+        showCollectionSelect = false;
+        showLogo = true;
+      }
       smallScreen = true;
-      showLogo = true;
+      
     } else {
       showSearch = true;
       showCollectionSelect = true;
@@ -213,12 +216,10 @@
             </div>
           </li>
           <li class="icons">
-            {#if !showCollectionSelect}
+            {#if !showCollectionSelect && !showSearch || !smallScreen}
               <span on:click={toggleCollectionsSelect}
                 ><CollectionsIcon size="1.5rem" /></span
               >
-            {/if}
-            {#if !showSearch}
               <span on:click={toggleSearch}><SearchIcon size="1.5rem" /></span>
             {/if}
             <Menu on:menu={actOnMenu} />
@@ -240,6 +241,9 @@
 </main>
 
 <style>
+  .icons {
+    display: flex
+  }
   .right-bar {
     flex-grow: 1;
   }
@@ -274,5 +278,13 @@
   .player {
     flex: 0 1 auto;
     border-top: 1px solid var(--color);
+  }
+
+  @media (max-height: 740px) {
+    main {
+    padding-top: 4px;
+    padding-bottom: 0px ;
+    }
+
   }
 </style>
