@@ -216,7 +216,7 @@
             </div>
           </li>
           <li class="icons">
-            {#if !showCollectionSelect && !showSearch || !smallScreen}
+            {#if !showCollectionSelect && !showSearch && smallScreen}
               <span on:click={toggleCollectionsSelect}
                 ><CollectionsIcon size="1.5rem" /></span
               >
