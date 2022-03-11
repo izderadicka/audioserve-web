@@ -135,6 +135,7 @@ import CacheIndicator from "./CacheIndicator.svelte";
 
   function tryCacheAhead(pos: number) {
     const cacheAheadCount = $config.cacheAheadFiles;
+    const preCaches = [];
     for (let newPos = pos + 1; newPos <= pos + cacheAheadCount; newPos++) {
       if (newPos < $playList.files.length) {
         const nextFile = $playList.files[newPos];
@@ -144,10 +145,13 @@ import CacheIndicator from "./CacheIndicator.svelte";
             collection,
             position: newPos,
           });
-          cache
-            .cacheAhead(item.url);
+          // TODO provide also folderPosition
+          preCaches.push(item.url);
         }
       }
+    }
+    if (preCaches) {
+      cache.cacheAhead(...preCaches);
     }
   }
 

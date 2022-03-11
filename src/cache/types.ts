@@ -14,13 +14,21 @@ export interface CachedItem{
     
 }
 
+export interface PrefetchDetail {
+    url: string,
+    folderPosition?: number,
+    cancelRunning?: boolean
+}
+
+export type PrefetchRequest = PrefetchDetail|string;
+
 export type CacheEventHandler = (evt: CacheEvent) => void;
 
 export interface Cache {
 
     getCachedUrl(url: string): Promise<CachedItem|null>;
     getCachedPaths(collection: number, folder: string): Promise<string[]>;
-    cacheAhead(url:string): void;
+    cacheAhead(...urls: PrefetchRequest[]): void;
     cancelPendingLoads(pathPrefix: string, includingRunning?: boolean): void;
     addListener(l: CacheEventHandler):void;
     removeListener(l: CacheEventHandler): void;

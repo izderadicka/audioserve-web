@@ -1,7 +1,7 @@
 import type { Cache } from ".";
 import { EventType } from ".";
 import { removeQuery, splitPath } from "../util";
-import type { CachedItem, CacheEventHandler } from "./types";
+import type { CachedItem, CacheEventHandler, PrefetchRequest } from "./types";
 
 export const AUDIO_CACHE_NAME = "audio";
 export const AUDIO_CACHE_LIMIT = 1000;
@@ -104,11 +104,16 @@ export class CacheStorageCache implements Cache {
       });
   }
 
-  cacheAhead(url: string) {
-    console.debug(`Want to prefetch ${url}`);
-    if (this.queue.indexOf(url) >= 0) {
-      console.debug(`Already  in prefetch queue`);
-    } else {
+  cacheAhead(...urls: PrefetchRequest[]) {
+    console.debug(`Want to prefetch ${urls.length} files : ${urls.map((i) => JSON.stringify(i)).join(', ')}`);
+    this.queue = []
+    for (const urlObject of urls) {
+      let  url:string;
+      if (typeof urlObject === "string") {
+        url = urlObject
+      } else {
+        url = urlObject.url;
+      }
       this.queue.push(url);
       if (this.processing < this.maxParallelLoads) {
         this.processQueue();

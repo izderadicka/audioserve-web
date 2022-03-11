@@ -10,7 +10,7 @@ import {
   AUDIO_CACHE_LIMIT,
 } from "./cache/cs-cache";
 import { removeQuery } from "./util";
-import { buildResponse, cloneRequest, evictCache } from "./util/sw";
+import { buildResponse, cloneRequest, evictCache, FetchQueue, logFetchError } from "./util/sw";
 import { APP_COMMIT, isDevelopment, ENVIRONMENT } from "./util/version";
 
 function broadcastMessage(msg: CacheMessage) {
@@ -82,7 +82,7 @@ function notifyAudioCached(cache: Cache, msg: CacheMessage) {
   );
 }
 
-const runningLoads: Map<string, AbortController> = new Map();
+const runningLoads =  new FetchQueue();
 
 self.addEventListener("message", (evt) => {
   const msg: CacheMessage = evt.data;
@@ -102,7 +102,7 @@ self.addEventListener("message", (evt) => {
       return;
     } else {
       abort = new AbortController();
-      runningLoads.set(keyUrl, abort);
+      runningLoads.add(keyUrl, abort, false, msg.data.folderPosition);
     }
 
     evt.waitUntil(
@@ -113,7 +113,6 @@ self.addEventListener("message", (evt) => {
       })
         .then(async (resp) => {
           if (resp.ok) {
-            runningLoads;
             const cache = await self.caches.open(audioCache);
             await cache.put(keyUrl, resp);
             notifyAudioCached(cache, {
@@ -153,12 +152,7 @@ self.addEventListener("message", (evt) => {
         .then(() => runningLoads.delete(keyUrl))
     );
   } else if (msg.kind === CacheMessageKind.AbortLoads) {
-    const pathPrefix = msg.data.pathPrefix;
-    for (const url of runningLoads.keys()) {
-      if (!pathPrefix || new URL(url).pathname.startsWith(pathPrefix)) {
-        runningLoads.get(url).abort()
-      }
-    }
+    runningLoads.abort(msg.data.pathPrefix)
   }
 });
 
@@ -188,9 +182,15 @@ self.addEventListener("fetch", (evt: FetchEvent) => {
                 console.debug(`Not caching direct request ${keyReq} as it is already in progress elsewhere`)
                 return fetch(evt.request);
               } else {
+                const posHeader = evt.request.headers.get("X-Folder-Position");
+                let folderPosition = posHeader?Number(posHeader):undefined;
+                if (isNaN(folderPosition)) {
+                  folderPosition = undefined;
+                }
                 const req = cloneRequest(evt.request);
                 const abort = new AbortController();
-                runningLoads.set(keyReq, abort);
+
+                runningLoads.add(keyReq, abort, true, folderPosition);
                 req.headers.delete("Range"); // let remove range header so we can cache whole file
                 return fetch(req, {signal: abort.signal}).then((resp) => {
                   // if not cached we can put it
@@ -204,7 +204,8 @@ self.addEventListener("fetch", (evt: FetchEvent) => {
                       },
                     })
                   )
-                  .finally(() => runningLoads.delete(keyReq));
+                  .catch((e) => logFetchError(e, keyReq))
+                  .then(() => runningLoads.delete(keyReq));
                   return resp;
                 })
               }
