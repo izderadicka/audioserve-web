@@ -171,7 +171,7 @@ export class CacheStorageCache implements Cache {
     }
   }
 
-  cancelPendingLoads(pathPrefix: string, includingRunning?: boolean): void {
+  cancelPendingLoads(pathPrefix: string, includingRunning?: boolean, keepDirect?: boolean): void {
     if (!pathPrefix) {
       this.queue = [];
     } else {
@@ -184,7 +184,7 @@ export class CacheStorageCache implements Cache {
     if (includingRunning) {
       this.worker.postMessage({
         kind: CacheMessageKind.AbortLoads,
-        data: { pathPrefix },
+        data: { pathPrefix, keepDirect },
       });
     }
   }

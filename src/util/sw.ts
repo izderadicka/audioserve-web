@@ -83,9 +83,9 @@ export class FetchQueue {
     }
   }
 
-  abort(pathPrefix: string) {
+  abort(pathPrefix: string, keepDirect?: boolean) {
     for (const i of this.queue) {
-      if (!pathPrefix || new URL(i.url).pathname.startsWith(pathPrefix)) {
+      if (!(keepDirect && i.isDirect) && (!pathPrefix || new URL(i.url).pathname.startsWith(pathPrefix))) {
         i.abort.abort()
       }
     }

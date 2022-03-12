@@ -31,6 +31,7 @@ pendingDownloads,
   import Player from "./components/Player.svelte";
   import type { Cache } from "./cache";
   import { isDevelopment } from "./util/version";
+import ConfirmDialog from "./components/ConfirmDialog.svelte";
 
   export let cache: Cache;
   cache.maxParallelLoads = $config.maxParallelDownload;
@@ -174,6 +175,20 @@ pendingDownloads,
     showCollectionSelect = false;
     showLogo = true;
   }
+
+  const DOWNLOAD_DIALOG_ID = "cancel-prefetch-dialog";
+
+  let cancelPrefetchDialog: ConfirmDialog;
+
+  function showDownloadDialog(evt) {
+    cancelPrefetchDialog.toggleModal(evt);
+  }
+
+  function cancelAllPrefetch() {
+    console.debug("Cancel all prefetch loads");
+    cache.cancelPendingLoads("", true, true);
+  }
+
 </script>
 
 <main>
@@ -227,8 +242,8 @@ pendingDownloads,
             {/if}
             {#if !showCollectionSelect && !showSearch || !smallScreen}
             {#if $pendingDownloads > 0}
-            <span>
-              <DownloadIcon size="1.5rem" /> {$pendingDownloads}
+            <span on:click="{showDownloadDialog}">
+              <DownloadIcon size="1.5rem"/> {$pendingDownloads}
             </span>
             {/if}
             {/if}
@@ -249,6 +264,10 @@ pendingDownloads,
     {/if}
   {/if}
 </main>
+<ConfirmDialog id="{DOWNLOAD_DIALOG_ID}" bind:this="{cancelPrefetchDialog}" confirmAction="{cancelAllPrefetch}">
+<svelte:fragment slot="header">Cancel All Running Loads?</svelte:fragment>
+<svelte:fragment slot="body">Do you want to cancel all currently running loads of audio files?</svelte:fragment>
+</ConfirmDialog>
 
 <style>
   .icons {

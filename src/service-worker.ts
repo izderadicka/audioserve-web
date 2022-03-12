@@ -152,7 +152,7 @@ self.addEventListener("message", (evt) => {
         .then(() => runningLoads.delete(keyUrl))
     );
   } else if (msg.kind === CacheMessageKind.AbortLoads) {
-    runningLoads.abort(msg.data.pathPrefix)
+    runningLoads.abort(msg.data.pathPrefix, msg.data.keepDirect);
   }
 });
 
