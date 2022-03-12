@@ -59,10 +59,14 @@ export class CacheStorageCache implements Cache {
       msg.kind === CacheMessageKind.ActualCached
     ) {
       this.notifyListeners(EventType.FileCached, msg.data);
-      // delete any pending prefetch from queue
+      // delete any pending prefetch from queue if cached by direct load
+      const oldSize = this.queue.length;
       this.queue = this.queue.filter(
         (item) => !item.url.startsWith(msg.data.cachedUrl)
       );
+      if (oldSize !== this.queue.length) {
+        this.updateQueueChanged();
+      }
     } else if (msg.kind === CacheMessageKind.Deleted) {
       this.notifyListeners(EventType.FileDeleted, msg.data);
     } else if (msg.kind === CacheMessageKind.Skipped) {
@@ -130,7 +134,7 @@ export class CacheStorageCache implements Cache {
       console.error("Prefecth queue is at max size, cannot add items");
       return;
     }
-    const newQueueEnd = this.queue.filter((i) => i.lowPriority === false);
+    const newQueueEnd = this.queue.filter((i) => i.lowPriority === true);
     const newQueueBeginning: QueueItem[] = [];
     for (const urlObject of urls) {
       let url: string;
