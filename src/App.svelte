@@ -5,6 +5,7 @@
   import SearchIcon from "svelte-material-icons/Magnify.svelte";
   import CollectionsIcon from "svelte-material-icons/LibraryShelves.svelte";
   import CloseIcon from "svelte-material-icons/Close.svelte";
+  import DownloadIcon from "svelte-material-icons/DownloadMultiple.svelte";
 
   import {
     apiConfig,
@@ -17,6 +18,7 @@
     currentFolder,
     windowSize,
     playItem,
+pendingDownloads,
   } from "./state/stores";
   import { onMount, setContext } from "svelte";
   import { Configuration } from "./client";
@@ -32,6 +34,7 @@
 
   export let cache: Cache;
   cache.maxParallelLoads = $config.maxParallelDownload;
+  cache.onQueueSizeChanged((n) => pendingDownloads.set(n));
   setContext("cache", cache);
   const themePreference = localStorage.getItem(StorageKeys.THEME);
   if (themePreference) {
@@ -221,6 +224,13 @@
                 ><CollectionsIcon size="1.5rem" /></span
               >
               <span on:click={toggleSearch}><SearchIcon size="1.5rem" /></span>
+            {/if}
+            {#if !showCollectionSelect && !showSearch || !smallScreen}
+            {#if $pendingDownloads > 0}
+            <span>
+              <DownloadIcon size="1.5rem" /> {$pendingDownloads}
+            </span>
+            {/if}
             {/if}
             <Menu on:menu={actOnMenu} />
           </li>

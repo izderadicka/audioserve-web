@@ -17,7 +17,8 @@ export interface CachedItem{
 export interface PrefetchDetail {
     url: string,
     folderPosition?: number,
-    cancelRunning?: boolean
+    cancelRunning?: boolean,
+    lowPriority?: boolean
 }
 
 export type PrefetchRequest = PrefetchDetail|string;
@@ -33,6 +34,7 @@ export interface Cache {
     addListener(l: CacheEventHandler):void;
     removeListener(l: CacheEventHandler): void;
     clearCache(): Promise<void>;
+    onQueueSizeChanged(callback: (n:number)=>void);
     maxParallelLoads: number;
 
 }

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { getContext, onDestroy, onMount } from "svelte";
-  import type { Cache } from "../cache";
+  import type { Cache, PrefetchRequest } from "../cache";
   import TranscodedIcon from "svelte-material-icons/ArrowCollapseVertical.svelte";
   import CachedIcon from "svelte-material-icons/Cached.svelte";
   import FolderIcon from "svelte-material-icons/FolderOutline.svelte";
@@ -135,7 +135,7 @@ import CacheIndicator from "./CacheIndicator.svelte";
 
   function tryCacheAhead(pos: number) {
     const cacheAheadCount = $config.cacheAheadFiles;
-    const preCaches = [];
+    const preCaches: PrefetchRequest[] = [];
     for (let newPos = pos + 1; newPos <= pos + cacheAheadCount; newPos++) {
       if (newPos < $playList.files.length) {
         const nextFile = $playList.files[newPos];
@@ -146,7 +146,7 @@ import CacheIndicator from "./CacheIndicator.svelte";
             position: newPos,
           });
           // TODO provide also folderPosition
-          preCaches.push(item.url);
+          preCaches.push({url:item.url, folderPosition:item.position, lowPriority: false});
         }
       }
     }

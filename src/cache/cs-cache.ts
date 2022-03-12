@@ -15,16 +15,27 @@ export enum CacheMessageKind {
   Deleted = 20,
   PrefetchError = 30,
   ActualError = 31,
-  OtherError = 39
+  OtherError = 39,
 }
+
+const MAX_QUEUE_SIZE = 4096;
 
 export interface CacheMessage {
   kind: CacheMessageKind;
   data: any;
 }
 
+class QueueItem {
+  constructor(
+    public url: string,
+    public lowPriority: boolean,
+    public folderPosition?: number
+  ) {}
+}
+
 export class CacheStorageCache implements Cache {
-  private queue: string[] = [];
+  private queue: QueueItem[] = [];
+  private queueChangedCB: (n:number)=>void;
   private processing = 0;
   private listeners: CacheEventHandler[] = [];
   private worker: ServiceWorker;
@@ -49,11 +60,15 @@ export class CacheStorageCache implements Cache {
     ) {
       this.notifyListeners(EventType.FileCached, msg.data);
       // delete any pending prefetch from queue
-      this.queue = this.queue.filter( (item) => !item.startsWith(msg.data.cachedUrl));
+      this.queue = this.queue.filter(
+        (item) => !item.url.startsWith(msg.data.cachedUrl)
+      );
     } else if (msg.kind === CacheMessageKind.Deleted) {
-      this.notifyListeners(EventType.FileDeleted, msg.data)
+      this.notifyListeners(EventType.FileDeleted, msg.data);
     } else if (msg.kind === CacheMessageKind.Skipped) {
-      console.debug(`Prefetch of  ${msg.data.originalUrl} skipped as is already being loaded`);
+      console.debug(
+        `Prefetch of  ${msg.data.originalUrl} skipped as is already being loaded`
+      );
     } else {
       console.error("Cache error message", msg);
     }
@@ -64,7 +79,8 @@ export class CacheStorageCache implements Cache {
       msg.kind === CacheMessageKind.PrefetchError ||
       msg.kind === CacheMessageKind.Skipped
     ) {
-      this.processing = this.processing>0?this.processing-1:0;
+      this.processing = this.processing > 0 ? this.processing - 1 : 0;
+      this.updateQueueChanged();
       this.processQueue();
     }
   }
@@ -105,28 +121,47 @@ export class CacheStorageCache implements Cache {
   }
 
   cacheAhead(...urls: PrefetchRequest[]) {
-    console.debug(`Want to prefetch ${urls.length} files : ${urls.map((i) => JSON.stringify(i)).join(', ')}`);
-    this.queue = []
+    console.debug(
+      `Want to prefetch ${urls.length} files : ${urls
+        .map((i) => JSON.stringify(i))
+        .join(", ")}`
+    );
+    if (this.queue.length > MAX_QUEUE_SIZE) {
+      console.error("Prefecth queue is at max size, cannot add items");
+      return;
+    }
+    const newQueueEnd = this.queue.filter((i) => i.lowPriority === false);
+    const newQueueBeginning: QueueItem[] = [];
     for (const urlObject of urls) {
-      let  url:string;
+      let url: string;
+      let lowPriority: boolean;
+      let folderPosition: number;
       if (typeof urlObject === "string") {
-        url = urlObject
+        url = urlObject;
+        lowPriority = false;
       } else {
         url = urlObject.url;
+        lowPriority = urlObject.lowPriority ?? false;
+        folderPosition = urlObject.folderPosition;
       }
-      this.queue.push(url);
-      if (this.processing < this.maxParallelLoads) {
-        this.processQueue();
-      }
+
+      (lowPriority ? newQueueEnd : newQueueBeginning).push(
+        new QueueItem(url, lowPriority, folderPosition)
+      );
+    }
+    this.queue = newQueueBeginning.concat(newQueueEnd);
+    this.updateQueueChanged();
+    if (this.processing < this.maxParallelLoads) {
+      this.processQueue();
     }
   }
 
   private processQueue(): void {
-    const url = this.queue.shift();
-    if (url) {
+    const item = this.queue.shift();
+    if (item) {
       this.worker.postMessage({
         kind: CacheMessageKind.Prefetch,
-        data: { url },
+        data: { url: item.url, folderPosition: item.folderPosition },
       });
       this.processing += 1;
     }
@@ -136,20 +171,19 @@ export class CacheStorageCache implements Cache {
     if (!pathPrefix) {
       this.queue = [];
     } else {
-      this.queue = this.queue.filter((url) => {
-        const path  = new URL(url).pathname;
+      this.queue = this.queue.filter((i) => {
+        const path = new URL(i.url).pathname;
         return !path.startsWith(pathPrefix);
-      })
+      });
     }
 
     if (includingRunning) {
       this.worker.postMessage({
         kind: CacheMessageKind.AbortLoads,
-        data: {pathPrefix}
-      })
+        data: { pathPrefix },
+      });
     }
   }
-
 
   addListener(l: CacheEventHandler) {
     this.listeners.push(l);
@@ -161,14 +195,22 @@ export class CacheStorageCache implements Cache {
     }
   }
 
+  private updateQueueChanged() {
+    if (this.queueChangedCB) {
+      this.queueChangedCB(this.processing + this.queue.length);
+    }
+  }
+  
+  onQueueSizeChanged(callback: (number: any) => void) {
+      this.queueChangedCB = callback;
+  }
   private notifyListeners(kind: EventType, item: CachedItem): void {
     this.listeners.forEach((l) =>
-        l({
-          kind,
-          item
-        })
-      );
-
+      l({
+        kind,
+        item,
+      })
+    );
   }
 
   maxParallelLoads: number = 1;
