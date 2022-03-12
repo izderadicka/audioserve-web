@@ -6,6 +6,8 @@
   import CollectionsIcon from "svelte-material-icons/LibraryShelves.svelte";
   import CloseIcon from "svelte-material-icons/Close.svelte";
   import DownloadIcon from "svelte-material-icons/DownloadMultiple.svelte";
+  import SleepIcon from "svelte-material-icons/AlarmSnooze.svelte";
+  import SleepCancelIcon from "svelte-material-icons/AlarmOff.svelte";
 
   import {
     apiConfig,
@@ -176,6 +178,8 @@ import ConfirmDialog from "./components/ConfirmDialog.svelte";
     showLogo = true;
   }
 
+  // Preferch Download section
+
   const DOWNLOAD_DIALOG_ID = "cancel-prefetch-dialog";
 
   let cancelPrefetchDialog: ConfirmDialog;
@@ -187,6 +191,32 @@ import ConfirmDialog from "./components/ConfirmDialog.svelte";
   function cancelAllPrefetch() {
     console.debug("Cancel all prefetch loads");
     cache.cancelPendingLoads("", true, true);
+  }
+
+  // Sleep Timer Section
+
+  let sleepTime=0;
+  let sleepTimer:number;
+  let player: Player;
+
+  function startSleepTimer() {
+
+    sleepTime=$config.sleepTimerPeriod;
+    sleepTimer = window.setInterval(() => {
+      sleepTime -= 1;
+      if (sleepTime === 0) {
+        player?.pause();
+        window.clearInterval(sleepTimer);
+
+      }
+    },
+    60000)
+
+  }
+
+  function stopSleepTimer() {
+    window.clearInterval(sleepTimer);
+    sleepTime = 0;
   }
 
 </script>
@@ -202,7 +232,13 @@ import ConfirmDialog from "./components/ConfirmDialog.svelte";
       <nav class="nav-bar">
         {#if showLogo}
           <ul>
-            <li><h4><a href="/">audioserve</a></h4></li>
+            <li><h4><a href="/">
+              {#if smallScreen} 
+                as
+              {:else}
+              audioserve
+              {/if}
+            </a></h4></li>
           </ul>
         {/if}
         <ul class="right-bar">
@@ -242,9 +278,19 @@ import ConfirmDialog from "./components/ConfirmDialog.svelte";
             {/if}
             {#if !showCollectionSelect && !showSearch || !smallScreen}
             {#if $pendingDownloads > 0}
-            <span on:click="{showDownloadDialog}">
+            <span on:click="{showDownloadDialog}" class="withText">
               <DownloadIcon size="1.5rem"/> {$pendingDownloads}
             </span>
+            {/if}
+
+            {#if sleepTime > 0} 
+              <span on:click="{stopSleepTimer}" class="withText">
+                <SleepCancelIcon size="1.5rem"/> {sleepTime}
+              </span>
+            {:else}
+              <span on:click="{startSleepTimer}">
+                <SleepIcon size="1.5rem"/>
+              </span>
             {/if}
             {/if}
             <Menu on:menu={actOnMenu} />
@@ -259,17 +305,22 @@ import ConfirmDialog from "./components/ConfirmDialog.svelte";
     </div>
     {#if $playItem}
       <div class="player">
-        <Player />
+        <Player bind:this="{player}"/>
       </div>
     {/if}
   {/if}
 </main>
+
 <ConfirmDialog id="{DOWNLOAD_DIALOG_ID}" bind:this="{cancelPrefetchDialog}" confirmAction="{cancelAllPrefetch}">
 <svelte:fragment slot="header">Cancel All Running Loads?</svelte:fragment>
 <svelte:fragment slot="body">Do you want to cancel all currently running loads of audio files?</svelte:fragment>
 </ConfirmDialog>
 
 <style>
+  .icons span.withText {
+    display: inline-flex;
+  }
+
   .icons {
     display: flex
   }

@@ -40,7 +40,8 @@ export class CacheStorageCache implements Cache {
   private listeners: CacheEventHandler[] = [];
   private worker: ServiceWorker;
 
-  constructor(worker: ServiceWorker) {
+  constructor(worker: ServiceWorker, maxParallelLoads?: number) {
+    this.maxParallelLoads = maxParallelLoads || 1;
     this.updateWorker(worker);
     /// @ts-ignore
     navigator.serviceWorker.addEventListener("message", (evt) =>

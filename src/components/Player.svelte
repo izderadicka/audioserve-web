@@ -43,6 +43,7 @@ import CacheIndicator from "./CacheIndicator.svelte";
   let currentTime: number;
   let reportedTime: number = -1;
   let paused: boolean;
+  export const pause = () => { paused = true };
   let player: HTMLAudioElement;
   let buffered;
   let seekable;

@@ -22,6 +22,7 @@ export interface AppConfig {
   cacheAheadFiles: number;
   transcodingTolerance: number;
   positionReportingPeriod: number;
+  sleepTimerPeriod: number;
 }
 
 export interface TranscodingDetail {

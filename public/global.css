@@ -12,7 +12,7 @@ body {
   padding: 0.3em;
 }
 
-/* Bit of tweaking sizes for header */
+/* Bit of tweaking sizes for header and menu*/
 
 .search-bar input,
 .search-bar select {
@@ -36,6 +36,18 @@ body {
 
 .nav-bar .icons svg:hover {
   color: var(--primary-hover);
+}
+
+a#main-menu-button {
+  padding-left: 0;
+}
+
+a#main-menu-button svg{
+  margin-left: 0;
+}
+
+nav .icons .dropdown {
+  margin-left: 1rem;
 }
 
 /* Fix range thumb color */
