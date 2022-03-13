@@ -212,7 +212,7 @@ import { ShakeDetector } from "./util/movement";
 
     const ac = createAudioContext();
     const soundSleep = await loadAudioFile("/static/will_sleep_soon.mp3", ac);
-    
+    const soundExtended = await loadAudioFile("/static/extended.mp3", ac);
 
     sleepTime=$config.sleepTimerPeriod;
     sleepTimer = window.setInterval(() => {
@@ -221,6 +221,7 @@ import { ShakeDetector } from "./util/movement";
         playBuffer(soundSleep, ac);
         shakeDetector = new ShakeDetector((how) => {
           sleepTime += $config.sleepTimerExtend;
+          playBuffer(soundExtended, ac);
           clearShakeDetector();
         })
       }
