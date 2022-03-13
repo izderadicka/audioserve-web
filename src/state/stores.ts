@@ -1,4 +1,5 @@
 import { writable, derived, Writable, Readable, readable } from "svelte/store";
+import { defaultConfig } from "../app-config";
 import type { CachedItem } from "../cache";
 import {
   CollectionsApi,
@@ -67,13 +68,7 @@ export const colApi = derived(
   ($apiConfig) => new CollectionsApi($apiConfig)
 );
 
-export const config: Writable<AppConfig> = writable({
-  maxParallelDownload: 1,
-  cacheAheadFiles: 3,
-  transcodingTolerance: 0.15,
-  positionReportingPeriod: 10,
-  sleepTimerPeriod: 30,
-});
+export const config: Writable<AppConfig> = writable(defaultConfig);
 
 export const positionWsApi: Readable<PlaybackSync> = derived(
   [config, apiConfig, group],

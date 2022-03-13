@@ -34,6 +34,7 @@ pendingDownloads,
   import type { Cache } from "./cache";
   import { isDevelopment } from "./util/version";
 import ConfirmDialog from "./components/ConfirmDialog.svelte";
+import { createAudioContext, loadAudioFile, playBuffer } from "./util/audio";
 
   export let cache: Cache;
   cache.maxParallelLoads = $config.maxParallelDownload;
@@ -199,12 +200,18 @@ import ConfirmDialog from "./components/ConfirmDialog.svelte";
   let sleepTimer:number;
   let player: Player;
 
-  function startSleepTimer() {
+  async function startSleepTimer() {
+
+    const ac = createAudioContext();
+    const soundSleep = await loadAudioFile("/static/will_sleep_soon.mp3", ac);
 
     sleepTime=$config.sleepTimerPeriod;
     sleepTimer = window.setInterval(() => {
       sleepTime -= 1;
-      if (sleepTime === 0) {
+      if (sleepTime === 1) {
+        playBuffer(soundSleep, ac);
+      }
+      else if (sleepTime === 0) {
         player?.pause();
         window.clearInterval(sleepTimer);
 

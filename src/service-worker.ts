@@ -30,6 +30,8 @@ const staticResources = [
   "/bundle.css",
   "/bundle.js",
   "/app.webmanifest",
+  "/static/will_sleep_soon.mp3",
+  "/static/extended.mp3"
 ];
 
 const cacheName = "static-" + APP_COMMIT;
