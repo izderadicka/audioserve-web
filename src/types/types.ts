@@ -23,6 +23,7 @@ export interface AppConfig {
   transcodingTolerance: number;
   positionReportingPeriod: number;
   sleepTimerPeriod: number;
+  sleepTimerExtend: number;
 }
 
 export interface TranscodingDetail {

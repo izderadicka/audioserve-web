@@ -6,4 +6,5 @@ export const defaultConfig: AppConfig = {
     transcodingTolerance: 0.15,
     positionReportingPeriod: 10,
     sleepTimerPeriod: 2,
+    sleepTimerExtend: 2,
   };

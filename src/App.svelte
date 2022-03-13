@@ -35,6 +35,7 @@ pendingDownloads,
   import { isDevelopment } from "./util/version";
 import ConfirmDialog from "./components/ConfirmDialog.svelte";
 import { createAudioContext, loadAudioFile, playBuffer } from "./util/audio";
+import { ShakeDetector } from "./util/movement";
 
   export let cache: Cache;
   cache.maxParallelLoads = $config.maxParallelDownload;
@@ -199,21 +200,34 @@ import { createAudioContext, loadAudioFile, playBuffer } from "./util/audio";
   let sleepTime=0;
   let sleepTimer:number;
   let player: Player;
+  let shakeDetector: ShakeDetector = null;
+  const clearShakeDetector = () => {
+    if (shakeDetector) {
+          shakeDetector.finish();
+          shakeDetector = null;
+        }
+  }
 
   async function startSleepTimer() {
 
     const ac = createAudioContext();
     const soundSleep = await loadAudioFile("/static/will_sleep_soon.mp3", ac);
+    
 
     sleepTime=$config.sleepTimerPeriod;
     sleepTimer = window.setInterval(() => {
       sleepTime -= 1;
       if (sleepTime === 1) {
         playBuffer(soundSleep, ac);
+        shakeDetector = new ShakeDetector((how) => {
+          sleepTime += $config.sleepTimerExtend;
+          clearShakeDetector();
+        })
       }
       else if (sleepTime === 0) {
         player?.pause();
         window.clearInterval(sleepTimer);
+        clearShakeDetector();
 
       }
     },
@@ -223,6 +237,7 @@ import { createAudioContext, loadAudioFile, playBuffer } from "./util/audio";
 
   function stopSleepTimer() {
     window.clearInterval(sleepTimer);
+    clearShakeDetector();
     sleepTime = 0;
   }
 
