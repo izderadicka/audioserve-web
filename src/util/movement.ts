@@ -7,17 +7,22 @@ type CBtype = (how: ShakeType)=>void;
 export class ShakeDetector {
 
     private cb: CBtype;
+    private onOrientationChange = (evt) => {
+        this.cb(ShakeType.OrientationChange);
+    };
 
     constructor(callback: CBtype) {
         this.cb = callback;
         if ("orientation" in window.screen) {
-            window.screen.orientation.addEventListener("change", (evt) => {
-                this.cb(ShakeType.OrientationChange);
-            }, {once: true});
+            window.screen.orientation.addEventListener("change", this.onOrientationChange, {once: true});
         }
     }
 
-    finish() {}
+    finish() {
+        if ("orientation" in window.screen) {
+            window.screen.orientation.removeEventListener("change", this.onOrientationChange)
+        }
+    }
 
 
 
