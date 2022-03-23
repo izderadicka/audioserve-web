@@ -42,7 +42,7 @@
     "@picocss/pico": "^1.4.4",
     "base64-js": "^1.5.1",
     "isomorphic-fetch": "^3.0.0",
-    "showdown": "^2.0.0",
+    "showdown": "^2.0.1",
     "sirv-cli": "^1.0.0",
     "url": "^0.11.0"
   }
