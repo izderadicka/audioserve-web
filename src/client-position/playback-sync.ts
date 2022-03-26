@@ -46,7 +46,8 @@ export class PlaybackSync {
 
         const baseUrl = config.development ?
             `${mapProtocol(window.location.protocol)}//${window.location.hostname}:${config.developmentPort}` :
-            `${mapProtocol(window.location.protocol)}//${window.location.host}${window.location.pathname.length > 1 ? window.location.pathname : ""}`;
+            `${mapProtocol(window.location.protocol)}//${window.location.host}${window.location.pathname.length > 1 && 
+                window.location.pathname != "/index.html" ? window.location.pathname : ""}`;
 
         this.socketUrl = baseUrl + (baseUrl.endsWith("/") ? "" : "/") + "position";
         this.closed = false;
