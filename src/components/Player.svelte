@@ -19,7 +19,7 @@
   import { FolderType, StorageKeys } from "../types/enums";
   import { PlayItem } from "../types/play-item";
 
-  import { formatTime, splitExt, splitPath } from "../util";
+  import { formatTime, splitExt, splitPath, splitRootPath } from "../util";
   import CacheIndicator from "./CacheIndicator.svelte";
 
   const cache: Cache = getContext("cache");
@@ -132,9 +132,12 @@
       }
 
       if ("mediaSession" in navigator) {
+        const {root:artist, path:album} = splitRootPath(splitPath(item.path).folder)
         navigator.mediaSession.metadata = new MediaMetadata({
           title: splitExt(item.name).baseName,
-          album: splitPath(item.path).folder,
+          album,
+          artist,
+          artwork: [{src:"favicon.png"}]
         });
       }
     }

@@ -57,6 +57,20 @@ export function splitPath(path: string): { folder?: string; file: string } {
   }
 }
 
+export function splitRootPath(path: string): { root?: string; path: string } {
+  const idx = path.indexOf("/");
+  if (idx >= 0) {
+    return {
+      root: path.substring(0, idx),
+      path: path.substring(idx + 1),
+    };
+  } else {
+    return {
+      path: path,
+    };
+  }
+}
+
 export function splitExt(name: string): {
   baseName: string;
   extension?: string;
