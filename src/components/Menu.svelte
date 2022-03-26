@@ -84,7 +84,7 @@
               >
             </li>
             <li>
-              <details open>
+              <details>
                 <summary>Transcoding ({transcoding})</summary>
                 <ul>
                   {#each transcodingNames as transcodingName}
@@ -103,6 +103,10 @@
                   {/each}
                 </ul>
               </details>
+            </li>
+            <li>
+              <a href="#" data-menu="show-preferences" on:click|preventDefault={menuClick}
+                >Other Preferences</a>
             </li>
           </ul>
         </nav>

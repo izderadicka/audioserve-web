@@ -1,6 +1,7 @@
 import App from "./App.svelte";
 import type { Cache} from "./cache";
 import { CacheStorageCache } from "./cache/cs-cache";
+import { ShakeDetector } from "./util/movement";
 import {APP_VERSION, ENVIRONMENT, APP_COMMIT, isDevelopment} from './util/version'
 
 console.log(`Running app version ${APP_VERSION}(${APP_COMMIT}) in env ${ENVIRONMENT}`);
@@ -60,5 +61,3 @@ if ("storage" in navigator) {
     .estimate()
     .then((estimate) => console.log("Available storage:", estimate));
 }
-
-//createDbCache().then(createApp)

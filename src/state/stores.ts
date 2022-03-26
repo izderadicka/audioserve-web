@@ -68,7 +68,22 @@ export const colApi = derived(
   ($apiConfig) => new CollectionsApi($apiConfig)
 );
 
-export const config: Writable<AppConfig> = writable(defaultConfig);
+const getInitialConfig = () => {
+  const pref = localStorage.getItem(StorageKeys.PREFERENCES);
+  let conf = defaultConfig;
+  if (pref) {
+    try {
+      const prefObj = JSON.parse(pref);
+      conf = Object.assign(conf, prefObj);
+    } catch (e) {
+      console.error("Invalid preferences");
+    }
+  }
+
+  return conf;
+};
+
+export const config: Writable<AppConfig> = writable(getInitialConfig());
 
 export const positionWsApi: Readable<PlaybackSync> = derived(
   [config, apiConfig, group],

@@ -5,6 +5,6 @@ export const defaultConfig: AppConfig = {
     cacheAheadFiles: 3,
     transcodingTolerance: 0.15,
     positionReportingPeriod: 10,
-    sleepTimerPeriod: 2,
-    sleepTimerExtend: 2,
+    sleepTimerPeriod: 30,
+    sleepTimerExtend: 15,
   };

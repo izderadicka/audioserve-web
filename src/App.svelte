@@ -20,7 +20,7 @@
     currentFolder,
     windowSize,
     playItem,
-pendingDownloads,
+    pendingDownloads,
   } from "./state/stores";
   import { onMount, setContext } from "svelte";
   import { Configuration } from "./client";
@@ -33,9 +33,10 @@ pendingDownloads,
   import Player from "./components/Player.svelte";
   import type { Cache } from "./cache";
   import { isDevelopment } from "./util/version";
-import ConfirmDialog from "./components/ConfirmDialog.svelte";
-import { createAudioContext, loadAudioFile, playBuffer } from "./util/audio";
-import { ShakeDetector } from "./util/movement";
+  import ConfirmDialog from "./components/ConfirmDialog.svelte";
+  import { createAudioContext, loadAudioFile, playBuffer } from "./util/audio";
+  import { ShakeDetector } from "./util/movement";
+  import ConfigEditor from "./components/ConfigEditor.svelte";
 
   export let cache: Cache;
   cache.maxParallelLoads = $config.maxParallelDownload;
@@ -89,6 +90,9 @@ import { ShakeDetector } from "./util/movement";
           window.location.reload();
         });
         break;
+      case "show-preferences":
+        showConfig = true;
+        break;
     }
   }
 
@@ -141,7 +145,6 @@ import { ShakeDetector } from "./util/movement";
         showLogo = true;
       }
       smallScreen = true;
-      
     } else {
       showSearch = true;
       showCollectionSelect = true;
@@ -197,24 +200,23 @@ import { ShakeDetector } from "./util/movement";
 
   // Sleep Timer Section
 
-  let sleepTime=0;
-  let sleepTimer:number;
+  let sleepTime = 0;
+  let sleepTimer: number;
   let player: Player;
   let shakeDetector: ShakeDetector = null;
   const clearShakeDetector = () => {
     if (shakeDetector) {
-          shakeDetector.finish();
-          shakeDetector = null;
-        }
-  }
+      shakeDetector.finish();
+      shakeDetector = null;
+    }
+  };
 
   async function startSleepTimer() {
-
     const ac = createAudioContext();
     const soundSleep = await loadAudioFile("/static/will_sleep_soon.mp3", ac);
     const soundExtended = await loadAudioFile("/static/extended.mp3", ac);
 
-    sleepTime=$config.sleepTimerPeriod;
+    sleepTime = $config.sleepTimerPeriod;
     sleepTimer = window.setInterval(() => {
       sleepTime -= 1;
       if (sleepTime === 1) {
@@ -223,17 +225,13 @@ import { ShakeDetector } from "./util/movement";
           sleepTime += $config.sleepTimerExtend;
           playBuffer(soundExtended, ac);
           clearShakeDetector();
-        })
-      }
-      else if (sleepTime === 0) {
+        });
+      } else if (sleepTime === 0) {
         player?.pause();
         window.clearInterval(sleepTimer);
         clearShakeDetector();
-
       }
-    },
-    60000)
-
+    }, 60000);
   }
 
   function stopSleepTimer() {
@@ -242,6 +240,7 @@ import { ShakeDetector } from "./util/movement";
     sleepTime = 0;
   }
 
+  let showConfig = false;
 </script>
 
 <main>
@@ -255,13 +254,17 @@ import { ShakeDetector } from "./util/movement";
       <nav class="nav-bar">
         {#if showLogo}
           <ul>
-            <li><h4><a href="/">
-              {#if smallScreen} 
-                as
-              {:else}
-              audioserve
-              {/if}
-            </a></h4></li>
+            <li>
+              <h4>
+                <a href="/">
+                  {#if smallScreen}
+                    as
+                  {:else}
+                    audioserve
+                  {/if}
+                </a>
+              </h4>
+            </li>
           </ul>
         {/if}
         <ul class="right-bar">
@@ -299,44 +302,62 @@ import { ShakeDetector } from "./util/movement";
               >
               <span on:click={toggleSearch}><SearchIcon size="1.5rem" /></span>
             {/if}
-            {#if !showCollectionSelect && !showSearch || !smallScreen}
-            {#if $pendingDownloads > 0}
-            <span on:click="{showDownloadDialog}" class="withText">
-              <DownloadIcon size="1.5rem"/> {$pendingDownloads}
-            </span>
-            {/if}
+            {#if (!showCollectionSelect && !showSearch) || !smallScreen}
+              {#if $pendingDownloads > 0}
+                <span on:click={showDownloadDialog} class="withText">
+                  <DownloadIcon size="1.5rem" />
+                  {$pendingDownloads}
+                </span>
+              {/if}
 
-            {#if sleepTime > 0} 
-              <span on:click="{stopSleepTimer}" class="withText">
-                <SleepCancelIcon size="1.5rem"/> {sleepTime}
-              </span>
-            {:else}
-              <span on:click="{startSleepTimer}">
-                <SleepIcon size="1.5rem"/>
-              </span>
-            {/if}
+              {#if sleepTime > 0}
+                <span on:click={stopSleepTimer} class="withText">
+                  <SleepCancelIcon size="1.5rem" />
+                  {sleepTime}
+                </span>
+              {:else}
+                <span on:click={startSleepTimer}>
+                  <SleepIcon size="1.5rem" />
+                </span>
+              {/if}
             {/if}
             <Menu on:menu={actOnMenu} />
           </li>
         </ul>
       </nav>
+    </div>
 
+    {#if showConfig}
+      <div class="browser">
+        <ConfigEditor
+          on:finished={() => {
+            showConfig = false;
+          }}
+        />
+      </div>
+    {:else}
       <Breadcrumb />
-    </div>
-    <div class="browser" bind:this={container}>
-      <Browser {container} />
-    </div>
+      <div class="browser" bind:this={container}>
+        <Browser {container} />
+      </div>
+    {/if}
     {#if $playItem}
       <div class="player">
-        <Player bind:this="{player}"/>
+        <Player bind:this={player} />
       </div>
     {/if}
   {/if}
 </main>
 
-<ConfirmDialog id="{DOWNLOAD_DIALOG_ID}" bind:this="{cancelPrefetchDialog}" confirmAction="{cancelAllPrefetch}">
-<svelte:fragment slot="header">Cancel All Running Loads?</svelte:fragment>
-<svelte:fragment slot="body">Do you want to cancel all currently running loads of audio files?</svelte:fragment>
+<ConfirmDialog
+  id={DOWNLOAD_DIALOG_ID}
+  bind:this={cancelPrefetchDialog}
+  confirmAction={cancelAllPrefetch}
+>
+  <svelte:fragment slot="header">Cancel All Running Loads?</svelte:fragment>
+  <svelte:fragment slot="body"
+    >Do you want to cancel all currently running loads of audio files?</svelte:fragment
+  >
 </ConfirmDialog>
 
 <style>
@@ -345,7 +366,7 @@ import { ShakeDetector } from "./util/movement";
   }
 
   .icons {
-    display: flex
+    display: flex;
   }
   .right-bar {
     flex-grow: 1;
@@ -385,9 +406,8 @@ import { ShakeDetector } from "./util/movement";
 
   @media (max-height: 740px) {
     main {
-    padding-top: 4px;
-    padding-bottom: 0px ;
+      padding-top: 4px;
+      padding-bottom: 0px;
     }
-
   }
 </style>
