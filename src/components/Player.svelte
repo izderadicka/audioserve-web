@@ -19,8 +19,8 @@
   import { FolderType, StorageKeys } from "../types/enums";
   import { PlayItem } from "../types/play-item";
 
-  import { formatTime, splitExt } from "../util";
-import CacheIndicator from "./CacheIndicator.svelte";
+  import { formatTime, splitExt, splitPath } from "../util";
+  import CacheIndicator from "./CacheIndicator.svelte";
 
   const cache: Cache = getContext("cache");
   const fileIconSize = "1.5rem";
@@ -43,7 +43,9 @@ import CacheIndicator from "./CacheIndicator.svelte";
   let currentTime: number;
   let reportedTime: number = -1;
   let paused: boolean;
-  export const pause = () => { paused = true };
+  export const pause = () => {
+    paused = true;
+  };
   let player: HTMLAudioElement;
   let buffered;
   let seekable;
@@ -74,7 +76,7 @@ import CacheIndicator from "./CacheIndicator.svelte";
     if (paused && !force) return;
     const time = roundedTime();
     if (time !== reportedTime) {
-      const fullPath = `/${collection}/${filePath}`
+      const fullPath = `/${collection}/${filePath}`;
       $positionWsApi.enqueuePosition(fullPath, time);
       console.debug(
         `Reporting time ${time}/${currentTime}/${reportedTime} on ${fullPath}`
@@ -129,6 +131,12 @@ import CacheIndicator from "./CacheIndicator.svelte";
         paused = true;
       }
 
+      if ("mediaSession" in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: splitExt(item.name).baseName,
+          album: splitPath(item.path).folder,
+        });
+      }
     }
   }
 
@@ -147,7 +155,11 @@ import CacheIndicator from "./CacheIndicator.svelte";
             position: newPos,
           });
           // TODO provide also folderPosition
-          preCaches.push({url:item.url, folderPosition:item.position, lowPriority: false});
+          preCaches.push({
+            url: item.url,
+            folderPosition: item.position,
+            lowPriority: false,
+          });
         }
       }
     }
@@ -183,7 +195,7 @@ import CacheIndicator from "./CacheIndicator.svelte";
     const msg = e.message
       ? `${codeName(e.code)} : ${e.message}`
       : codeName(e.code);
-    alert("Player Error: "+ msg);
+    alert("Player Error: " + msg);
   }
 
   function tryNextFile() {
@@ -223,9 +235,9 @@ import CacheIndicator from "./CacheIndicator.svelte";
 
   onMount(async () => {
     if ($playItem) {
-      await startPlay($playItem)
+      await startPlay($playItem);
     }
-  })
+  });
 
   onDestroy(unsubscribe);
 </script>
@@ -296,16 +308,16 @@ import CacheIndicator from "./CacheIndicator.svelte";
     {formattedCurrentTime}
   </div>
   <div class="progress">
-  <div class="progress-bar">
-    <input
-      type="range"
-      id="playback-progress"
-      min="0"
-      max={expectedDuration}
-      bind:value={currentTime}
-    />
-    <CacheIndicator ranges={buffered} totalTime={expectedDuration}/>
-  </div>
+    <div class="progress-bar">
+      <input
+        type="range"
+        id="playback-progress"
+        min="0"
+        max={expectedDuration}
+        bind:value={currentTime}
+      />
+      <CacheIndicator ranges={buffered} totalTime={expectedDuration} />
+    </div>
   </div>
   <div class="total-time">
     {formattedDuration}
@@ -323,7 +335,7 @@ import CacheIndicator from "./CacheIndicator.svelte";
     margin-left: 1rem;
     margin-top: 0.5rem;
   }
-  .progress-bar input{
+  .progress-bar input {
     margin-bottom: 0;
   }
 
