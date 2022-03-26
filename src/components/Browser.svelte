@@ -68,7 +68,7 @@
         folder
       );
       console.debug("Cached files for this folder", cachedPaths);
-      
+
       files = audioFolder.files!.map((file: AudioFileExt) => {
         if (cachedPaths.indexOf(file.path) >= 0) {
           file.cached = true;
@@ -79,11 +79,13 @@
       localStorage.setItem(StorageKeys.LAST_FOLDER, folder);
       sharedPosition = audioFolder.position;
       sharePositionDisplayName = null;
-      files.forEach((f) => {
-        if (f.path === sharedPosition.path) {
-          sharePositionDisplayName = splitExt(f.name).baseName
-        }
-      })
+      if (sharedPosition) {
+        files.forEach((f) => {
+          if (f.path === sharedPosition.path) {
+            sharePositionDisplayName = splitExt(f.name).baseName;
+          }
+        });
+      }
 
       folderTime = audioFolder.totalTime;
       descriptionPath = audioFolder.description?.path;
@@ -266,32 +268,32 @@
     {/if}
   </div>
   {#if $currentFolder && $currentFolder.type === FolderType.REGULAR}
-  <div class="browser-sidebar">
-    {#if sharedPosition}
-      <div class="last-position" id="last-remote-position">
-        <button on:click={playSharedPosition}
-          ><ContinuePlay size="2rem" />
-          {sharePositionDisplayName} at {formatTime(
-            sharedPosition.position
-          )}</button
-        >
-      </div>
-    {/if}
-    <details open>
-      <summary>Info</summary>
-      <div id="folder-cover">
-        {#if coverPath}
-          <Cover {coverPath} />
-        {/if}
-      </div>
-      <div id="folder-tags" />
-      <div id="folder-description">
-        {#if descriptionPath}
-          <Description {descriptionPath} />
-        {/if}
-      </div>
-    </details>
-  </div>
+    <div class="browser-sidebar">
+      {#if sharedPosition}
+        <div class="last-position" id="last-remote-position">
+          <button on:click={playSharedPosition}
+            ><ContinuePlay size="2rem" />
+            {sharePositionDisplayName} at {formatTime(
+              sharedPosition.position
+            )}</button
+          >
+        </div>
+      {/if}
+      <details open>
+        <summary>Info</summary>
+        <div id="folder-cover">
+          {#if coverPath}
+            <Cover {coverPath} />
+          {/if}
+        </div>
+        <div id="folder-tags" />
+        <div id="folder-description">
+          {#if descriptionPath}
+            <Description {descriptionPath} />
+          {/if}
+        </div>
+      </details>
+    </div>
   {/if}
 </div>
 
