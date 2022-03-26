@@ -108,6 +108,10 @@
               <a href="#" data-menu="show-preferences" on:click|preventDefault={menuClick}
                 >Other Preferences</a>
             </li>
+            <li>
+              <a href="#" data-menu="about" on:click|preventDefault={menuClick}
+                >About</a>
+            </li>
           </ul>
         </nav>
       </aside>

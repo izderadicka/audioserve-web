@@ -32,7 +32,7 @@
   import { baseUrl, otherTheme } from "./util/browser";
   import Player from "./components/Player.svelte";
   import type { Cache } from "./cache";
-  import { isDevelopment } from "./util/version";
+  import { APP_COMMIT, APP_VERSION, isDevelopment } from "./util/version";
   import ConfirmDialog from "./components/ConfirmDialog.svelte";
   import { createAudioContext, loadAudioFile, playBuffer } from "./util/audio";
   import { ShakeDetector } from "./util/movement";
@@ -92,6 +92,9 @@
         break;
       case "show-preferences":
         showConfig = true;
+        break;
+      case "about":
+        showAboutDialog();
         break;
     }
   }
@@ -186,6 +189,7 @@
   // Preferch Download section
 
   const DOWNLOAD_DIALOG_ID = "cancel-prefetch-dialog";
+  const ABOUT_DIALOG_ID ="about-dialog";
 
   let cancelPrefetchDialog: ConfirmDialog;
 
@@ -196,6 +200,14 @@
   function cancelAllPrefetch() {
     console.debug("Cancel all prefetch loads");
     cache.cancelPendingLoads("", true, true);
+  }
+
+  // About Dialog 
+
+  let aboutDialog: ConfirmDialog;
+
+  function showAboutDialog() {
+    aboutDialog.toggleModal();
   }
 
   // Sleep Timer Section
@@ -359,6 +371,16 @@
     >Do you want to cancel all currently running loads of audio files?</svelte:fragment
   >
 </ConfirmDialog>
+
+<ConfirmDialog id={ABOUT_DIALOG_ID} noConfirm="{true}" bind:this="{aboutDialog}">
+  <svelte:fragment slot="header">Audioserve Web Client</svelte:fragment>
+  <svelte:fragment slot="body">
+    <p>New PWA client built with Svelte and TypeScript</p>
+    <p><a href="https://github.com/izderadicka/audioserve-web">Check it's site</a></p>
+    <p>Version: {APP_VERSION}({APP_COMMIT})</p>
+  </svelte:fragment>
+
+  </ConfirmDialog>
 
 <style>
   .icons span.withText {

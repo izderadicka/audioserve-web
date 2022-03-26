@@ -40,10 +40,11 @@ import { onDestroy } from "svelte";
 
   export let id: string;
   export let confirmAction: ()=>void = null;
+  export let noConfirm = false;
 
   // Toggle modal
-  export const toggleModal = (event) => {
-    event.preventDefault();
+  export const toggleModal = (event?) => {
+    event?.preventDefault();
     const modal = document.getElementById(id);
     typeof modal != "undefined" && modal != null && isModalOpen(modal)
       ? closeModal(modal)
@@ -136,9 +137,13 @@ import { onDestroy } from "svelte";
       >
         Cancel
       </a>
+      
+      {#if !noConfirm}
       <a href="#confirm" role="button" on:click={confirmModal}>
         Confirm
       </a>
+      {/if}
+
     </footer>
   </article>
 </dialog>
