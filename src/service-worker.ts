@@ -9,7 +9,7 @@ import {
   CacheMessage,
   AUDIO_CACHE_LIMIT,
 } from "./cache/cs-cache";
-import { removeQuery } from "./util";
+import { removeQuery, splitPath } from "./util";
 import { buildResponse, cloneRequest, evictCache, FetchQueue, logFetchError } from "./util/sw";
 import { APP_COMMIT, isDevelopment, ENVIRONMENT } from "./util/version";
 
@@ -22,16 +22,26 @@ function broadcastMessage(msg: CacheMessage) {
   });
 }
 
+function getPathPrefix() {
+  const base = location.pathname;
+  const folder = splitPath(base).folder;
+  if (folder) {
+    return folder+"/";
+  } else {
+    return "/"
+  }
+}
+
 const staticResources = [
-  "/",
-  "/index.html",
-  "/global.css",
-  "/favicon.png",
-  "/bundle.css",
-  "/bundle.js",
-  "/app.webmanifest",
-  "/static/will_sleep_soon.mp3",
-  "/static/extended.mp3"
+  getPathPrefix(),
+  "index.html",
+  "global.css",
+  "favicon.png",
+  "bundle.css",
+  "bundle.js",
+  "app.webmanifest",
+  "static/will_sleep_soon.mp3",
+  "static/extended.mp3"
 ];
 
 const cacheName = "static-" + APP_COMMIT;
@@ -42,10 +52,10 @@ self.addEventListener("install", (evt) => {
     caches
       .open(cacheName)
       .then((cache) => {
-        return cache.addAll(isDevelopment ? ["/favicon.png"] : staticResources);
+        return cache.addAll(isDevelopment ? ["favicon.png"] : staticResources);
       })
       .then(() => {
-        console.log(`SW Installation successful (dev ${isDevelopment} )`);
+        console.log(`SW Installation successful (dev ${isDevelopment} ) on path ${location.pathname}`);
         return self.skipWaiting(); // forces to immediately replace old SW
       })
   );
