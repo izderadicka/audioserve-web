@@ -283,7 +283,7 @@
           <li class="search-bar-box">
             <div class="search-bar">
               {#if showCollectionSelect}
-                <CollectionSelector />
+                <CollectionSelector selected="{$selectedCollection}"/>
                 {#if smallScreen}
                   <span on:click={closeNavInput}
                     ><CloseIcon size="1.6rem" /></span
