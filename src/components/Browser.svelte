@@ -22,20 +22,24 @@
   import FolderItem from "./FolderItem.svelte";
   import Description from "./Description.svelte";
   import Cover from "./Cover.svelte";
+import type { HistoryWrapper } from "../util/history";
 
   const cache: Cache = getContext("cache");
+  const history: HistoryWrapper = getContext("history");
 
   export let container: HTMLDivElement;
 
   let subfolders: Subfolder[] = [];
   let files: AudioFileExt[] = [];
   let folderPath: string | undefined;
+  let searchQuery: string| undefined;
   let folderTime: number;
   let sharedPosition: PositionShort | null;
   let sharePositionDisplayName: string;
 
   let descriptionPath: string;
   let coverPath: string;
+
 
   async function searchFor(query: string) {
     try {
@@ -48,11 +52,14 @@
       subfolders = result.subfolders;
       files = [];
 
+      searchQuery = query;
+
       // Other properties are not relevant and should be reset
       sharedPosition = undefined;
+      folderPath = undefined;
       folderTime = undefined;
       descriptionPath = undefined;
-      coverPath: undefined;
+      coverPath = undefined;
     } catch (err) {}
   }
 
@@ -92,7 +99,7 @@
       coverPath = audioFolder.cover?.path;
 
       // restore last played file, if possible
-      if (folderPath === undefined) {
+      if (!$playItem && folderPath === undefined) {
         const prevFile = localStorage.getItem(StorageKeys.LAST_FILE);
         if (prevFile) {
           console.debug(
@@ -114,6 +121,7 @@
       }
 
       folderPath = folder;
+      
     } catch (resp) {
       console.error("Cannot load folder", resp);
       if (resp.status === 404) {
@@ -121,11 +129,36 @@
       } else if (resp.status === 401) {
         $isAuthenticated = false;
       }
+    } finally {
+      searchQuery = undefined;
     }
   }
 
+  function addToHistory() {
+    const currentScroll = container?.scrollTop || 0;
+    if (searchQuery != null) {
+      history.add({
+        folderType: FolderType.SEARCH,
+        value: searchQuery,
+        collection: $selectedCollection,
+        scrollTo: currentScroll
+      })
+    } else if (folderPath != null) {
+      history.add({
+        folderType: FolderType.REGULAR,
+        value: folderPath,
+        collection: $selectedCollection,
+        scrollTo: currentScroll
+      })
+    } else {
+      console.error("Inconsistent state of Browser");
+    }
+    }
+
   function navigateTo(folder: string) {
-    return () => ($currentFolder = { value: folder, type: FolderType.REGULAR });
+    return () => {
+      $currentFolder = { value: folder, type: FolderType.REGULAR };
+    }
   }
 
   function playSharedPosition() {
@@ -184,11 +217,21 @@
   );
 
   $: if ($currentFolder != undefined) {
+    let done: Promise<void>;
+    
+    const scrollTo = $currentFolder.scrollTo;
     if ($currentFolder.type === FolderType.REGULAR) {
-      loadFolder($currentFolder.value);
+      done = loadFolder($currentFolder.value);
     } else if ($currentFolder.type === FolderType.SEARCH) {
-      searchFor($currentFolder.value);
+      done = searchFor($currentFolder.value);
     }
+
+    done.then(() => {
+      addToHistory();
+      // if (scrollTo) {
+      //   container.scrollTo({top: scrollTo})
+      // }
+    })
   }
 
   function handleCacheEvent(evt: CacheEvent) {

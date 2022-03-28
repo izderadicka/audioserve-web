@@ -37,11 +37,20 @@
   import { createAudioContext, loadAudioFile, playBuffer } from "./util/audio";
   import { ShakeDetector } from "./util/movement";
   import ConfigEditor from "./components/ConfigEditor.svelte";
+import { HistoryWrapper } from "./util/history";
 
   export let cache: Cache;
   cache.maxParallelLoads = $config.maxParallelDownload;
   cache.onQueueSizeChanged((n) => pendingDownloads.set(n));
   setContext("cache", cache);
+
+  const historyChanged = () => {
+    showConfig = false;
+  }
+  const history = new HistoryWrapper(historyChanged);
+  setContext("history", history);
+
+  
   const themePreference = localStorage.getItem(StorageKeys.THEME);
   if (themePreference) {
     document.querySelector("html").setAttribute("data-theme", themePreference);

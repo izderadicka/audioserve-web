@@ -8,6 +8,7 @@ export interface AudioFileExt extends AudioFile {
 export interface CurrentFolder {
   value: string;
   type: FolderType;
+  scrollTo?: number;
 }
 
 export interface CurrentPlayList {
