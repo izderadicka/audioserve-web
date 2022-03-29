@@ -211,6 +211,10 @@
     })
   );
 
+  function folderIsPlaying(): boolean {
+    return $playList && $playList.collection === $selectedCollection && $playList.folder === folderPath;
+  }
+
   $: if ($currentFolder != undefined) {
     let done: Promise<void>;
     const scrollTo = $currentFolder.scrollTo;
@@ -222,7 +226,7 @@
 
     done.then(() => {
       history.add(constructHistoryState());
-      if (scrollTo) {
+      if (scrollTo && ! folderIsPlaying()) { // Do not scroll to history postion if current folder is playing
         container.scrollTo({top: scrollTo})
       }
     });
