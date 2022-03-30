@@ -22,7 +22,7 @@
   import FolderItem from "./FolderItem.svelte";
   import Description from "./Description.svelte";
   import Cover from "./Cover.svelte";
-import type { HistoryWrapper } from "../util/history";
+  import type { HistoryRecord, HistoryWrapper } from "../util/history";
 
   const cache: Cache = getContext("cache");
   const history: HistoryWrapper = getContext("history");
@@ -32,14 +32,13 @@ import type { HistoryWrapper } from "../util/history";
   let subfolders: Subfolder[] = [];
   let files: AudioFileExt[] = [];
   let folderPath: string | undefined;
-  let searchQuery: string| undefined;
+  let searchQuery: string | undefined;
   let folderTime: number;
   let sharedPosition: PositionShort | null;
   let sharePositionDisplayName: string;
 
   let descriptionPath: string;
   let coverPath: string;
-
 
   async function searchFor(query: string) {
     try {
@@ -121,7 +120,6 @@ import type { HistoryWrapper } from "../util/history";
       }
 
       folderPath = folder;
-      
     } catch (resp) {
       console.error("Cannot load folder", resp);
       if (resp.status === 404) {
@@ -134,31 +132,28 @@ import type { HistoryWrapper } from "../util/history";
     }
   }
 
-  function addToHistory() {
-    const currentScroll = container?.scrollTop || 0;
+  export function constructHistoryState(scrollTo?: number): HistoryRecord {
     if (searchQuery != null) {
-      history.add({
+      return {
         folderType: FolderType.SEARCH,
         value: searchQuery,
         collection: $selectedCollection,
-        scrollTo: currentScroll
-      })
+        scrollTo,
+      };
     } else if (folderPath != null) {
-      history.add({
+      return {
         folderType: FolderType.REGULAR,
         value: folderPath,
         collection: $selectedCollection,
-        scrollTo: currentScroll
-      })
-    } else {
-      console.error("Inconsistent state of Browser");
-    }
-    }
+        scrollTo,
+      };
+    } 
+  }
 
   function navigateTo(folder: string) {
     return () => {
       $currentFolder = { value: folder, type: FolderType.REGULAR };
-    }
+    };
   }
 
   function playSharedPosition() {
@@ -216,9 +211,12 @@ import type { HistoryWrapper } from "../util/history";
     })
   );
 
+  function folderIsPlaying(): boolean {
+    return $playList && $playList.collection === $selectedCollection && $playList.folder === folderPath;
+  }
+
   $: if ($currentFolder != undefined) {
     let done: Promise<void>;
-    
     const scrollTo = $currentFolder.scrollTo;
     if ($currentFolder.type === FolderType.REGULAR) {
       done = loadFolder($currentFolder.value);
@@ -227,11 +225,11 @@ import type { HistoryWrapper } from "../util/history";
     }
 
     done.then(() => {
-      addToHistory();
-      // if (scrollTo) {
-      //   container.scrollTo({top: scrollTo})
-      // }
-    })
+      history.add(constructHistoryState());
+      if (scrollTo && ! folderIsPlaying()) { // Do not scroll to history postion if current folder is playing
+        container.scrollTo({top: scrollTo})
+      }
+    });
   }
 
   function handleCacheEvent(evt: CacheEvent) {
@@ -266,10 +264,24 @@ import type { HistoryWrapper } from "../util/history";
 
   cache.addListener(handleCacheEvent);
 
+  let scrollDebounceTimer: number;
+  const scrollDebounce = (cb: ()=> void) => {
+    clearTimeout(scrollDebounceTimer);
+    scrollDebounceTimer= window.setTimeout(cb, 250)
+  }
+  function updateScroll() {
+    scrollDebounce(() => {
+      history.update(constructHistoryState(container.scrollTop))
+    })
+  }
+
+  $: container?.addEventListener("scroll", updateScroll);
+
   onMount(async () => {});
   onDestroy(() => {
     unsubsribe.forEach((u) => u());
     cache.removeListener(handleCacheEvent);
+    container.removeEventListener("scroll", updateScroll);
   });
 </script>
 

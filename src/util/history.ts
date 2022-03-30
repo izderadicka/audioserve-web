@@ -8,25 +8,34 @@ export interface HistoryRecord {
   scrollTo?: number;
 }
 
+function historyEq(me: HistoryRecord, other: HistoryRecord): boolean {
+  return (
+    me.collection === other.collection &&
+    me.folderType === other.folderType &&
+    me.value === other.value
+  );
+}
+
 export class HistoryWrapper {
   constructor(private beforeChange: () => void) {
     window.addEventListener("popstate", this.onPopup);
   }
 
+  update(rec: HistoryRecord) {
+    if (rec && history.state && historyEq(history.state, rec)) {
+      window.history.replaceState(rec, "");
+    }
+  }
+
   add(rec: HistoryRecord) {
-    if (
-      !history.state ||
-      rec.collection != history.state.collection ||
-      rec.value != history.state.value ||
-      rec.folderType != history.state.folderType
-    ) {
+    if (rec && (!history.state || ! historyEq(history.state, rec))) {
       history.pushState(
         rec,
         "",
         `#${
           rec.folderType === FolderType.SEARCH ? "search:" : ""
         }${encodeURIComponent(rec.value)}`
-      ); 
+      );
     }
   }
 
