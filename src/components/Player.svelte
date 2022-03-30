@@ -35,7 +35,8 @@
 
   let duration: number;
   let expectedDuration: number;
-  $: if (isFinite(duration) && duration > expectedDuration) {
+  // TODO: This is WA, as ADTS with aac does not provide correct duration when cached.
+  $: if (isFinite(duration) && (!mime.startsWith('audio/m4b') || transcoded) && duration > expectedDuration) {
     expectedDuration = duration;
   }
   $: formattedDuration = formatTime(expectedDuration);
@@ -57,6 +58,7 @@
   let collection: number;
   let transcoded: boolean = false;
   let cached: boolean = false;
+  let mime: string;
 
   $: formattedCurrentTime = formatTime(currentTime);
   $: if (currentTime != undefined) {
@@ -116,6 +118,7 @@
       filePath = item.path;
       folderPosition = item.position;
       transcoded = item.transcoded;
+      mime = item.mime;
       folder = $playList.folder;
       collection = $playList.collection;
       previousTime = $playList.files

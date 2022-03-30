@@ -23,6 +23,7 @@ export class PlayItem {
   time?: number;
   transcoded: boolean;
   transcoding?: TranscodingCode;
+  mime: string;
 
   constructor(params: PlayItemParams) {
     this.checkNeedsTranscoding(params.file.meta.bitrate)
@@ -34,6 +35,7 @@ export class PlayItem {
     this.position = params.position;
     this.startPlay = params.startPlay;
     this.time = params.time;
+    this.mime = params.file.mime;
   }
 
   private checkNeedsTranscoding(bitrate: number) {
@@ -70,7 +72,7 @@ export class PlayItem {
   // will manage cache buffer and will have to call remove for old parts
   // On the other hand there is big potential for loading only required parts of audio, 
   // Media source can handle widows of audio frames.
-  // I guess to really leverage it on will must read the specification.
+  // I guess to really leverage it on must read the specification first.
          
   createMediaSourceUrl() {
     const mediaSource = new MediaSource();
