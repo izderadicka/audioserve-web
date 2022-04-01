@@ -1,10 +1,4 @@
-function mapProtocol(p: string) {
-    if (p == "http:") {
-        return "ws:";
-    } else if (p == "https:") {
-        return "wss:";
-    }
-}
+import { baseWsUrl } from "../util/browser";
 
 interface LastPosition {
     position: number,
@@ -44,12 +38,7 @@ export class PlaybackSync {
 
     constructor(config: PlaybackSyncConfig) {
 
-        const baseUrl = config.development ?
-            `${mapProtocol(window.location.protocol)}//${window.location.hostname}:${config.developmentPort}` :
-            `${mapProtocol(window.location.protocol)}//${window.location.host}${window.location.pathname.length > 1 && 
-                window.location.pathname != "/index.html" ? window.location.pathname : ""}`;
-
-        this.socketUrl = baseUrl + (baseUrl.endsWith("/") ? "" : "/") + "position";
+        this.socketUrl = baseWsUrl(config.development, config.developmentPort) + "/position";
         this.closed = false;
         this.filePath = null;
         this._groupPrefix = null;

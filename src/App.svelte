@@ -56,7 +56,7 @@ import { HistoryWrapper } from "./util/history";
     document.querySelector("html").setAttribute("data-theme", themePreference);
   }
 
-  const API_BASE_URL = isDevelopment ? "http://localhost:3000" : baseUrl();
+  const API_BASE_URL = baseUrl(isDevelopment);
   apiConfig.set(
     new Configuration({
       basePath: API_BASE_URL,
