@@ -234,8 +234,8 @@ import { HistoryWrapper } from "./util/history";
 
   async function startSleepTimer() {
     const ac = createAudioContext();
-    const soundSleep = await loadAudioFile("/static/will_sleep_soon.mp3", ac);
-    const soundExtended = await loadAudioFile("/static/extended.mp3", ac);
+    const soundSleep = await loadAudioFile("static/will_sleep_soon.mp3", ac);
+    const soundExtended = await loadAudioFile("static/extended.mp3", ac);
 
     sleepTime = $config.sleepTimerPeriod;
     sleepTimer = window.setInterval(() => {
@@ -276,7 +276,7 @@ import { HistoryWrapper } from "./util/history";
         {#if showLogo}
           <ul>
             <li>
-              <h4>
+              <h4 class="logo">
                 <a href="/">
                   {#if smallScreen}
                     as
@@ -394,6 +394,10 @@ import { HistoryWrapper } from "./util/history";
 <style>
   .icons span.withText {
     display: inline-flex;
+  }
+
+  .logo {
+    margin-bottom: 0;
   }
 
   .icons {
