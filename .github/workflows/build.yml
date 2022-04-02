@@ -19,6 +19,7 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: 16
+        cache: 'npm'
 
     - name: Build
       run: |
@@ -29,3 +30,4 @@ jobs:
       with:
         name: web-build
         path: public
+        retention-days: 5
