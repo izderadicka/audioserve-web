@@ -23,6 +23,7 @@
   import Description from "./Description.svelte";
   import Cover from "./Cover.svelte";
   import type { HistoryRecord, HistoryWrapper } from "../util/history";
+import { getLocationPath } from "../util/browser";
 
   const cache: Cache = getContext("cache");
   const history: HistoryWrapper = getContext("history");
@@ -232,12 +233,14 @@
     });
   }
 
+  const globalPathPrefix = getLocationPath();
+
   function handleCacheEvent(evt: CacheEvent) {
     const item = evt.item;
     if (item) {
       const cached = evt.kind === EventType.FileCached;
       console.log("File cached", item);
-      const { collection, path } = splitUrl(item.originalUrl);
+      const { collection, path } = splitUrl(item.originalUrl, globalPathPrefix);
 
       // update folder
       if (collection === $selectedCollection) {

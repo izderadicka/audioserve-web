@@ -33,9 +33,12 @@ export function audioFilePath(collection: number, folder: string) {
   return `/${collection}/audio/${encodeURI(folder)}`;
 }
 
-export function splitUrl(url: string) {
+export function splitUrl(url: string, prefix?: string) {
   const parsedUrl = new URL(url);
-  const path = decodeURI(parsedUrl.pathname);
+  let path = decodeURI(parsedUrl.pathname);
+  if (prefix) {
+    path = path.substring(prefix.length);
+  }
   const comps = path.split("/");
   return {
     collection: parseInt(comps[1]),

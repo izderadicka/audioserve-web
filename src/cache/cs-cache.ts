@@ -40,7 +40,7 @@ export class CacheStorageCache implements Cache {
   private listeners: CacheEventHandler[] = [];
   private worker: ServiceWorker;
 
-  constructor(worker: ServiceWorker, maxParallelLoads?: number) {
+  constructor(worker: ServiceWorker, private prefix?: string, maxParallelLoads?: number) {
     this.maxParallelLoads = maxParallelLoads || 1;
     this.updateWorker(worker);
     /// @ts-ignore
@@ -90,6 +90,10 @@ export class CacheStorageCache implements Cache {
     }
   }
 
+  private prefixPath(path: string) {
+    return this.prefix?this.prefix+path:path
+  }
+
   getCachedUrl(url: string): Promise<CachedItem> {
     return caches.open(AUDIO_CACHE_NAME).then((cache) => {
       const cachedUrl = removeQuery(url);
@@ -117,11 +121,11 @@ export class CacheStorageCache implements Cache {
             return decodeURI(parsedURL.pathname);
           })
           .filter((path) => {
-            const prefix = `/${collection}/audio/${folder}`;
+            const prefix = this.prefixPath(`/${collection}/audio/${folder}`);
             const { folder: dir } = splitPath(path);
             return prefix === dir;
           })
-          .map((path) => path.substring(collLen + 8));
+          .map((path) => path.substring((this.prefix.length || 0) + collLen + 8));
       });
   }
 
@@ -176,16 +180,17 @@ export class CacheStorageCache implements Cache {
     if (!pathPrefix) {
       this.queue = [];
     } else {
+
       this.queue = this.queue.filter((i) => {
         const path = new URL(i.url).pathname;
-        return !path.startsWith(pathPrefix);
+        return !path.startsWith(this.prefixPath(pathPrefix));
       });
     }
 
     if (includingRunning) {
       this.worker.postMessage({
         kind: CacheMessageKind.AbortLoads,
-        data: { pathPrefix, keepDirect },
+        data: { pathPrefix: this.prefixPath(pathPrefix), keepDirect },
       });
     }
   }

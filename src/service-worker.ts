@@ -10,7 +10,13 @@ import {
   AUDIO_CACHE_LIMIT,
 } from "./cache/cs-cache";
 import { removeQuery, splitPath } from "./util";
-import { buildResponse, cloneRequest, evictCache, FetchQueue, logFetchError } from "./util/sw";
+import {
+  buildResponse,
+  cloneRequest,
+  evictCache,
+  FetchQueue,
+  logFetchError,
+} from "./util/sw";
 import { APP_COMMIT, isDevelopment, ENVIRONMENT } from "./util/version";
 
 function broadcastMessage(msg: CacheMessage) {
@@ -22,18 +28,18 @@ function broadcastMessage(msg: CacheMessage) {
   });
 }
 
-function getPathPrefix() {
+let globalPathPrefix: string = (() => {
   const base = location.pathname;
   const folder = splitPath(base).folder;
   if (folder) {
-    return folder+"/";
+    return folder + "/";
   } else {
-    return "/"
+    return "/";
   }
-}
+})();
 
 const staticResources = [
-  getPathPrefix(),
+  globalPathPrefix,
   "index.html",
   "global.css",
   "favicon.png",
@@ -41,7 +47,7 @@ const staticResources = [
   "bundle.js",
   "app.webmanifest",
   "static/will_sleep_soon.mp3",
-  "static/extended.mp3"
+  "static/extended.mp3",
 ];
 
 const cacheName = "static-" + APP_COMMIT;
@@ -55,7 +61,9 @@ self.addEventListener("install", (evt) => {
         return cache.addAll(isDevelopment ? ["favicon.png"] : staticResources);
       })
       .then(() => {
-        console.log(`SW Installation successful (dev ${isDevelopment} ) on path ${location.pathname}`);
+        console.log(
+          `SW Installation successful (dev ${isDevelopment} ) on path ${location.pathname}`
+        );
         return self.skipWaiting(); // forces to immediately replace old SW
       })
   );
@@ -94,7 +102,7 @@ function notifyAudioCached(cache: Cache, msg: CacheMessage) {
   );
 }
 
-const runningLoads =  new FetchQueue();
+const runningLoads = new FetchQueue();
 
 self.addEventListener("message", (evt) => {
   const msg: CacheMessage = evt.data;
@@ -172,9 +180,11 @@ self.addEventListener("push", (evt) => {
   console.log("Got push message", evt.data.text());
 });
 
+const AUDIO_REG_EXP: RegExp = new RegExp(`^${globalPathPrefix}\\d+/audio/`)
+
 self.addEventListener("fetch", (evt: FetchEvent) => {
   const parsedUrl = new URL(evt.request.url);
-  if (/^\/\d+\/audio\//.test(parsedUrl.pathname)) {
+  if (AUDIO_REG_EXP.test(parsedUrl.pathname)) {
     console.debug("AUDIO FILE request: ", decodeURI(parsedUrl.pathname));
     // we are not intercepting requests with seek query
     if (parsedUrl.searchParams.get("seek")) return;
@@ -191,11 +201,13 @@ self.addEventListener("fetch", (evt: FetchEvent) => {
             } else {
               const keyReq = removeQuery(evt.request.url);
               if (runningLoads.has(keyReq)) {
-                console.debug(`Not caching direct request ${keyReq} as it is already in progress elsewhere`)
+                console.debug(
+                  `Not caching direct request ${keyReq} as it is already in progress elsewhere`
+                );
                 return fetch(evt.request);
               } else {
                 const posHeader = evt.request.headers.get("X-Folder-Position");
-                let folderPosition = posHeader?Number(posHeader):undefined;
+                let folderPosition = posHeader ? Number(posHeader) : undefined;
                 if (isNaN(folderPosition)) {
                   folderPosition = undefined;
                 }
@@ -204,22 +216,24 @@ self.addEventListener("fetch", (evt: FetchEvent) => {
 
                 runningLoads.add(keyReq, abort, true, folderPosition);
                 req.headers.delete("Range"); // let remove range header so we can cache whole file
-                return fetch(req, {signal: abort.signal}).then((resp) => {
+                return fetch(req, { signal: abort.signal }).then((resp) => {
                   // if not cached we can put it
                   const keyReq = removeQuery(evt.request.url);
-                  cache.put(keyReq, resp.clone()).then(() =>
-                    notifyAudioCached(cache, {
-                      kind: CacheMessageKind.ActualCached,
-                      data: {
-                        originalUrl: resp.url,
-                        cachedUrl: keyReq,
-                      },
-                    })
-                  )
-                  .catch((e) => logFetchError(e, keyReq))
-                  .then(() => runningLoads.delete(keyReq));
+                  cache
+                    .put(keyReq, resp.clone())
+                    .then(() =>
+                      notifyAudioCached(cache, {
+                        kind: CacheMessageKind.ActualCached,
+                        data: {
+                          originalUrl: resp.url,
+                          cachedUrl: keyReq,
+                        },
+                      })
+                    )
+                    .catch((e) => logFetchError(e, keyReq))
+                    .then(() => runningLoads.delete(keyReq));
                   return resp;
-                })
+                });
               }
             }
           })

@@ -1,6 +1,7 @@
 import App from "./App.svelte";
 import type { Cache} from "./cache";
 import { CacheStorageCache } from "./cache/cs-cache";
+import { getLocationPath } from "./util/browser";
 import { ShakeDetector } from "./util/movement";
 import {APP_VERSION, ENVIRONMENT, APP_COMMIT, isDevelopment} from './util/version'
 
@@ -32,7 +33,7 @@ if ("serviceWorker" in navigator) {
     console.log("Registration succeeded. Scope is " + reg.scope, ctl);
 
     if (ctl) {
-      const cache = new CacheStorageCache(ctl);
+      const cache = new CacheStorageCache(ctl, getLocationPath());
       // has to watch for changes of ServiceWorker controller
       navigator.serviceWorker.oncontrollerchange = () => {
         if (navigator.serviceWorker.controller) {
