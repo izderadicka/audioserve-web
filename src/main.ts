@@ -55,10 +55,13 @@ if ("serviceWorker" in navigator) {
     // });
 
   });
+} else {
+  console.error("Service worker is not available - will start in with no caching")
+  createApp(null);
 }
 
 if ("storage" in navigator) {
   navigator.storage
     .estimate()
-    .then((estimate) => console.log("Available storage:", estimate));
+    .then((estimate) => console.debug("Available storage:", estimate));
 }

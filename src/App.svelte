@@ -37,20 +37,21 @@
   import { createAudioContext, loadAudioFile, playBuffer } from "./util/audio";
   import { ShakeDetector } from "./util/movement";
   import ConfigEditor from "./components/ConfigEditor.svelte";
-import { HistoryWrapper } from "./util/history";
+  import { HistoryWrapper } from "./util/history";
 
   export let cache: Cache;
-  cache.maxParallelLoads = $config.maxParallelDownload;
-  cache.onQueueSizeChanged((n) => pendingDownloads.set(n));
-  setContext("cache", cache);
+  if (cache) {
+    cache.maxParallelLoads = $config.maxParallelDownload;
+    cache.onQueueSizeChanged((n) => pendingDownloads.set(n));
+    setContext("cache", cache);
+  }
 
   const historyChanged = () => {
     showConfig = false;
-  }
+  };
   const history = new HistoryWrapper(historyChanged);
   setContext("history", history);
 
-  
   const themePreference = localStorage.getItem(StorageKeys.THEME);
   if (themePreference) {
     document.querySelector("html").setAttribute("data-theme", themePreference);
@@ -94,7 +95,7 @@ import { HistoryWrapper } from "./util/history";
         localStorage.setItem(StorageKeys.THEME, theme);
         break;
       case "clear-cache":
-        cache.clearCache().then(() => {
+        cache?.clearCache().then(() => {
           cache.cancelPendingLoads("", true);
           window.location.reload();
         });
@@ -130,7 +131,11 @@ import { HistoryWrapper } from "./util/history";
           // try to load again after authentication
           const unsubsribe = isAuthenticated.subscribe(async (ok) => {
             if (ok) {
-              await loadCollections();
+              try {
+                await loadCollections();
+              } catch(e) {
+                error = `Fail to load collections after authentication, one reason can be insecure context and API on diffrent origin`;
+              }
             }
           });
         } else {
@@ -198,7 +203,7 @@ import { HistoryWrapper } from "./util/history";
   // Preferch Download section
 
   const DOWNLOAD_DIALOG_ID = "cancel-prefetch-dialog";
-  const ABOUT_DIALOG_ID ="about-dialog";
+  const ABOUT_DIALOG_ID = "about-dialog";
 
   let cancelPrefetchDialog: ConfirmDialog;
 
@@ -211,7 +216,7 @@ import { HistoryWrapper } from "./util/history";
     cache.cancelPendingLoads("", true, true);
   }
 
-  // About Dialog 
+  // About Dialog
 
   let aboutDialog: ConfirmDialog;
 
@@ -292,7 +297,7 @@ import { HistoryWrapper } from "./util/history";
           <li class="search-bar-box">
             <div class="search-bar">
               {#if showCollectionSelect}
-                <CollectionSelector selected="{$selectedCollection}"/>
+                <CollectionSelector selected={$selectedCollection} />
                 {#if smallScreen}
                   <span on:click={closeNavInput}
                     ><CloseIcon size="1.6rem" /></span
@@ -381,15 +386,17 @@ import { HistoryWrapper } from "./util/history";
   >
 </ConfirmDialog>
 
-<ConfirmDialog id={ABOUT_DIALOG_ID} noConfirm="{true}" bind:this="{aboutDialog}">
+<ConfirmDialog id={ABOUT_DIALOG_ID} noConfirm={true} bind:this={aboutDialog}>
   <svelte:fragment slot="header">Audioserve Web Client</svelte:fragment>
   <svelte:fragment slot="body">
     <p>New PWA client built with Svelte and TypeScript</p>
-    <p><a href="https://github.com/izderadicka/audioserve-web">Check it's site</a></p>
+    <p>
+      <a href="https://github.com/izderadicka/audioserve-web">Check it's site</a
+      >
+    </p>
     <p>Version: {APP_VERSION}({APP_COMMIT})</p>
   </svelte:fragment>
-
-  </ConfirmDialog>
+</ConfirmDialog>
 
 <style>
   .icons span.withText {

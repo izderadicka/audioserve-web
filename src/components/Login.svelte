@@ -5,10 +5,12 @@ import {AuthenticationApi} from '../client/apis'
 import { encodeSecret } from '../util/auth';
 import { Configuration } from '../client';
 import { StorageKeys } from '../types/enums';
+import { getContext } from 'svelte';
 
     let sharedSecret:string;
     let playbackGroup:string = localStorage.getItem(StorageKeys.GROUP);
     let loginError = false;
+    const cache = getContext("cache");
 
     async function login() {
         console.debug("Initiating client login");
@@ -44,6 +46,12 @@ import { StorageKeys } from '../types/enums';
 
 <div class="login">
     <h1>Audioserve Login</h1>
+    {#if cache == null}
+        <p class="warning">Service Worker is not available. 
+            You're probably not using secure connection connection or you have old browser.
+            Some functionality (especially caching] will not be available. 
+        </p>
+    {/if}
     {#if loginError} 
     <p class="warning">Login failed!</p>
     {/if}

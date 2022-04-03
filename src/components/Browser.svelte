@@ -265,7 +265,7 @@ import { getLocationPath } from "../util/browser";
     }
   }
 
-  cache.addListener(handleCacheEvent);
+  cache?.addListener(handleCacheEvent);
 
   let scrollDebounceTimer: number;
   const scrollDebounce = (cb: ()=> void) => {
@@ -283,7 +283,7 @@ import { getLocationPath } from "../util/browser";
   onMount(async () => {});
   onDestroy(() => {
     unsubsribe.forEach((u) => u());
-    cache.removeListener(handleCacheEvent);
+    cache?.removeListener(handleCacheEvent);
     container.removeEventListener("scroll", updateScroll);
   });
 </script>

@@ -91,7 +91,7 @@
     if (item && player) {
       let source;
       if (item.cached) {
-        const cachedItem = await cache.getCachedUrl(item.url);
+        const cachedItem = await cache?.getCachedUrl(item.url);
         if (cachedItem) {
           source = cachedItem.cachedUrl;
           console.debug("Playing cached item", source);
@@ -149,6 +149,7 @@
   const unsubscribe = playItem.subscribe(startPlay);
 
   function tryCacheAhead(pos: number) {
+    if (! cache) return;
     const cacheAheadCount = $config.cacheAheadFiles;
     const preCaches: PrefetchRequest[] = [];
     for (let newPos = pos + 1; newPos <= pos + cacheAheadCount; newPos++) {
@@ -169,7 +170,7 @@
         }
       }
     }
-    if (preCaches) {
+    if (cache && preCaches) {
       cache.cacheAhead(...preCaches);
     }
   }
