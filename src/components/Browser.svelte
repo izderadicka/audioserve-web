@@ -5,10 +5,13 @@
   import ContinuePlay from "svelte-material-icons/PlayCircleOutline.svelte";
   import SortNameIcon from "svelte-material-icons/SortAlphabeticalAscending.svelte";
   import SortTimeIcon from "svelte-material-icons/SortClockAscendingOutline.svelte";
+  import DownloadFolderIcon from "svelte-material-icons/BriefcaseDownloadOutline.svelte";
 
   import type { AudioFile, PositionShort, Subfolder } from "../client";
   import {
+apiConfig,
     colApi,
+    collections,
     currentFolder,
     group,
     isAuthenticated,
@@ -304,6 +307,10 @@ import { getLocationPath } from "../util/browser";
     cache?.removeListener(handleCacheEvent);
     container.removeEventListener("scroll", updateScroll);
   });
+
+  function generateDownloadPath():string {
+    return $apiConfig.basePath+`/${$selectedCollection}/download/${encodeURI(folderPath)}`
+  }
 </script>
 
 <div id="browser">
@@ -333,7 +340,11 @@ import { getLocationPath } from "../util/browser";
     {/if}
     {#if files.length > 0}
       <details open>
-        <summary>Files</summary>
+        <summary>Files
+          {#if $collections && $collections.folderDownload}
+          <a href="{generateDownloadPath()}" target="_self"><span class="summary-icons"><DownloadFolderIcon/></span></a>
+          {/if}
+        </summary>
         <ul>
           {#each files as file, pos}
             <li on:click={startPlaying(pos, true, 0)}>

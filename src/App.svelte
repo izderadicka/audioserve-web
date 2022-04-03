@@ -71,11 +71,11 @@
     const cols = await $colApi.collectionsGet();
     console.debug("Got collections list", cols);
     $collections = cols;
-    let pastCollection: number = parseInt(
+    let parsedCollection: number = parseInt(
       localStorage.getItem(StorageKeys.LAST_COLLECTION) || "0"
     );
-    if (pastCollection >= cols.names.length) pastCollection = 0;
-    $selectedCollection = pastCollection;
+    if (parsedCollection >= cols.names.length) parsedCollection = 0;
+    $selectedCollection = parsedCollection;
     const trans = await $colApi.transcodingsGet();
     console.debug("Got transcodings list", trans);
     $transcodings = trans;
@@ -395,6 +395,7 @@
       >
     </p>
     <p>Version: {APP_VERSION}({APP_COMMIT})</p>
+    <p>Server Version: {$collections?.version}</p>
   </svelte:fragment>
 </ConfirmDialog>
 
