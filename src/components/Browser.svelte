@@ -3,6 +3,8 @@
   import type { Unsubscriber } from "svelte/store";
   import { Cache, CacheEvent, EventType } from "../cache";
   import ContinuePlay from "svelte-material-icons/PlayCircleOutline.svelte";
+  import SortNameIcon from "svelte-material-icons/SortAlphabeticalAscending.svelte";
+  import SortTimeIcon from "svelte-material-icons/SortClockAscendingOutline.svelte";
 
   import type { AudioFile, PositionShort, Subfolder } from "../client";
   import {
@@ -40,6 +42,22 @@ import { getLocationPath } from "../util/browser";
 
   let descriptionPath: string;
   let coverPath: string;
+
+  let sortTime = false;
+  const toggleSubfoldersSort = () => {
+    sortTime = !sortTime;
+    subfolders = sortSubfolders(subfolders);
+  }
+
+  function sortSubfolders(subs: Subfolder[]) {
+    return subs.sort((a, b) => {
+      if (sortTime) {
+        return a.modified<b.modified?1:a.modified>b.modified?-1:0
+      } else {
+        return a.name>b.name?1:a.name<b.name?-1:0
+      }
+    })
+  }
 
   async function searchFor(query: string) {
     try {
@@ -82,7 +100,7 @@ import { getLocationPath } from "../util/browser";
         }
         return file;
       });
-      subfolders = audioFolder.subfolders!;
+      subfolders = sortTime? sortSubfolders(audioFolder.subfolders!):audioFolder.subfolders!;
       localStorage.setItem(StorageKeys.LAST_FOLDER, folder);
       sharedPosition = audioFolder.position;
       sharePositionDisplayName = null;
@@ -292,7 +310,15 @@ import { getLocationPath } from "../util/browser";
   <div class="main-browser-panel">
     {#if subfolders.length > 0}
       <details open>
-        <summary>Subfolders</summary>
+        <summary>Subfolders 
+          <span class="summary-icons" on:click|stopPropagation|preventDefault="{toggleSubfoldersSort}">
+            {#if sortTime} 
+            <SortTimeIcon/>
+            {:else}
+            <SortNameIcon/>
+            {/if}
+          </span>
+        </summary>
         <ul>
           {#each subfolders as fld}
             <li on:click={navigateTo(fld.path)}>
@@ -356,6 +382,10 @@ import { getLocationPath } from "../util/browser";
 </div>
 
 <style>
+
+  .summary-icons {
+    color: var(--primary);
+  }
   .browser-sidebar button {
     overflow: hidden;
   }
