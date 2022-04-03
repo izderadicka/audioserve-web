@@ -9,7 +9,7 @@
 
   import type { AudioFile, PositionShort, Subfolder } from "../client";
   import {
-apiConfig,
+    apiConfig,
     colApi,
     collections,
     currentFolder,
@@ -28,7 +28,7 @@ apiConfig,
   import Description from "./Description.svelte";
   import Cover from "./Cover.svelte";
   import type { HistoryRecord, HistoryWrapper } from "../util/history";
-import { getLocationPath } from "../util/browser";
+  import { getLocationPath } from "../util/browser";
 
   const cache: Cache = getContext("cache");
   const history: HistoryWrapper = getContext("history");
@@ -50,16 +50,16 @@ import { getLocationPath } from "../util/browser";
   const toggleSubfoldersSort = () => {
     sortTime = !sortTime;
     subfolders = sortSubfolders(subfolders);
-  }
+  };
 
   function sortSubfolders(subs: Subfolder[]) {
     return subs.sort((a, b) => {
       if (sortTime) {
-        return a.modified<b.modified?1:a.modified>b.modified?-1:0
+        return a.modified < b.modified ? 1 : a.modified > b.modified ? -1 : 0;
       } else {
-        return a.name>b.name?1:a.name<b.name?-1:0
+        return a.name > b.name ? 1 : a.name < b.name ? -1 : 0;
       }
-    })
+    });
   }
 
   async function searchFor(query: string) {
@@ -91,19 +91,24 @@ import { getLocationPath } from "../util/browser";
         path: folder,
         group: $group,
       });
-      const cachedPaths = await cache.getCachedPaths(
+      const cachedPaths = await cache?.getCachedPaths(
         $selectedCollection,
         folder
       );
       console.debug("Cached files for this folder", cachedPaths);
 
-      files = audioFolder.files!.map((file: AudioFileExt) => {
-        if (cachedPaths.indexOf(file.path) >= 0) {
-          file.cached = true;
-        }
-        return file;
-      });
-      subfolders = sortTime? sortSubfolders(audioFolder.subfolders!):audioFolder.subfolders!;
+      files =
+        cachedPaths && cachedPaths.length > 0
+          ? audioFolder.files!.map((file: AudioFileExt) => {
+              if (cachedPaths.indexOf(file.path) >= 0) {
+                file.cached = true;
+              }
+              return file;
+            })
+          : audioFolder.files!;
+      subfolders = sortTime
+        ? sortSubfolders(audioFolder.subfolders!)
+        : audioFolder.subfolders!;
       localStorage.setItem(StorageKeys.LAST_FOLDER, folder);
       sharedPosition = audioFolder.position;
       sharePositionDisplayName = null;
@@ -169,7 +174,7 @@ import { getLocationPath } from "../util/browser";
         collection: $selectedCollection,
         scrollTo,
       };
-    } 
+    }
   }
 
   function navigateTo(folder: string) {
@@ -234,7 +239,11 @@ import { getLocationPath } from "../util/browser";
   );
 
   function folderIsPlaying(): boolean {
-    return $playList && $playList.collection === $selectedCollection && $playList.folder === folderPath;
+    return (
+      $playList &&
+      $playList.collection === $selectedCollection &&
+      $playList.folder === folderPath
+    );
   }
 
   $: if ($currentFolder != undefined) {
@@ -248,8 +257,9 @@ import { getLocationPath } from "../util/browser";
 
     done.then(() => {
       history.add(constructHistoryState());
-      if (scrollTo && ! folderIsPlaying()) { // Do not scroll to history postion if current folder is playing
-        container.scrollTo({top: scrollTo})
+      if (scrollTo && !folderIsPlaying()) {
+        // Do not scroll to history postion if current folder is playing
+        container.scrollTo({ top: scrollTo });
       }
     });
   }
@@ -289,14 +299,14 @@ import { getLocationPath } from "../util/browser";
   cache?.addListener(handleCacheEvent);
 
   let scrollDebounceTimer: number;
-  const scrollDebounce = (cb: ()=> void) => {
+  const scrollDebounce = (cb: () => void) => {
     clearTimeout(scrollDebounceTimer);
-    scrollDebounceTimer= window.setTimeout(cb, 250)
-  }
+    scrollDebounceTimer = window.setTimeout(cb, 250);
+  };
   function updateScroll() {
     scrollDebounce(() => {
-      history.update(constructHistoryState(container.scrollTop))
-    })
+      history.update(constructHistoryState(container.scrollTop));
+    });
   }
 
   $: container?.addEventListener("scroll", updateScroll);
@@ -308,8 +318,11 @@ import { getLocationPath } from "../util/browser";
     container.removeEventListener("scroll", updateScroll);
   });
 
-  function generateDownloadPath():string {
-    return $apiConfig.basePath+`/${$selectedCollection}/download/${encodeURI(folderPath)}`
+  function generateDownloadPath(): string {
+    return (
+      $apiConfig.basePath +
+      `/${$selectedCollection}/download/${encodeURI(folderPath)}`
+    );
   }
 </script>
 
@@ -317,12 +330,16 @@ import { getLocationPath } from "../util/browser";
   <div class="main-browser-panel">
     {#if subfolders.length > 0}
       <details open>
-        <summary>Subfolders 
-          <span class="summary-icons" on:click|stopPropagation|preventDefault="{toggleSubfoldersSort}">
-            {#if sortTime} 
-            <SortTimeIcon/>
+        <summary
+          >Subfolders
+          <span
+            class="summary-icons"
+            on:click|stopPropagation|preventDefault={toggleSubfoldersSort}
+          >
+            {#if sortTime}
+              <SortTimeIcon />
             {:else}
-            <SortNameIcon/>
+              <SortNameIcon />
             {/if}
           </span>
         </summary>
@@ -340,9 +357,12 @@ import { getLocationPath } from "../util/browser";
     {/if}
     {#if files.length > 0}
       <details open>
-        <summary>Files
+        <summary
+          >Files
           {#if $collections && $collections.folderDownload}
-          <a href="{generateDownloadPath()}" target="_self"><span class="summary-icons"><DownloadFolderIcon/></span></a>
+            <a href={generateDownloadPath()} target="_self"
+              ><span class="summary-icons"><DownloadFolderIcon /></span></a
+            >
           {/if}
         </summary>
         <ul>
@@ -393,7 +413,6 @@ import { getLocationPath } from "../util/browser";
 </div>
 
 <style>
-
   .summary-icons {
     color: var(--primary);
   }
