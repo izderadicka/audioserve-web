@@ -12,7 +12,7 @@
     ],
     "start_url": ".",
     "display": "standalone",
-    "orientation": "natural",
+    "orientation": "any",
     "theme_color": "black",
     "background_color": "black"
   }
