@@ -3,6 +3,7 @@
   import type { Cache, PrefetchRequest } from "../cache";
   import TranscodedIcon from "svelte-material-icons/ArrowCollapseVertical.svelte";
   import CachedIcon from "svelte-material-icons/Cached.svelte";
+  import AudioIcon from "svelte-material-icons/SineWave.svelte";
   import FolderIcon from "svelte-material-icons/FolderOutline.svelte";
   import FileIcon from "svelte-material-icons/FileMusicOutline.svelte";
   import PlayIcon from "svelte-material-icons/Play.svelte";
@@ -256,8 +257,8 @@
 
   function jumpTime(amt: number) {
     return (evt) => {
-      currentTime += amt
-    }
+      currentTime += amt;
+    };
   }
 
   onMount(async () => {
@@ -268,7 +269,7 @@
 
   onDestroy(unsubscribe);
 
-  const controlSize="40px";
+  const controlSize = "40px";
 </script>
 
 <div class="info">
@@ -284,17 +285,20 @@
     <div class="total-time">{formattedTotalFolderTime}</div>
   </div>
   <div id="file-info">
-    <label for="file-name"
-      ><FileIcon size={fileIconSize} />(<span
-        >{folderSize ? folderPosition + 1 : 0}</span
-      >/<span>{folderSize}</span>)
+    <label for="file-name">
+      {#if cached}
+        <CachedIcon size={fileIconSize} />
+      {:else if transcoded}
+        <TranscodedIcon size={fileIconSize} />
+      {:else}
+        <AudioIcon size={fileIconSize} />
+      {/if}
+
+      (<span>{folderSize ? folderPosition + 1 : 0}</span>/<span
+        >{folderSize}</span
+      >)
     </label>
 
-    {#if cached}
-      <CachedIcon />
-    {:else if transcoded}
-      <TranscodedIcon />
-    {/if}
     <span id="file-name">{fileDisplayName}</span>
   </div>
 </div>
@@ -331,45 +335,43 @@
   </div>
 </div>
 <div class="controls-bar">
-<div class="player-controls">
-  
-  <span class="control-button" on:click={playPrevious}>
-    <PreviousIcon size="{controlSize}"/>
-  </span>
-  <span class="control-button" on:click={jumpTime(-$config.jumpBackTime)}>
-    <RewindIcon size="{controlSize}" />
-  </span>
-  <span class="control-button" on:click={playPause}>
-    {#if paused}
-      <PlayIcon size="{controlSize}"/>
-    {:else}
-      <PauseIcon size="{controlSize}"/>
-    {/if}
-  </span>
-  <span class="control-button" on:click={jumpTime($config.jumpForwardTime)}>
-    <ForwardIcon size="{controlSize}" />
-  </span>
-  <span class="control-button" on:click={playNext}>
-    <NextIcon size="{controlSize}" />
-  </span>
+  <div class="player-controls">
+    <span class="control-button" on:click={playPrevious}>
+      <PreviousIcon size={controlSize} />
+    </span>
+    <span class="control-button" on:click={jumpTime(-$config.jumpBackTime)}>
+      <RewindIcon size={controlSize} />
+    </span>
+    <span class="control-button" on:click={playPause}>
+      {#if paused}
+        <PlayIcon size={controlSize} />
+      {:else}
+        <PauseIcon size={controlSize} />
+      {/if}
+    </span>
+    <span class="control-button" on:click={jumpTime($config.jumpForwardTime)}>
+      <ForwardIcon size={controlSize} />
+    </span>
+    <span class="control-button" on:click={playNext}>
+      <NextIcon size={controlSize} />
+    </span>
 
-  <!-- <span class="control-button" on:click={null}>
+    <!-- <span class="control-button" on:click={null}>
     <SpeedIcon size="{controlSize}" />
   </span> -->
-</div>
+  </div>
 </div>
 
 <style>
-
   .player-controls {
-   color: var(--primary);
-   width: 320px;
-   margin-left:  auto ;
-   margin-right: auto;
+    color: var(--primary);
+    width: 320px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .player-controls span:not(:first-child) {
-    margin-left: 8px
+    margin-left: 8px;
   }
 
   #total-progress {
@@ -386,15 +388,10 @@
     margin-bottom: 0;
   }
 
-  #prev-file,
-  #next-file {
-    font-size: 1.5em;
-    margin-left: 0.3em;
-  }
   #folder-name {
     cursor: pointer;
   }
-  
+
   .progress {
     flex-grow: 1;
     margin-left: 1rem;
@@ -416,12 +413,6 @@
     margin-bottom: 1rem;
   }
 
-  button {
-    all: initial;
-    cursor: pointer;
-    color: var(--primary);
-  }
-  
   label {
     display: inline;
     font-weight: bold;
