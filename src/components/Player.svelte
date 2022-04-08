@@ -5,6 +5,13 @@
   import CachedIcon from "svelte-material-icons/Cached.svelte";
   import FolderIcon from "svelte-material-icons/FolderOutline.svelte";
   import FileIcon from "svelte-material-icons/FileMusicOutline.svelte";
+  import PlayIcon from "svelte-material-icons/Play.svelte";
+  import PauseIcon from "svelte-material-icons/Pause.svelte";
+  import PreviousIcon from "svelte-material-icons/SkipPrevious.svelte";
+  import NextIcon from "svelte-material-icons/SkipNext.svelte";
+  import RewindIcon from "svelte-material-icons/Undo.svelte";
+  import ForwardIcon from "svelte-material-icons/Redo.svelte";
+  import SpeedIcon from "svelte-material-icons/SpeedometerMedium.svelte";
 
   import {
     apiConfig,
@@ -21,6 +28,7 @@
 
   import { formatTime, splitExt, splitPath, splitRootPath } from "../util";
   import CacheIndicator from "./CacheIndicator.svelte";
+  import Play from "svelte-material-icons/Play.svelte";
 
   const cache: Cache = getContext("cache");
   const fileIconSize = "1.5rem";
@@ -36,7 +44,11 @@
   let duration: number;
   let expectedDuration: number;
   // TODO: This is WA, as ADTS with aac does not provide correct duration when cached.
-  $: if (isFinite(duration) && (!mime.startsWith('audio/m4b') || transcoded) && duration > expectedDuration) {
+  $: if (
+    isFinite(duration) &&
+    (!mime.startsWith("audio/m4b") || transcoded) &&
+    duration > expectedDuration
+  ) {
     expectedDuration = duration;
   }
   $: formattedDuration = formatTime(expectedDuration);
@@ -135,12 +147,14 @@
       }
 
       if ("mediaSession" in navigator) {
-        const {root:artist, path:album} = splitRootPath(splitPath(item.path).folder)
+        const { root: artist, path: album } = splitRootPath(
+          splitPath(item.path).folder
+        );
         navigator.mediaSession.metadata = new MediaMetadata({
           title: splitExt(item.name).baseName,
           album,
           artist,
-          artwork: [{src:"favicon.png"}]
+          artwork: [{ src: "favicon.png" }],
         });
       }
     }
@@ -149,7 +163,7 @@
   const unsubscribe = playItem.subscribe(startPlay);
 
   function tryCacheAhead(pos: number) {
-    if (! cache) return;
+    if (!cache) return;
     const cacheAheadCount = $config.cacheAheadFiles;
     const preCaches: PrefetchRequest[] = [];
     for (let newPos = pos + 1; newPos <= pos + cacheAheadCount; newPos++) {
@@ -240,6 +254,12 @@
     playPosition($playItem.position + 1, !paused);
   }
 
+  function jumpTime(amt: number) {
+    return (evt) => {
+      currentTime += amt
+    }
+  }
+
   onMount(async () => {
     if ($playItem) {
       await startPlay($playItem);
@@ -247,6 +267,8 @@
   });
 
   onDestroy(unsubscribe);
+
+  const controlSize="40px";
 </script>
 
 <div class="info">
@@ -267,8 +289,7 @@
         >{folderSize ? folderPosition + 1 : 0}</span
       >/<span>{folderSize}</span>)
     </label>
-    <button id="prev-file" on:click={playPrevious}>▲</button>
-    <button id="next-file" on:click={playNext}>▼</button>
+
     {#if cached}
       <CachedIcon />
     {:else if transcoded}
@@ -290,27 +311,6 @@
     on:error={playerError}
     on:ended={tryNextFile}
   />
-  <div class="play-btn">
-    <button on:click={playPause}>
-      <svg
-        id="play-icon"
-        xmlns="http://www.w3.org/2000/svg"
-        width="18"
-        height="24"
-        viewBox="0 0 18 24"
-      >
-        {#if paused}
-          <path fill="#566574" fill-rule="evenodd" d="M18 12L0 24V0" />
-        {:else}
-          <path
-            fill="#566574"
-            fill-rule="evenodd"
-            d="M0 0h6v24H0zM12 0h6v24h-6z"
-          />
-        {/if}
-      </svg>
-    </button>
-  </div>
   <div class="play-time">
     {formattedCurrentTime}
   </div>
@@ -330,8 +330,48 @@
     {formattedDuration}
   </div>
 </div>
+<div class="controls-bar">
+<div class="player-controls">
+  
+  <span class="control-button" on:click={playPrevious}>
+    <PreviousIcon size="{controlSize}"/>
+  </span>
+  <span class="control-button" on:click={jumpTime(-$config.jumpBackTime)}>
+    <RewindIcon size="{controlSize}" />
+  </span>
+  <span class="control-button" on:click={playPause}>
+    {#if paused}
+      <PlayIcon size="{controlSize}"/>
+    {:else}
+      <PauseIcon size="{controlSize}"/>
+    {/if}
+  </span>
+  <span class="control-button" on:click={jumpTime($config.jumpForwardTime)}>
+    <ForwardIcon size="{controlSize}" />
+  </span>
+  <span class="control-button" on:click={playNext}>
+    <NextIcon size="{controlSize}" />
+  </span>
+
+  <!-- <span class="control-button" on:click={null}>
+    <SpeedIcon size="{controlSize}" />
+  </span> -->
+</div>
+</div>
 
 <style>
+
+  .player-controls {
+   color: var(--primary);
+   width: 320px;
+   margin-left:  auto ;
+   margin-right: auto;
+  }
+
+  .player-controls span:not(:first-child) {
+    margin-left: 8px
+  }
+
   #total-progress {
     display: flex;
     flex-flow: row;
@@ -354,9 +394,7 @@
   #folder-name {
     cursor: pointer;
   }
-  #play-icon path {
-    fill: var(--primary);
-  }
+  
   .progress {
     flex-grow: 1;
     margin-left: 1rem;
@@ -364,25 +402,26 @@
   }
   .total-time {
     margin-left: 1rem;
+    width: 4.5rem;
   }
   .play-time {
-    margin-left: 1rem;
-    width: 4rem;
+    width: 4.5rem;
     text-align: end;
   }
   .player {
     display: flex;
     flex-flow: row;
     align-items: center;
+    height: 1.2rem;
+    margin-bottom: 1rem;
   }
+
   button {
     all: initial;
     cursor: pointer;
     color: var(--primary);
   }
-  .play-btn button {
-    font-size: 32px;
-  }
+  
   label {
     display: inline;
     font-weight: bold;

@@ -25,6 +25,8 @@ export interface AppConfig {
   positionReportingPeriod: number;
   sleepTimerPeriod: number;
   sleepTimerExtend: number;
+  jumpForwardTime: number;
+  jumpBackTime: number;
 }
 
 export interface TranscodingDetail {

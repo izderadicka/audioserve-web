@@ -32,6 +32,22 @@ import { StorageKeys } from "../types/enums";
     />
     <p>When you start to play file following n files will be loaded to cache on background</p>
 
+    <label for="jump-fwd">Short Jump Forward (secs]</label>
+    <input
+      id="jump-fwd"
+      type="number"
+      bind:value={currentConfig.jumpForwardTime}
+    />
+    <p>Time for short foward jump (arc arrow icon right from play/pause button)</p>
+
+    <label for="jump-back">Short Jump Backward (secs]</label>
+    <input
+      id="jump-back"
+      type="number"
+      bind:value={currentConfig.jumpBackTime}
+    />
+    <p>Time for short backward jump (arc arrow icon left from play/pause button)</p>
+
     <label for="sleep-time">Sleep Timer (minutes)</label>
     <input
       id="sleep-time"

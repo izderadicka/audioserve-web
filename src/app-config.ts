@@ -7,4 +7,6 @@ export const defaultConfig: AppConfig = {
     positionReportingPeriod: 10,
     sleepTimerPeriod: 30,
     sleepTimerExtend: 15,
+    jumpBackTime: 15,
+    jumpForwardTime: 10,
   };
