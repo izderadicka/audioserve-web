@@ -94,6 +94,7 @@
 
   let progressValue = 0;
   let progressValueChanging = false;
+
   const handleProgressMouseUp = () => {
     if (progressValueChanging) {
       player.currentTime = progressValue;
@@ -113,6 +114,7 @@
     if (!progressValueChanging) {
       progressValue = currentTime;
     }
+    updateMediaSessionState();
     localStorage.setItem(StorageKeys.LAST_POSITION, currentTime.toString());
     if (roundedTime() % 10 === 0) {
       reportPosition();
@@ -201,7 +203,29 @@
           artist,
           artwork: [{ src: "favicon.png" }],
         });
+
+        navigator.mediaSession.setActionHandler(
+          "seekbackward",
+          jumpTime(-$config.jumpBackTime)
+        );
+        navigator.mediaSession.setActionHandler(
+          "seekforward",
+          jumpTime($config.jumpForwardTime)
+        );
+        //navigator.mediaSession.setActionHandler('seekto', function() { /* Code excerpted. */ });
+        navigator.mediaSession.setActionHandler("previoustrack", playPrevious);
+        navigator.mediaSession.setActionHandler("nexttrack", playNext);
       }
+    }
+  }
+
+  function updateMediaSessionState() {
+    if (currentTime <= duration) {
+      navigator.mediaSession?.setPositionState({
+        duration,
+        playbackRate: player.playbackRate,
+        position: currentTime,
+      });
     }
   }
 
