@@ -215,6 +215,7 @@
         //navigator.mediaSession.setActionHandler('seekto', function() { /* Code excerpted. */ });
         navigator.mediaSession.setActionHandler("previoustrack", playPrevious);
         navigator.mediaSession.setActionHandler("nexttrack", playNext);
+        navigator.mediaSession.setPositionState({});
       }
     }
   }
