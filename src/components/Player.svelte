@@ -35,10 +35,6 @@
   const fileIconSize = "1.5rem";
 
   let previousTime: number; // sum of time of previous items
-  $: folderTime =
-    (isFinite(previousTime) ? previousTime : 0) +
-    (isFinite(currentTime) ? currentTime : 0);
-  $: formattedFolderTime = formatTime(folderTime);
   let totalFolderTime: number;
   $: formattedTotalFolderTime = formatTime(totalFolderTime);
 
@@ -55,6 +51,11 @@
   $: formattedDuration = formatTime(expectedDuration);
 
   let currentTime: number;
+  $: folderTime =
+    (isFinite(previousTime) ? previousTime : 0) +
+    (isFinite(currentTime) ? currentTime : 0);
+  $: formattedFolderTime = formatTime(folderTime);
+
   let reportedTime: number = -1;
   let paused: boolean;
   export const pause = () => {
@@ -73,8 +74,31 @@
   let cached: boolean = false;
   let mime: string;
 
-  $: formattedCurrentTime = formatTime(currentTime);
+  let progressValue = 0;
+  let progressValueChanging = false;
+  const handleProgressMouseUp = () => {
+    
+    if (progressValueChanging) {
+
+      currentTime = progressValue;
+    setTimeout(()=> {
+      progressValueChanging = false;
+    }, 200)
+    
+    }
+  }
+  window.addEventListener("mouseup", handleProgressMouseUp);
+  window.addEventListener("touchend", handleProgressMouseUp);
+  const handleProgressMouseDown = () => {
+    progressValueChanging = true;
+
+  }
+
+  $: formattedCurrentTime = formatTime(progressValue);
   $: if (currentTime != undefined) {
+    if (!progressValueChanging) {
+      progressValue = currentTime;
+    }
     localStorage.setItem(StorageKeys.LAST_POSITION, currentTime.toString());
     if (roundedTime() % 10 === 0) {
       reportPosition();
@@ -267,7 +291,11 @@
     }
   });
 
-  onDestroy(unsubscribe);
+  onDestroy(() => {
+    unsubscribe();
+    window.removeEventListener("mouseup", handleProgressMouseUp);
+    window.removeEventListener("touchend", handleProgressMouseUp);
+  });
 
   const controlSize = "40px";
 </script>
@@ -325,7 +353,9 @@
         id="playback-progress"
         min="0"
         max={expectedDuration}
-        bind:value={currentTime}
+        bind:value={progressValue}
+        on:mousedown="{handleProgressMouseDown}"
+        on:touchstart="{handleProgressMouseDown}"
       />
       <CacheIndicator ranges={buffered} totalTime={expectedDuration} />
     </div>
