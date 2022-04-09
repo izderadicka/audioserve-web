@@ -5,7 +5,6 @@
   import CachedIcon from "svelte-material-icons/Cached.svelte";
   import AudioIcon from "svelte-material-icons/SineWave.svelte";
   import FolderIcon from "svelte-material-icons/FolderOutline.svelte";
-  import FileIcon from "svelte-material-icons/FileMusicOutline.svelte";
   import PlayIcon from "svelte-material-icons/Play.svelte";
   import PauseIcon from "svelte-material-icons/Pause.svelte";
   import PreviousIcon from "svelte-material-icons/SkipPrevious.svelte";
@@ -15,10 +14,8 @@
   import SpeedIcon from "svelte-material-icons/SpeedometerMedium.svelte";
 
   import {
-    apiConfig,
     config,
     currentFolder,
-    group,
     playItem,
     playList,
     positionWsApi,
@@ -29,10 +26,31 @@
 
   import { formatTime, splitExt, splitPath, splitRootPath } from "../util";
   import CacheIndicator from "./CacheIndicator.svelte";
-  import Play from "svelte-material-icons/Play.svelte";
+
+  const fileIconSize = "1.5rem";
+  const controlSize = "40px";
+  const MEDIA_ERRORS = [
+    "MEDIA_ERR_ABORTED",
+    "MEDIA_ERR_NETWORK",
+    "MEDIA_ERR_DECODE",
+    "MEDIA_ERR_SRC_NOT_SUPPORTED",
+  ];
+
+  const codeName = (code: number) => {
+    if (code > 0 && code <= MEDIA_ERRORS.length) return MEDIA_ERRORS[code - 1];
+    else return `UNKNOWN_${code}`;
+  };
+
+  function playerError() {
+    const e = player.error;
+    console.error("Player error", e);
+    const msg = e.message
+      ? `${codeName(e.code)} : ${e.message}`
+      : codeName(e.code);
+    alert("Player Error: " + msg);
+  }
 
   const cache: Cache = getContext("cache");
-  const fileIconSize = "1.5rem";
 
   let previousTime: number; // sum of time of previous items
   let totalFolderTime: number;
@@ -77,22 +95,18 @@
   let progressValue = 0;
   let progressValueChanging = false;
   const handleProgressMouseUp = () => {
-    
     if (progressValueChanging) {
-
       player.currentTime = progressValue;
-    setTimeout(()=> {
-      progressValueChanging = false;
-    }, 200)
-    
+      setTimeout(() => {
+        progressValueChanging = false;
+      }, 200);
     }
-  }
+  };
   window.addEventListener("mouseup", handleProgressMouseUp);
   window.addEventListener("touchend", handleProgressMouseUp);
   const handleProgressMouseDown = () => {
     progressValueChanging = true;
-
-  }
+  };
 
   $: formattedCurrentTime = formatTime(progressValue);
   $: if (currentTime != undefined) {
@@ -103,6 +117,12 @@
     if (roundedTime() % 10 === 0) {
       reportPosition();
     }
+  }
+
+  function jumpTime(amt: number) {
+    return (evt) => {
+      player.currentTime += amt;
+    };
   }
 
   $: folderSize = $playList?.files.length || 0;
@@ -224,26 +244,6 @@
     }
   }
 
-  const MEDIA_ERRORS = [
-    "MEDIA_ERR_ABORTED",
-    "MEDIA_ERR_NETWORK",
-    "MEDIA_ERR_DECODE",
-    "MEDIA_ERR_SRC_NOT_SUPPORTED",
-  ];
-  const codeName = (code) => {
-    if (code > 0 && code <= MEDIA_ERRORS.length) return MEDIA_ERRORS[code - 1];
-    else return `UNKNOWN_${code}`;
-  };
-
-  function playerError() {
-    const e = player.error;
-    console.error("Player error", e);
-    const msg = e.message
-      ? `${codeName(e.code)} : ${e.message}`
-      : codeName(e.code);
-    alert("Player Error: " + msg);
-  }
-
   function tryNextFile() {
     let pos = $playItem.position;
     const nextPosition = pos + 1;
@@ -279,12 +279,6 @@
     playPosition($playItem.position + 1, !paused);
   }
 
-  function jumpTime(amt: number) {
-    return (evt) => {
-      player.currentTime += amt;
-    };
-  }
-
   onMount(async () => {
     if ($playItem) {
       await startPlay($playItem);
@@ -296,8 +290,6 @@
     window.removeEventListener("mouseup", handleProgressMouseUp);
     window.removeEventListener("touchend", handleProgressMouseUp);
   });
-
-  const controlSize = "40px";
 </script>
 
 <div class="info">
@@ -354,8 +346,8 @@
         min="0"
         max={expectedDuration}
         bind:value={progressValue}
-        on:mousedown="{handleProgressMouseDown}"
-        on:touchstart="{handleProgressMouseDown}"
+        on:mousedown={handleProgressMouseDown}
+        on:touchstart={handleProgressMouseDown}
       />
       <CacheIndicator ranges={buffered} totalTime={expectedDuration} />
     </div>
