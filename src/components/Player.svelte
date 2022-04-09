@@ -76,9 +76,14 @@
 
   let reportedTime: number = -1;
   let paused: boolean;
+  $: {
+    const state = paused==null?"none":paused?"paused":"playing";
+    if (navigator.mediaSession) navigator.mediaSession.playbackState = state;
+  }
   export const pause = () => {
     paused = true;
   };
+  
   let player: HTMLAudioElement;
   let buffered;
   let seekable;
@@ -97,16 +102,17 @@
 
   const handleProgressMouseUp = () => {
     if (progressValueChanging) {
+      window.removeEventListener("pointerup", handleProgressMouseUp);
       player.currentTime = progressValue;
       setTimeout(() => {
         progressValueChanging = false;
       }, 200);
     }
   };
-  window.addEventListener("mouseup", handleProgressMouseUp);
-  window.addEventListener("touchend", handleProgressMouseUp);
+  
   const handleProgressMouseDown = () => {
     progressValueChanging = true;
+    window.addEventListener("pointerup", handleProgressMouseUp);
   };
 
   $: formattedCurrentTime = formatTime(progressValue);
@@ -194,6 +200,7 @@
       }
 
       if ("mediaSession" in navigator) {
+        navigator.mediaSession.setPositionState(null);
         const { root: artist, path: album } = splitRootPath(
           splitPath(item.path).folder
         );
@@ -215,7 +222,6 @@
         //navigator.mediaSession.setActionHandler('seekto', function() { /* Code excerpted. */ });
         navigator.mediaSession.setActionHandler("previoustrack", playPrevious);
         navigator.mediaSession.setActionHandler("nexttrack", playNext);
-        navigator.mediaSession.setPositionState({});
       }
     }
   }
@@ -312,8 +318,7 @@
 
   onDestroy(() => {
     unsubscribe();
-    window.removeEventListener("mouseup", handleProgressMouseUp);
-    window.removeEventListener("touchend", handleProgressMouseUp);
+    window.removeEventListener("pointerup", handleProgressMouseUp);
   });
 </script>
 
