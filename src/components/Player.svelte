@@ -80,7 +80,7 @@
     
     if (progressValueChanging) {
 
-      currentTime = progressValue;
+      player.currentTime = progressValue;
     setTimeout(()=> {
       progressValueChanging = false;
     }, 200)
@@ -281,7 +281,7 @@
 
   function jumpTime(amt: number) {
     return (evt) => {
-      currentTime += amt;
+      player.currentTime += amt;
     };
   }
 
