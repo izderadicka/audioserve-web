@@ -1,9 +1,28 @@
-export class Debouncer<T> {
-    private timer: number;
-    constructor(private callBack: (arg:T) => void, private interval: number) {}
+import { windowSize } from "../state/stores";
 
-    debounce(arg: T) {
-        window.clearTimeout(this.timer);
-        this.timer = window.setTimeout(this.callBack, this.interval, [arg]);
+export class Debouncer<T> {
+  private timer: number;
+  constructor(private callBack: (arg: T) => void, private interval: number) {}
+
+  debounce(arg: T) {
+    window.clearTimeout(this.timer);
+    this.timer = window.setTimeout(this.callBack, this.interval, [arg]);
+  }
+}
+
+export class Throttler<T> {
+  private skip = false;
+  constructor(private callBack: (arg: T) => void, private interval: number) {}
+
+  throttle(arg: T) {
+    if (this.skip) {
+      return;
+    } else {
     }
+    this.callBack(arg);
+    this.skip = true;
+    window.setTimeout(() => {
+      this.skip = false;
+    }, this.interval);
+  }
 }

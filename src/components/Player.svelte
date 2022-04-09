@@ -26,6 +26,7 @@
 
   import { formatTime, splitExt, splitPath, splitRootPath } from "../util";
   import CacheIndicator from "./CacheIndicator.svelte";
+import { Throttler } from "../util/events";
 
   const fileIconSize = "1.5rem";
   const controlSize = "40px";
@@ -116,12 +117,20 @@
   };
 
   $: formattedCurrentTime = formatTime(progressValue);
+
+  const lastPositionThrottler = new Throttler(
+    (time: number) => {
+      localStorage.setItem(StorageKeys.LAST_POSITION, currentTime.toString());
+    },
+    250
+  )
   $: if (currentTime != undefined) {
     if (!progressValueChanging) {
       progressValue = currentTime;
     }
     updateMediaSessionState();
-    localStorage.setItem(StorageKeys.LAST_POSITION, currentTime.toString());
+    lastPositionThrottler.throttle(currentTime)
+    // TODO: this should be changed  to use throttling
     if (roundedTime() % 10 === 0) {
       reportPosition();
     }
