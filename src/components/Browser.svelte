@@ -29,6 +29,7 @@
   import Cover from "./Cover.svelte";
   import type { HistoryRecord, HistoryWrapper } from "../util/history";
   import { getLocationPath } from "../util/browser";
+import { Debouncer } from "../util/events";
 
   const cache: Cache = getContext("cache");
   const history: HistoryWrapper = getContext("history");
@@ -298,17 +299,14 @@
 
   cache?.addListener(handleCacheEvent);
 
-  let scrollDebounceTimer: number;
-  const scrollDebounce = (cb: () => void) => {
-    clearTimeout(scrollDebounceTimer);
-    scrollDebounceTimer = window.setTimeout(cb, 250);
-  };
-  function updateScroll() {
-    scrollDebounce(() => {
+  let scrollDebouncer = new Debouncer<void>(
+    () => {
       history.update(constructHistoryState(container.scrollTop));
-    });
-  }
+    },
+    250
+  );
 
+  const  updateScroll = () => scrollDebouncer.debounce()
   $: container?.addEventListener("scroll", updateScroll);
 
   onMount(async () => {});
