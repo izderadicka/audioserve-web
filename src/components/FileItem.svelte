@@ -6,27 +6,25 @@
     selectedCollection,
   } from "../state/stores";
 
-  import { formatTime, splitExt } from "../util";
+  import { formatTime, splitExtInName } from "../util";
   import Cached from "svelte-material-icons/Cached.svelte";
   import Play from "svelte-material-icons/Play.svelte";
   import { FolderType } from "../types/enums";
+import type { AudioFileExt } from "../types/types";
 
-  export let name: string;
-  export let duration: number;
-  export let bitrate: number;
+  export let file: AudioFileExt;
   export let position: number;
-  export let cached: boolean = false;
   export let container: HTMLElement;
 
   let baseName: string;
   let extension: string;
 
   $: {
-    ({ baseName, extension } = splitExt(name));
+    ({ baseName, extension } = splitExtInName(file));
   }
 
   let elem: HTMLElement;
-  let formattedDuration = formatTime(duration);
+  let formattedDuration = formatTime(file.meta?.duration);
 
   enum Scroll {
     UP,
@@ -52,7 +50,7 @@
     $playItem &&
     $playList &&
     $playItem.position === position &&
-    $playItem.name === name &&
+    $playItem.path === file.path &&
     $playList.folder === $currentFolder.value &&
     $currentFolder.type === FolderType.REGULAR &&
     $playList.collection === $selectedCollection;
@@ -70,12 +68,12 @@
     <div class="file-name">{baseName}</div>
     <div class="meta">
       <span class="time">{formattedDuration}</span>
-      <span class="bitrate">{bitrate}kbps</span>
+      <span class="bitrate">{file.meta?.bitrate}kbps</span>
       {#if extension}<span class="extension">{extension}</span>{/if}
     </div>
   </div>
   <div class="icons">
-    {#if cached}<Cached size="1.2em"/>{/if}
+    {#if file.cached}<Cached size="1.2em"/>{/if}
   </div>
 </div>
 

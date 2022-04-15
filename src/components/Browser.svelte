@@ -22,7 +22,7 @@
   import { FolderType, StorageKeys } from "../types/enums";
   import { PlayItem } from "../types/play-item";
   import type { AudioFileExt } from "../types/types";
-  import { formatTime, splitExt, splitPath, splitUrl } from "../util";
+  import { formatTime, splitExtInName, splitPath, splitUrl } from "../util";
   import FileItem from "./FileItem.svelte";
   import FolderItem from "./FolderItem.svelte";
   import Description from "./Description.svelte";
@@ -116,7 +116,7 @@ import { Debouncer } from "../util/events";
       if (sharedPosition) {
         files.forEach((f) => {
           if (f.path === sharedPosition.path) {
-            sharePositionDisplayName = splitExt(f.name).baseName;
+            sharePositionDisplayName = splitExtInName(f).baseName;
           }
         });
       }
@@ -367,11 +367,8 @@ import { Debouncer } from "../util/events";
           {#each files as file, pos}
             <li on:click={startPlaying(pos, true, 0)}>
               <FileItem
-                name={file.name}
-                duration={file.meta.duration}
-                bitrate={file.meta.bitrate}
+                file = {file}
                 position={pos}
-                cached={file.cached}
                 {container}
               />
             </li>

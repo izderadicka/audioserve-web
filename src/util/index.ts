@@ -1,3 +1,4 @@
+import type { AudioFile } from "../client";
 import { StorageKeys } from "../types/enums";
 
 export function capitalize(s: string) {
@@ -74,19 +75,21 @@ export function splitRootPath(path: string): { root?: string; path: string } {
   }
 }
 
-export function splitExt(name: string): {
+export function splitExtInName(file: AudioFile): {
   baseName: string;
   extension?: string;
 } {
-  const idx = name.lastIndexOf(".");
+  const idx = file.path.lastIndexOf(".");
   if (idx >= 0) {
+    const ext = file.path.substring(idx)
+    const baseName = file.name.endsWith(ext)?file.name.substring(0, file.name.length-ext.length):file.name;
     return {
-      baseName: name.substring(0, idx),
-      extension: name.substring(idx+1)
+      baseName,
+      extension: ext.substring(1)
     }
   } else {
     return {
-      baseName: name
+      baseName: file.name
     }
   }
 }

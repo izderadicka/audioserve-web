@@ -24,7 +24,7 @@
   import { FolderType, StorageKeys } from "../types/enums";
   import { PlayItem } from "../types/play-item";
 
-  import { formatTime, splitExt, splitPath, splitRootPath } from "../util";
+  import { formatTime, splitExtInName, splitPath, splitRootPath } from "../util";
   import CacheIndicator from "./CacheIndicator.svelte";
   import { Throttler } from "../util/events";
 
@@ -170,7 +170,7 @@
       }
       expectedDuration = item.duration;
       duration = 0;
-      fileDisplayName = splitExt(item.name).baseName;
+      fileDisplayName = splitExtInName(item).baseName;
       filePath = item.path;
       folderPosition = item.position;
       transcoded = item.transcoded;
@@ -196,7 +196,7 @@
           splitPath(item.path).folder
         );
         navigator.mediaSession.metadata = new MediaMetadata({
-          title: splitExt(item.name).baseName,
+          title: fileDisplayName,
           album,
           artist,
           artwork: [{ src: "favicon.png" }],
@@ -218,7 +218,7 @@
   }
 
   function updateMediaSessionState() {
-    if (currentTime <= duration) {
+    if (isFinite(currentTime) && isFinite(duration) && currentTime <= duration) {
       navigator.mediaSession?.setPositionState({
         duration,
         playbackRate: player.playbackRate,
