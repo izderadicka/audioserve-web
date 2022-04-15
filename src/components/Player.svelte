@@ -314,11 +314,11 @@
 </script>
 
 <div class="info">
-  <div id="folder-info">
+  <div class="item-info" id="folder-info">
     <label for="folder-name" class="icon"
       ><FolderIcon size={fileIconSize} /></label
     >
-    <span id="folder-name" on:click={navigateToFolder}>{folder}</span>
+    <span id="folder-name" class="item-name" dir="rtl" on:click={navigateToFolder}>{folder}</span>
   </div>
   <div id="total-progress">
     <div class="play-time">{formattedFolderTime}</div>
@@ -327,7 +327,7 @@
     </div>
     <div class="total-time">{formattedTotalFolderTime}</div>
   </div>
-  <div id="file-info">
+  <div class="item-info" id="file-info">
     <label for="file-name">
       {#if cached}
         <CachedIcon size={fileIconSize} />
@@ -336,13 +336,13 @@
       {:else}
         <AudioIcon size={fileIconSize} />
       {/if}
-
-      (<span>{folderSize ? folderPosition + 1 : 0}</span>/<span
+    </label>
+    <span class="label">
+    (<span>{folderSize ? folderPosition + 1 : 0}</span>/<span
         >{folderSize}</span
       >)
-    </label>
-
-    <span id="file-name">{fileDisplayName}</span>
+    </span>
+    <span id="file-name" class="item-name">{fileDisplayName}</span>
   </div>
 </div>
 <div class="player">
@@ -408,6 +408,23 @@
 </div>
 
 <style>
+
+  div.item-info {
+    display: flex;
+    flex-direction: row;
+    gap: 0.33rem;
+  }
+
+  span.item-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .label {
+    font-weight: bold;
+  }
+
   .player-controls {
     color: var(--primary);
     max-width: 380px;
