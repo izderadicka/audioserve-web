@@ -26,7 +26,7 @@
 
   import { formatTime, splitExt, splitPath, splitRootPath } from "../util";
   import CacheIndicator from "./CacheIndicator.svelte";
-import { Throttler } from "../util/events";
+  import { Throttler } from "../util/events";
 
   const fileIconSize = "1.5rem";
   const controlSize = "48px";
@@ -75,16 +75,15 @@ import { Throttler } from "../util/events";
     (isFinite(currentTime) ? currentTime : 0);
   $: formattedFolderTime = formatTime(folderTime);
 
-  let reportedTime: number = -1;
   let paused: boolean;
   $: {
-    const state = paused==null?"none":paused?"paused":"playing";
+    const state = paused == null ? "none" : paused ? "paused" : "playing";
     if (navigator.mediaSession) navigator.mediaSession.playbackState = state;
   }
   export const pause = () => {
     paused = true;
   };
-  
+
   let player: HTMLAudioElement;
   let buffered;
   let seekable;
@@ -110,7 +109,7 @@ import { Throttler } from "../util/events";
       }, 200);
     }
   };
-  
+
   const handleProgressMouseDown = () => {
     progressValueChanging = true;
     window.addEventListener("pointerup", handleProgressMouseUp);
@@ -118,22 +117,17 @@ import { Throttler } from "../util/events";
 
   $: formattedCurrentTime = formatTime(progressValue);
 
-  const lastPositionThrottler = new Throttler(
-    (time: number) => {
-      localStorage.setItem(StorageKeys.LAST_POSITION, currentTime.toString());
-    },
-    250
-  )
+  const lastPositionThrottler = new Throttler((time: number) => {
+    localStorage.setItem(StorageKeys.LAST_POSITION, currentTime.toString());
+    reportPosition();
+  }, 250);
+
   $: if (currentTime != undefined) {
     if (!progressValueChanging) {
       progressValue = currentTime;
     }
     updateMediaSessionState();
-    lastPositionThrottler.throttle(currentTime)
-    // TODO: this should be changed  to use throttling
-    if (roundedTime() % 10 === 0) {
-      reportPosition();
-    }
+    lastPositionThrottler.throttle(currentTime);
   }
 
   function jumpTime(amt: number) {
@@ -144,21 +138,10 @@ import { Throttler } from "../util/events";
 
   $: folderSize = $playList?.files.length || 0;
 
-  function roundedTime() {
-    return Math.floor(currentTime);
-  }
-
   function reportPosition(force?: boolean) {
     if (paused && !force) return;
-    const time = roundedTime();
-    if (time !== reportedTime) {
-      const fullPath = `/${collection}/${filePath}`;
-      $positionWsApi.enqueuePosition(fullPath, time);
-      console.debug(
-        `Reporting time ${time}/${currentTime}/${reportedTime} on ${fullPath}`
-      );
-      reportedTime = time;
-    }
+    const fullPath = `/${collection}/${filePath}`;
+    $positionWsApi.enqueuePosition(fullPath, currentTime);
   }
 
   async function startPlay(item: PlayItem): Promise<void> {
@@ -187,7 +170,6 @@ import { Throttler } from "../util/events";
       }
       expectedDuration = item.duration;
       duration = 0;
-      reportedTime = -1;
       fileDisplayName = splitExt(item.name).baseName;
       filePath = item.path;
       folderPosition = item.position;
@@ -437,7 +419,7 @@ import { Throttler } from "../util/events";
     justify-content: space-between;
   }
 
-  .player-controls span{
+  .player-controls span {
     display: block;
     cursor: pointer;
   }

@@ -142,19 +142,19 @@ export class PlaybackSync {
 
             return;
         };
-        position = Math.round(position * 1000) / 1000;
         filePath = this.groupPrefix + filePath;
         if (this.filePath && this.lastSend && filePath == this.filePath) {
-
-            if ((Date.now() - this.lastSend!.timestamp.getTime() >= this.config.positionReportingPeriod) ||
-                (1000* Math.abs(position - this.lastSend.position)) > this.config.positionReportingPeriod) {
+            const lastSendTime = (Date.now() - this.lastSend!.timestamp.getTime())/1000;
+            const lastSendPosition = Math.abs(position - this.lastSend.position);
+            if ( lastSendTime >= this.config.positionReportingPeriod ||
+                lastSendPosition > this.config.positionReportingPeriod) {
                 this.sendMessage(position);
             } else {
                 this.pendingPositionTimeout = window.setTimeout(() => {
                     this.sendMessage(position);
                     this.pendingPositionTimeout = null;
                 },
-                    this.config.positionReportingPeriod
+                    this.config.positionReportingPeriod * 1000
                 );
             }
         } else {
@@ -165,6 +165,7 @@ export class PlaybackSync {
 
     private sendMessage(position: number, filePath?: string, timestamp?: Date) {
         if (this.active) {
+            position = Math.round(position * 10) / 10;
             let msg = position.toString() + "|";
             if (filePath) msg += filePath;
             if (timestamp) msg += '|' + Math.round(timestamp.getTime()/1000);
