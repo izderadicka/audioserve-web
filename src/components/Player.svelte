@@ -29,7 +29,7 @@
 import { Throttler } from "../util/events";
 
   const fileIconSize = "1.5rem";
-  const controlSize = "40px";
+  const controlSize = "48px";
   const MEDIA_ERRORS = [
     "MEDIA_ERR_ABORTED",
     "MEDIA_ERR_NETWORK",
@@ -340,7 +340,9 @@ import { Throttler } from "../util/events";
   </div>
   <div id="total-progress">
     <div class="play-time">{formattedFolderTime}</div>
-    <progress value={folderTime} max={totalFolderTime} />
+    <div class="progress total">
+      <progress value={folderTime} max={totalFolderTime} />
+    </div>
     <div class="total-time">{formattedTotalFolderTime}</div>
   </div>
   <div id="file-info">
@@ -426,13 +428,18 @@ import { Throttler } from "../util/events";
 <style>
   .player-controls {
     color: var(--primary);
-    width: 320px;
+    max-width: 380px;
     margin-left: auto;
     margin-right: auto;
+    margin-bottom: 0.33rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
   }
 
-  .player-controls span:not(:first-child) {
-    margin-left: 8px;
+  .player-controls span{
+    display: block;
+    cursor: pointer;
   }
 
   #total-progress {
@@ -442,7 +449,6 @@ import { Throttler } from "../util/events";
   }
   progress {
     height: 3px;
-    margin-left: 1rem;
     margin-top: 0.5rem;
   }
   .progress-bar input {
@@ -456,7 +462,11 @@ import { Throttler } from "../util/events";
   .progress {
     flex-grow: 1;
     margin-left: 1rem;
-    padding-top: 1.2rem;
+    padding-top: 0.7 rem;
+  }
+
+  .progress.total {
+    padding-top: 0;
   }
   .total-time {
     margin-left: 1rem;
@@ -471,7 +481,7 @@ import { Throttler } from "../util/events";
     flex-flow: row;
     align-items: center;
     height: 1.2rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0.33 rem;
   }
 
   label {
