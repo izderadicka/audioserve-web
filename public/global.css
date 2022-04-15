@@ -70,14 +70,31 @@ input[type="range"]::-moz-range-thumb:hover {
 
 /* and additional colors for menu */
 
-:root {
+:root[data-theme=light], 
+  :root:not([data-theme="dark"]) {
   --menu-background: #f9f9f9;
   --menu-shadow: rgba(0, 0, 0, 0.2);
 }
 
-@media only screen {
-  :root[data-theme="dark"] {
-    --menu-background: #0a0a0a;
+@media only screen and (prefers-color-scheme: dark) {
+  :root:not([data-theme=light])
+   {
+    --menu-background: #11191f;
     --menu-shadow: rgba(255, 255, 255, 0.2);
+
+    /* Override some colors for dark theme */
+    --background-color: #000;
   }
 }
+
+:root[data-theme=dark]
+   {
+    --menu-background: #11191f;
+    --menu-shadow: rgba(255, 255, 255, 0.2);
+
+    /* Override some colors for dark theme */
+    --background-color: #000;
+  }
+
+
+
