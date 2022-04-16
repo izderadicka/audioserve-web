@@ -503,10 +503,10 @@
   }
   .total-time {
     margin-left: 1rem;
-    width: 4.5rem;
+    width: 4.1rem;
   }
   .play-time {
-    width: 4.5rem;
+    width: 4.1rem;
     text-align: end;
   }
   .player {
