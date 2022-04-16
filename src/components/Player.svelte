@@ -102,7 +102,9 @@
 
   const handleProgressMouseUp = () => {
     if (progressValueChanging) {
-      window.removeEventListener("pointerup", handleProgressMouseUp);
+      
+      window.removeEventListener("mouseup", handleProgressMouseUp);
+      window.removeEventListener("touchend", handleProgressMouseUp);
       player.currentTime = progressValue;
       setTimeout(() => {
         progressValueChanging = false;
@@ -112,7 +114,8 @@
 
   const handleProgressMouseDown = () => {
     progressValueChanging = true;
-    window.addEventListener("pointerup", handleProgressMouseUp);
+    window.addEventListener("mouseup", handleProgressMouseUp);
+    window.addEventListener("touchend", handleProgressMouseUp);
   };
 
   $: formattedCurrentTime = formatTime(progressValue);
@@ -309,7 +312,8 @@
 
   onDestroy(() => {
     unsubscribe();
-    window.removeEventListener("pointerup", handleProgressMouseUp);
+    window.removeEventListener("mouseup", handleProgressMouseUp);
+    window.removeEventListener("touchend", handleProgressMouseUp);
   });
 </script>
 
