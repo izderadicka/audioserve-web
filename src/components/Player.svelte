@@ -13,6 +13,7 @@
   import ForwardIcon from "svelte-material-icons/Redo.svelte";
   import SpeedIcon from "svelte-material-icons/SpeedometerMedium.svelte";
   import ExpandIcon from "svelte-material-icons/ChevronUp.svelte";
+  import CollapsIcon from "svelte-material-icons/ChevronDown.svelte";
 
   import {
     config,
@@ -25,7 +26,12 @@
   import { FolderType, StorageKeys } from "../types/enums";
   import { PlayItem } from "../types/play-item";
 
-  import { formatTime, splitExtInName, splitPath, splitRootPath } from "../util";
+  import {
+    formatTime,
+    splitExtInName,
+    splitPath,
+    splitRootPath,
+  } from "../util";
   import CacheIndicator from "./CacheIndicator.svelte";
   import { Throttler } from "../util/events";
 
@@ -53,6 +59,8 @@
   }
 
   const cache: Cache = getContext("cache");
+
+  let expanded = false;
 
   let previousTime: number; // sum of time of previous items
   let totalFolderTime: number;
@@ -88,6 +96,13 @@
   let player: HTMLAudioElement;
   let buffered;
   let seekable;
+  let playbackRate: number = Number(localStorage.getItem(StorageKeys.PLAYBACK_SPEED) || 1.0);
+
+  $: if (player && playbackRate) {
+    player.defaultPlaybackRate = playbackRate;
+    localStorage.setItem(StorageKeys.PLAYBACK_SPEED, playbackRate.toString());
+
+  }
 
   let fileDisplayName = "";
   let filePath: string;
@@ -103,7 +118,6 @@
 
   const handleProgressMouseUp = () => {
     if (progressValueChanging) {
-      
       window.removeEventListener("mouseup", handleProgressMouseUp);
       window.removeEventListener("touchend", handleProgressMouseUp);
       player.currentTime = progressValue;
@@ -222,7 +236,11 @@
   }
 
   function updateMediaSessionState() {
-    if (isFinite(currentTime) && isFinite(duration) && currentTime <= duration) {
+    if (
+      isFinite(currentTime) &&
+      isFinite(duration) &&
+      currentTime <= duration
+    ) {
       navigator.mediaSession?.setPositionState({
         duration,
         playbackRate: player.playbackRate,
@@ -317,18 +335,42 @@
     window.removeEventListener("touchend", handleProgressMouseUp);
   });
 </script>
+
 <div class="player-separator">
-  <div class="player-expand-button">
-    <ExpandIcon size="48px"/>
+  <div class="player-expand-button" on:click={() => (expanded = !expanded)}>
+    {#if expanded}<CollapsIcon  size="48px"/>{:else}<ExpandIcon size="48px" />{/if}
   </div>
 </div>
+
+{#if expanded}
+  <div class="extra-controls">
+    <div class="speed-control slider-control extra-control">
+      <span><SpeedIcon  size={fileIconSize}/></span>
+      <input
+        type="range"
+        name="playback-speed"
+        id="playback-speed"
+        min="0.5"
+        max="3"
+        step="0.1"
+        bind:value="{playbackRate}"
+      />
+      <span class="control-value">{playbackRate.toFixed(1)}</span>
+    </div>
+  </div>
+{/if}
 
 <div class="info">
   <div class="item-info" id="folder-info">
     <label for="folder-name" class="icon"
       ><FolderIcon size={fileIconSize} /></label
     >
-    <span id="folder-name" class="item-name" dir="rtl" on:click={navigateToFolder}>{folder}</span>
+    <span
+      id="folder-name"
+      class="item-name"
+      dir="rtl"
+      on:click={navigateToFolder}>{folder}</span
+    >
   </div>
   <div id="total-progress">
     <div class="play-time">{formattedFolderTime}</div>
@@ -348,7 +390,7 @@
       {/if}
     </label>
     <span class="label">
-    (<span>{folderSize ? folderPosition + 1 : 0}</span>/<span
+      (<span>{folderSize ? folderPosition + 1 : 0}</span>/<span
         >{folderSize}</span
       >)
     </span>
@@ -364,6 +406,7 @@
     bind:paused
     bind:buffered
     bind:seekable
+    bind:playbackRate
     bind:this={player}
     on:error={playerError}
     on:ended={tryNextFile}
@@ -418,16 +461,32 @@
 </div>
 
 <style>
+  .extra-controls {
+    margin-top: 1rem;
+  }
+
+  .extra-control {
+    display:flex;
+    flex-direction: row;
+    gap: 1em;
+  }
+  .slider-control {
+    flex-grow: 1;
+  }
 
   .player-separator {
-    background-image: linear-gradient(to bottom, rgba(0,0,0,0), rgba(var(--background-rgb),1));
-    position:relative;
+    background-image: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0),
+      rgba(var(--background-rgb), 1)
+    );
+    position: relative;
     top: -24px;
     margin-bottom: -24px;
     width: calc(100% - 16px);
   }
 
-  @media (max-width:400px) {
+  @media (max-width: 400px) {
     .player-separator {
       width: 100%;
     }
@@ -439,7 +498,7 @@
     width: 48px;
     height: 25px;
     color: var(--primary);
-    position:relative;
+    position: relative;
     top: -12px;
   }
 
@@ -531,6 +590,10 @@
     }
     .player-separator {
       display: none;
+    }
+
+    .extra-controls {
+      display:none;
     }
 
     div.player {
