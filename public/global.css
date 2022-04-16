@@ -85,7 +85,7 @@ input[type="range"]::-moz-range-thumb:hover {
     --menu-shadow: rgba(255, 255, 255, 0.2);
 
     /* Override some colors for dark theme */
-    --background-color: #000;
+    --background-color: #000 !important;
     --background-rgb: 0, 0, 0;
   }
 }
@@ -96,7 +96,7 @@ input[type="range"]::-moz-range-thumb:hover {
     --menu-shadow: rgba(255, 255, 255, 0.2);
 
     /* Override some colors for dark theme */
-    --background-color: #000;
+    --background-color: #000 !important;
     --background-rgb: 0, 0, 0;
   }
 
