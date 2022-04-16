@@ -12,6 +12,7 @@
   import RewindIcon from "svelte-material-icons/Undo.svelte";
   import ForwardIcon from "svelte-material-icons/Redo.svelte";
   import SpeedIcon from "svelte-material-icons/SpeedometerMedium.svelte";
+  import ExpandIcon from "svelte-material-icons/ChevronUp.svelte";
 
   import {
     config,
@@ -316,6 +317,11 @@
     window.removeEventListener("touchend", handleProgressMouseUp);
   });
 </script>
+<div class="player-separator">
+  <div class="player-expand-button">
+    <ExpandIcon size="48px"/>
+  </div>
+</div>
 
 <div class="info">
   <div class="item-info" id="folder-info">
@@ -413,6 +419,30 @@
 
 <style>
 
+  .player-separator {
+    background-image: linear-gradient(to bottom, rgba(0,0,0,0), rgba(var(--background-rgb),1));
+    position:relative;
+    top: -24px;
+    margin-bottom: -24px;
+    width: calc(100% - 16px);
+  }
+
+  @media (max-width:400px) {
+    .player-separator {
+      width: 100%;
+    }
+  }
+
+  .player-expand-button {
+    margin-left: auto;
+    margin-right: auto;
+    width: 48px;
+    height: 25px;
+    color: var(--primary);
+    position:relative;
+    top: -12px;
+  }
+
   div.item-info {
     display: flex;
     flex-direction: row;
@@ -498,6 +528,13 @@
   @media (max-height: 400px) {
     .info {
       display: none;
+    }
+    .player-separator {
+      display: none;
+    }
+
+    div.player {
+      margin-top: 1rem;
     }
   }
 </style>

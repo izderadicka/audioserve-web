@@ -400,6 +400,7 @@
 </ConfirmDialog>
 
 <style>
+ 
   .icons span.withText {
     display: inline-flex;
   }
@@ -444,7 +445,6 @@
   }
   .player {
     flex: 0 1 auto;
-    border-top: 1px solid var(--color);
   }
 
   @media (max-height: 740px) {

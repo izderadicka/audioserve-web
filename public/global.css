@@ -74,6 +74,8 @@ input[type="range"]::-moz-range-thumb:hover {
   :root:not([data-theme="dark"]) {
   --menu-background: #f9f9f9;
   --menu-shadow: rgba(0, 0, 0, 0.2);
+
+  --background-rgb: 255, 255, 255;
 }
 
 @media only screen and (prefers-color-scheme: dark) {
@@ -84,6 +86,7 @@ input[type="range"]::-moz-range-thumb:hover {
 
     /* Override some colors for dark theme */
     --background-color: #000;
+    --background-rgb: 0, 0, 0;
   }
 }
 
@@ -94,6 +97,7 @@ input[type="range"]::-moz-range-thumb:hover {
 
     /* Override some colors for dark theme */
     --background-color: #000;
+    --background-rgb: 0, 0, 0;
   }
 
 
