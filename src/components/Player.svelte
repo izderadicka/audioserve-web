@@ -12,6 +12,7 @@
   import RewindIcon from "svelte-material-icons/Undo.svelte";
   import ForwardIcon from "svelte-material-icons/Redo.svelte";
   import SpeedIcon from "svelte-material-icons/SpeedometerMedium.svelte";
+  import VolumeIcon from "svelte-material-icons/VolumeHigh.svelte";
   import ExpandIcon from "svelte-material-icons/ChevronUp.svelte";
   import CollapsIcon from "svelte-material-icons/ChevronDown.svelte";
 
@@ -102,6 +103,12 @@
     player.defaultPlaybackRate = playbackRate;
     localStorage.setItem(StorageKeys.PLAYBACK_SPEED, playbackRate.toString());
 
+  }
+
+  let volume: number = Number(localStorage.getItem(StorageKeys.PLAYBACK_VOLUME) || 1.0);
+
+  $: {
+    localStorage.setItem(StorageKeys.PLAYBACK_VOLUME, volume.toString());
   }
 
   let fileDisplayName = "";
@@ -344,6 +351,20 @@
 
 {#if expanded}
   <div class="extra-controls">
+    <div class="volume-control slider-control extra-control">
+      <span><VolumeIcon  size={fileIconSize}/></span>
+      <input
+        type="range"
+        name="volume"
+        id="volume"
+        min="0"
+        max="1"
+        step="0.01"
+        bind:value="{volume}"
+      />
+      <span class="control-value">{volume.toFixed(2)}</span>
+    </div>
+
     <div class="speed-control slider-control extra-control">
       <span><SpeedIcon  size={fileIconSize}/></span>
       <input
@@ -357,6 +378,7 @@
       />
       <span class="control-value">{playbackRate.toFixed(1)}</span>
     </div>
+
   </div>
 {/if}
 
@@ -406,6 +428,7 @@
     bind:paused
     bind:buffered
     bind:seekable
+    bind:volume
     bind:playbackRate
     bind:this={player}
     on:error={playerError}
