@@ -16,6 +16,8 @@ import type { AudioFileExt } from "../types/types";
   export let position: number;
   export let container: HTMLElement;
 
+  const scrollOffset = 26;
+
   let baseName: string;
   let extension: string;
 
@@ -58,6 +60,9 @@ import type { AudioFileExt } from "../types/types";
     const scrollDirection = needScroll();
     if (scrollDirection !== Scroll.NO) {
       elem.scrollIntoView(scrollDirection === Scroll.DOWN ? true : false);
+      if (scrollDirection === Scroll.UP ) {
+        container.scrollBy({top: scrollOffset});
+      }
     }
   }
 </script>
