@@ -51,6 +51,7 @@
   };
 
   function playerError() {
+    progressValueChanging = false;
     const e = player.error;
     console.error("Player error", e);
     const msg = e.message
@@ -285,9 +286,30 @@
     }
   }
 
-  function playPause() {
+  async function playPause() {
     reportPosition(true);
     if (paused) {
+      if (!cached) {
+        // check if it was loaded meanwhile
+        const cachedItem = await cache.getCachedUrl($playItem.url);
+        if (cachedItem) {
+          console.debug(`Current file ${$playItem.url} gets cached on url ${cachedItem.cachedUrl}`)
+          const pos = player.currentTime;
+          const oldSrc = player.src;
+          player.src = cachedItem.cachedUrl
+          cached = true;
+          // $playItem.cached = true; 
+          progressValueChanging = true;
+          player.play()
+          player.addEventListener("canplay", (evt)=> {
+            progressValueChanging = false
+            player.currentTime = pos;
+            tryCacheAhead(folderPosition);
+          }, 
+          {once: true}); 
+          return;
+        } 
+      }
       player.play();
       tryCacheAhead(folderPosition);
     } else {
