@@ -1,6 +1,6 @@
 <script lang="ts">
   import { getContext, onDestroy, onMount } from "svelte";
-  import type { Cache, PrefetchRequest } from "../cache";
+  import { Cache, CachedItem, CacheEvent, EventType, PrefetchRequest } from "../cache";
   import TranscodedIcon from "svelte-material-icons/ArrowCollapseVertical.svelte";
   import CachedIcon from "svelte-material-icons/Cached.svelte";
   import AudioIcon from "svelte-material-icons/SineWave.svelte";
@@ -32,9 +32,11 @@
     splitExtInName,
     splitPath,
     splitRootPath,
+    splitUrl,
   } from "../util";
   import CacheIndicator from "./CacheIndicator.svelte";
   import { Throttler } from "../util/events";
+  import { getLocationPath } from "../util/browser";
 
   const fileIconSize = "1.5rem";
   const controlSize = "48px";
@@ -98,15 +100,18 @@
   let player: HTMLAudioElement;
   let buffered;
   let seekable;
-  let playbackRate: number = Number(localStorage.getItem(StorageKeys.PLAYBACK_SPEED) || 1.0);
+  let playbackRate: number = Number(
+    localStorage.getItem(StorageKeys.PLAYBACK_SPEED) || 1.0
+  );
 
   $: if (player && playbackRate) {
     player.defaultPlaybackRate = playbackRate;
     localStorage.setItem(StorageKeys.PLAYBACK_SPEED, playbackRate.toString());
-
   }
 
-  let volume: number = Number(localStorage.getItem(StorageKeys.PLAYBACK_VOLUME) || 1.0);
+  let volume: number = Number(
+    localStorage.getItem(StorageKeys.PLAYBACK_VOLUME) || 1.0
+  );
 
   $: {
     localStorage.setItem(StorageKeys.PLAYBACK_VOLUME, volume.toString());
@@ -286,30 +291,48 @@
     }
   }
 
+  function updateCurrentlyPlaying(evt: CacheEvent) {
+    if (!cached && evt.kind === EventType.FileCached) {
+      const { collection: cachedCollection, path: cachedPath } = splitUrl(
+        evt.item.originalUrl,
+        getLocationPath()
+      );
+      if (cachedCollection === collection && cachedPath === filePath) {
+        switchCurrentToCached(evt.item, paused);
+      }
+    }
+  }
+
+  cache.addListener(updateCurrentlyPlaying);
+
+  function switchCurrentToCached(cachedItem: CachedItem, keepPaused = false) {
+    console.debug(
+      `Current file ${$playItem.url} gets cached on url ${cachedItem.cachedUrl}`
+    );
+    const pos = player.currentTime;
+    const oldSrc = player.src;
+    player.src = cachedItem.cachedUrl;
+    cached = true;
+    // $playItem.cached = true;
+    if (! keepPaused) {
+      progressValueChanging = true;
+      player.play();
+      player.addEventListener(
+        "canplay",
+        (evt) => {
+          progressValueChanging = false;
+          player.currentTime = pos;
+        },
+        { once: true }
+      );
+    } else {
+      player.currentTime = pos
+    }
+  }
+
   async function playPause() {
     reportPosition(true);
     if (paused) {
-      if (!cached) {
-        // check if it was loaded meanwhile
-        const cachedItem = await cache.getCachedUrl($playItem.url);
-        if (cachedItem) {
-          console.debug(`Current file ${$playItem.url} gets cached on url ${cachedItem.cachedUrl}`)
-          const pos = player.currentTime;
-          const oldSrc = player.src;
-          player.src = cachedItem.cachedUrl
-          cached = true;
-          // $playItem.cached = true; 
-          progressValueChanging = true;
-          player.play()
-          player.addEventListener("canplay", (evt)=> {
-            progressValueChanging = false
-            player.currentTime = pos;
-            tryCacheAhead(folderPosition);
-          }, 
-          {once: true}); 
-          return;
-        } 
-      }
       player.play();
       tryCacheAhead(folderPosition);
     } else {
@@ -362,19 +385,22 @@
     unsubscribe();
     window.removeEventListener("mouseup", handleProgressMouseUp);
     window.removeEventListener("touchend", handleProgressMouseUp);
+    cache.removeListener(updateCurrentlyPlaying);
   });
 </script>
 
 <div class="player-separator">
   <div class="player-expand-button" on:click={() => (expanded = !expanded)}>
-    {#if expanded}<CollapsIcon  size="48px"/>{:else}<ExpandIcon size="48px" />{/if}
+    {#if expanded}<CollapsIcon size="48px" />{:else}<ExpandIcon
+        size="48px"
+      />{/if}
   </div>
 </div>
 
 {#if expanded}
   <div class="extra-controls">
     <div class="volume-control slider-control extra-control">
-      <span><VolumeIcon  size={fileIconSize}/></span>
+      <span><VolumeIcon size={fileIconSize} /></span>
       <input
         type="range"
         name="volume"
@@ -382,13 +408,13 @@
         min="0"
         max="1"
         step="0.01"
-        bind:value="{volume}"
+        bind:value={volume}
       />
       <span class="control-value">{volume.toFixed(2)}</span>
     </div>
 
     <div class="speed-control slider-control extra-control">
-      <span><SpeedIcon  size={fileIconSize}/></span>
+      <span><SpeedIcon size={fileIconSize} /></span>
       <input
         type="range"
         name="playback-speed"
@@ -396,11 +422,10 @@
         min="0.5"
         max="3"
         step="0.1"
-        bind:value="{playbackRate}"
+        bind:value={playbackRate}
       />
       <span class="control-value">{playbackRate.toFixed(1)}</span>
     </div>
-
   </div>
 {/if}
 
@@ -511,7 +536,7 @@
   }
 
   .extra-control {
-    display:flex;
+    display: flex;
     flex-direction: row;
     gap: 1em;
   }
@@ -638,7 +663,7 @@
     }
 
     .extra-controls {
-      display:none;
+      display: none;
     }
 
     div.player {
