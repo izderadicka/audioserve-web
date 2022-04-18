@@ -16,6 +16,7 @@ import { windowSize } from "../state/stores";
   })
 
   function update() {
+    if (!indicator) return;
     let totalLength = indicator.offsetWidth;
     let offsetLength = (totalLength * offset) / totalTime;
     while (indicator.firstChild) {
@@ -43,7 +44,7 @@ import { windowSize } from "../state/stores";
 </script>
 
 <div class="player-cache" bind:this={indicator}>
-  <div bind:this="{bar}" class="cache-bar" style="width: 50%;" />
+  <div bind:this="{bar}" class="cache-bar" style="width: Opx;" />
 </div>
 
 <style>

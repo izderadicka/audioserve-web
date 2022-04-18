@@ -81,8 +81,17 @@
     expectedDuration = duration;
   }
   $: formattedDuration = formatTime(expectedDuration);
+  let timeOffset = 0;
+  let playbackTime: number;
 
   let currentTime: number;
+  $: {currentTime = timeOffset + playbackTime};
+  function setCurrentTime(val: number, resetOffset = false) {
+    if (resetOffset) timeOffset = 0;
+    player.currentTime = val - timeOffset;
+    progressValue = val;
+  }
+  
   $: folderTime =
     (isFinite(previousTime) ? previousTime : 0) +
     (isFinite(currentTime) ? currentTime : 0);
@@ -98,8 +107,7 @@
   };
 
   let player: HTMLAudioElement;
-  let buffered;
-  let seekable;
+  let buffered = [];
   let playbackRate: number = Number(
     localStorage.getItem(StorageKeys.PLAYBACK_SPEED) || 1.0
   );
@@ -133,7 +141,7 @@
     if (progressValueChanging) {
       window.removeEventListener("mouseup", handleProgressMouseUp);
       window.removeEventListener("touchend", handleProgressMouseUp);
-      player.currentTime = progressValue;
+      jumpTime(progressValue);
       setTimeout(() => {
         progressValueChanging = false;
       }, 200);
@@ -151,19 +159,64 @@
   const lastPositionThrottler = new Throttler((time: number) => {
     localStorage.setItem(StorageKeys.LAST_POSITION, currentTime.toString());
     reportPosition();
+    updateBuffered();
   }, 250);
 
-  $: if (currentTime != undefined) {
+  $: if (currentTime != undefined && isFinite(currentTime)) {
     if (!progressValueChanging) {
       progressValue = currentTime;
     }
     updateMediaSessionState();
     lastPositionThrottler.throttle(currentTime);
   }
+  function loadTime(time: number) {
+    console.debug(`Seeking time on url ${$playItem.url} to time ${time}`)
+    const newUrl=$playItem.url +`&seek=${time}`;
+    timeOffset = time;
+    //player.src = null;
+    player.src = newUrl;
+    //player.load()
+    player.currentTime = 0;
+  }
 
-  function jumpTime(amt: number) {
+  function jumpTime(time: number) {
+    if (transcoded && !cached && !paused) {
+        // can move only to already buffered or slightly beyond
+        // otherwise use seek on server
+        const diffToBuffered = () => {
+          let diff = time - currentTime;
+          for (let i = 0; i< player.buffered.length; i++) {
+            const start = timeOffset + player.buffered.start[i];
+            const end = timeOffset + player.buffered.end[i];
+            if (start >= time && end <= time) {
+              return 0
+            } else if ( time < start && diff < 0) {
+              const newDiff = time - start;
+              if (newDiff > diff) diff = newDiff;
+            } else if ( time > end && diff > 0) {
+              const newDiff = time - end;
+              if (newDiff < diff) diff = newDiff;
+            }
+          }
+          return diff
+        }
+
+        const diff = diffToBuffered();
+        if (diff >= 0 && diff < 5*60) { //TODO: Set as config parameter
+          setCurrentTime(time)
+        } else {
+          loadTime(time);
+        }
+
+      } else {
+        setCurrentTime(time);
+      }
+  }
+
+  function jumpTimeRelative(amt: number) {
     return (evt) => {
-      player.currentTime += amt;
+      const toTime = progressValue + amt;
+      jumpTime(toTime);
     };
   }
 
@@ -196,8 +249,9 @@
       }
       player.src = source;
       localStorage.setItem(StorageKeys.LAST_FILE, item.path);
-      if (item.time != null) {
-        currentTime = item.time;
+      timeOffset=0;
+      if (item.time != null && isFinite(item.time)) {
+        setCurrentTime(item.time);
       }
       expectedDuration = item.duration;
       duration = 0;
@@ -235,11 +289,11 @@
 
         navigator.mediaSession.setActionHandler(
           "seekbackward",
-          jumpTime(-$config.jumpBackTime)
+          jumpTimeRelative(-$config.jumpBackTime)
         );
         navigator.mediaSession.setActionHandler(
           "seekforward",
-          jumpTime($config.jumpForwardTime)
+          jumpTimeRelative($config.jumpForwardTime)
         );
         //navigator.mediaSession.setActionHandler('seekto', function() { /* Code excerpted. */ });
         navigator.mediaSession.setActionHandler("previoustrack", playPrevious);
@@ -309,7 +363,7 @@
     console.debug(
       `Current file ${$playItem.url} gets cached on url ${cachedItem.cachedUrl}`
     );
-    const pos = player.currentTime;
+    const pos = currentTime;
     const oldSrc = player.src;
     player.src = cachedItem.cachedUrl;
     cached = true;
@@ -321,12 +375,12 @@
         "canplay",
         (evt) => {
           progressValueChanging = false;
-          player.currentTime = pos;
+          setCurrentTime(pos, true);
         },
         { once: true }
       );
     } else {
-      player.currentTime = pos
+      setCurrentTime(pos, true)
     }
   }
 
@@ -375,6 +429,33 @@
     playPosition($playItem.position + 1, !paused);
   }
 
+  function updateBuffered() {
+    const arr = []
+    for (let i=0; i<player.buffered.length; i++) {
+      arr.push({
+        start: timeOffset + player.buffered.start(i),
+        end: timeOffset + player.buffered.end(i)
+      })
+    }
+    const is_different = () => {
+      if (buffered.length != arr.length) {
+        return true
+      } else {
+        for (let i =0; i< arr.length; i++) {
+          if (arr[i].start !== buffered[i].start || arr[i].end != buffered[i].end ) {
+            return true
+          }
+        }
+        return false;
+      }
+    }
+    if (is_different()) {
+      buffered = arr;
+    }
+  }
+
+  $: if (player) player.addEventListener("progress", updateBuffered);
+
   onMount(async () => {
     if ($playItem) {
       await startPlay($playItem);
@@ -386,6 +467,7 @@
     window.removeEventListener("mouseup", handleProgressMouseUp);
     window.removeEventListener("touchend", handleProgressMouseUp);
     cache.removeListener(updateCurrentlyPlaying);
+    player?.removeEventListener("progress", updateBuffered);
   });
 </script>
 
@@ -471,10 +553,8 @@
     preload="none"
     crossorigin="use-credentials"
     bind:duration
-    bind:currentTime
+    bind:currentTime={playbackTime}
     bind:paused
-    bind:buffered
-    bind:seekable
     bind:volume
     bind:playbackRate
     bind:this={player}
@@ -507,7 +587,7 @@
     <span class="control-button" on:click={playPrevious}>
       <PreviousIcon size={controlSize} />
     </span>
-    <span class="control-button" on:click={jumpTime(-$config.jumpBackTime)}>
+    <span class="control-button" on:click={jumpTimeRelative(-$config.jumpBackTime)}>
       <RewindIcon size={controlSize} />
     </span>
     <span class="control-button" on:click={playPause}>
@@ -517,7 +597,7 @@
         <PauseIcon size={controlSize} />
       {/if}
     </span>
-    <span class="control-button" on:click={jumpTime($config.jumpForwardTime)}>
+    <span class="control-button" on:click={jumpTimeRelative($config.jumpForwardTime)}>
       <ForwardIcon size={controlSize} />
     </span>
     <span class="control-button" on:click={playNext}>
