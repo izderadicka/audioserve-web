@@ -172,11 +172,16 @@
   function loadTime(time: number) {
     console.debug(`Seeking time on url ${$playItem.url} to time ${time}`)
     const newUrl=$playItem.url +`&seek=${time}`;
+    let wasPlaying = !paused;
     timeOffset = time;
     //player.src = null;
     player.src = newUrl;
     //player.load()
     player.currentTime = 0;
+    if (wasPlaying) {
+      player.play();
+    }
+    
   }
 
   function jumpTime(time: number) {
