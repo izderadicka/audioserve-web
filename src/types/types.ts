@@ -27,6 +27,7 @@ export interface AppConfig {
   sleepTimerExtend: number;
   jumpForwardTime: number;
   jumpBackTime: number;
+  transcodingJumpLimit: number;
 }
 
 export interface TranscodingDetail {

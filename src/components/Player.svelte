@@ -88,8 +88,12 @@
   $: {currentTime = timeOffset + playbackTime};
   function setCurrentTime(val: number, resetOffset = false) {
     if (resetOffset) timeOffset = 0;
-    player.currentTime = val - timeOffset;
-    progressValue = val;
+    try {
+      player.currentTime = val - timeOffset;
+      progressValue = val;
+    } catch(e) {
+      console.error(`Cannot set currentTime, val=${val}, offset=${timeOffset}: ${e}`);
+    }
   }
   
   $: folderTime =
@@ -105,6 +109,8 @@
   export const pause = () => {
     paused = true;
   };
+  let preparingPlayback = false;
+
 
   let player: HTMLAudioElement;
   let buffered = [];
@@ -169,7 +175,7 @@
     updateMediaSessionState();
     lastPositionThrottler.throttle(currentTime);
   }
-  function loadTime(time: number) {
+  async function loadTime(time: number, startPlayback = false) {
     console.debug(`Seeking time on url ${$playItem.url} to time ${time}`)
     const newUrl=$playItem.url +`&seek=${time}`;
     let wasPlaying = !paused;
@@ -178,8 +184,8 @@
     player.src = newUrl;
     //player.load()
     player.currentTime = 0;
-    if (wasPlaying) {
-      player.play();
+    if (wasPlaying || startPlay) {
+      await playPlayer();
     }
     
   }
@@ -207,7 +213,7 @@
         }
 
         const diff = diffToBuffered();
-        if (diff >= 0 && diff < 5*60) { //TODO: Set as config parameter
+        if (diff >= 0 && diff < $config.transcodingJumpLimit) { 
           setCurrentTime(time)
         } else {
           loadTime(time);
@@ -273,7 +279,7 @@
       totalFolderTime = $playList.totalTime;
 
       if (item.startPlay) {
-        player.play();
+        await playPlayer();
         reportPosition();
         tryCacheAhead(folderPosition);
       } else {
@@ -375,7 +381,7 @@
     // $playItem.cached = true;
     if (! keepPaused) {
       progressValueChanging = true;
-      player.play();
+      playPlayer();
       player.addEventListener(
         "canplay",
         (evt) => {
@@ -389,13 +395,29 @@
     }
   }
 
+  async function playPlayer() {
+    try {
+      preparingPlayback = true;
+      await player.play()
+      } catch(e) {
+        console.error("Playback start failed because of error: " + e);
+      }
+      preparingPlayback = false;
+  }
+
   async function playPause() {
     reportPosition(true);
     if (paused) {
-      player.play();
+      if (transcoded && !cached && progressValue > $config.transcodingJumpLimit) {
+        console.debug("Should seek to position "+ progressValue);
+        await loadTime(progressValue, true)
+      } else {
+        await playPlayer();
+      }
       tryCacheAhead(folderPosition);
     } else {
       player.pause();
+      preparingPlayback = false;
     }
   }
 
@@ -595,7 +617,7 @@
     <span class="control-button" on:click={jumpTimeRelative(-$config.jumpBackTime)}>
       <RewindIcon size={controlSize} />
     </span>
-    <span class="control-button" on:click={playPause}>
+    <span class="control-button" class:blink="{preparingPlayback}" on:click={playPause}>
       {#if paused}
         <PlayIcon size={controlSize} />
       {:else}
@@ -738,6 +760,23 @@
   .info {
     margin-top: 0.5em;
   }
+
+  .blink {
+            animation: blink 4s infinite both;
+}
+
+
+@keyframes blink {
+  0%,
+  50%,
+  100% {
+    opacity: 1;
+  }
+  25%,
+  75% {
+    opacity: 0.5;
+  }
+}
 
   @media (max-height: 400px) {
     .info {

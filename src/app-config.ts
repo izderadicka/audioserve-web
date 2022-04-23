@@ -9,4 +9,5 @@ export const defaultConfig: AppConfig = {
     sleepTimerExtend: 15,
     jumpBackTime: 15,
     jumpForwardTime: 10,
+    transcodingJumpLimit: 5*60,
   };
