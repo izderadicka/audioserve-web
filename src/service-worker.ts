@@ -52,6 +52,7 @@ const staticResources = [
 
 const cacheName = "static-" + APP_COMMIT;
 const audioCache = AUDIO_CACHE_NAME;
+const apiCache = "api";
 
 self.addEventListener("install", (evt) => {
   evt.waitUntil(
@@ -77,6 +78,8 @@ self.addEventListener("activate", (evt) => {
         return Promise.all(
           keyList.map((key) => {
             if (key.startsWith("static-") && key != cacheName) {
+              return caches.delete(key);
+            } else if (key == apiCache) {
               return caches.delete(key);
             }
           })
@@ -180,7 +183,8 @@ self.addEventListener("push", (evt) => {
   console.log("Got push message", evt.data.text());
 });
 
-const AUDIO_REG_EXP: RegExp = new RegExp(`^${globalPathPrefix}\\d+/audio/`)
+const AUDIO_REG_EXP: RegExp = new RegExp(`^${globalPathPrefix}\\d+/audio/`);
+const API_REG_EXP: RegExp = new RegExp(`^${globalPathPrefix}(\\d+)?/(folder|collections|transcodings)/`);
 
 self.addEventListener("fetch", (evt: FetchEvent) => {
   const parsedUrl = new URL(evt.request.url);
@@ -243,6 +247,9 @@ self.addEventListener("fetch", (evt: FetchEvent) => {
           return new Response("Service Worker Cache Error", { status: 555 });
         })
     );
+  } else if (API_REG_EXP.test(parsedUrl.pathname)) {
+    console.debug("API request "+ parsedUrl.pathname);
+      
   } else {
     evt.respondWith(
       caches.open(cacheName).then((cache) =>

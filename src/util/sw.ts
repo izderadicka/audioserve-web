@@ -1,3 +1,7 @@
+/// <reference no-default-lib="true"/>
+/// <reference lib="es6" />
+/// <reference lib="webworker" />
+
 function parseRange(range: string): [number, number?] {
   const r = /^bytes=(\d+)-?(\d+)?/.exec(range);
   return [Number(r[1]), r[2] ? Number(r[2]) : undefined];
@@ -89,5 +93,24 @@ export class FetchQueue {
         i.abort.abort()
       }
     }
+  }
+}
+
+export class NetworkFirstCache {
+  private isEnabled = true;
+
+  constructor(private cacheName: string) {}
+
+  async handleRequest(evt: FetchEvent) {
+    if (! this.isEnabled) return;
+    
+  }
+
+  enable() {
+    this.isEnabled = true;
+  }
+
+  disable() {
+    this.isEnabled = false;
   }
 }
