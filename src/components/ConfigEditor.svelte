@@ -80,6 +80,17 @@ import { StorageKeys } from "../types/enums";
     />
     <p>If file bitrate is only by x bigger then transcoding limit, transcoding is not used</p>
 
+    <label for="trans-jump">Transcoding Seek Limit (secs)</label>
+    <input
+      id="trans-jump"
+      type="number"
+      bind:value={currentConfig.transcodingJumpLimit}
+    />
+    <p>If you seek ahead on transcoded file in player (indicated by squaze icon) and jump is bigger theh this limit, 
+      then if not already buffred seek will be done on server (which is fast), 
+      rather then waiting for intermediate date to load
+    </p>
+
     <div class="grid">
         <button class="secondary" on:click|preventDefault={cancel}>Cancel</button>
         <button on:click|preventDefault={applyConfig}>Apply</button>
