@@ -1,6 +1,12 @@
 <script lang="ts">
   import { getContext, onDestroy, onMount } from "svelte";
-  import { Cache, CachedItem, CacheEvent, EventType, PrefetchRequest } from "../cache";
+  import {
+    Cache,
+    CachedItem,
+    CacheEvent,
+    EventType,
+    PrefetchRequest,
+  } from "../cache";
   import TranscodedIcon from "svelte-material-icons/ArrowCollapseVertical.svelte";
   import CachedIcon from "svelte-material-icons/Cached.svelte";
   import AudioIcon from "svelte-material-icons/SineWave.svelte";
@@ -85,17 +91,21 @@
   let playbackTime: number;
 
   let currentTime: number;
-  $: {currentTime = timeOffset + playbackTime};
+  $: {
+    currentTime = timeOffset + playbackTime;
+  }
   function setCurrentTime(val: number, resetOffset = false) {
     if (resetOffset) timeOffset = 0;
     try {
       player.currentTime = val - timeOffset;
       progressValue = val;
-    } catch(e) {
-      console.error(`Cannot set currentTime, val=${val}, offset=${timeOffset}: ${e}`);
+    } catch (e) {
+      console.error(
+        `Cannot set currentTime, val=${val}, offset=${timeOffset}: ${e}`
+      );
     }
   }
-  
+
   $: folderTime =
     (isFinite(previousTime) ? previousTime : 0) +
     (isFinite(currentTime) ? currentTime : 0);
@@ -110,7 +120,6 @@
     paused = true;
   };
   let preparingPlayback = false;
-
 
   let player: HTMLAudioElement;
   let buffered = [];
@@ -176,8 +185,8 @@
     lastPositionThrottler.throttle(currentTime);
   }
   async function loadTime(time: number, startPlayback = false) {
-    console.debug(`Seeking time on url ${$playItem.url} to time ${time}`)
-    const newUrl=$playItem.url +`&seek=${time}`;
+    console.debug(`Seeking time on url ${$playItem.url} to time ${time}`);
+    const newUrl = $playItem.url + `&seek=${time}`;
     let wasPlaying = !paused;
     timeOffset = time;
     //player.src = null;
@@ -187,41 +196,40 @@
     if (wasPlaying || startPlay) {
       await playPlayer();
     }
-    
   }
+
+  const safeToSeekInPlayer = (time: number) => {
+    let diff = time - currentTime;
+    for (let i = 0; i < player.buffered.length; i++) {
+      const start = timeOffset + player.buffered.start(i);
+      const end = timeOffset + player.buffered.end(i);
+      // console.debug(`Checking buffer star ${start} end ${end} for time ${time}`);
+      if (start <= time && time <= end) {
+        return true;
+      } else if (time < start && diff < 0) {
+        const newDiff = time - start;
+        if (newDiff > diff) diff = newDiff;
+      } else if (time > end && diff > 0) {
+        const newDiff = time - end;
+        if (newDiff < diff) diff = newDiff;
+      }
+    }
+
+    return !(isNaN(diff) || diff < 0 || diff > $config.transcodingJumpLimit);
+  };
 
   function jumpTime(time: number) {
     if (transcoded && !cached && !paused) {
-        // can move only to already buffered or slightly beyond
-        // otherwise use seek on server
-        const diffToBuffered = () => {
-          let diff = time - currentTime;
-          for (let i = 0; i< player.buffered.length; i++) {
-            const start = timeOffset + player.buffered.start[i];
-            const end = timeOffset + player.buffered.end[i];
-            if (start >= time && end <= time) {
-              return 0
-            } else if ( time < start && diff < 0) {
-              const newDiff = time - start;
-              if (newDiff > diff) diff = newDiff;
-            } else if ( time > end && diff > 0) {
-              const newDiff = time - end;
-              if (newDiff < diff) diff = newDiff;
-            }
-          }
-          return diff
-        }
-
-        const diff = diffToBuffered();
-        if (diff >= 0 && diff < $config.transcodingJumpLimit) { 
-          setCurrentTime(time)
-        } else {
-          loadTime(time);
-        }
-
-      } else {
+      // can move only to already buffered or slightly beyond
+      // otherwise use seek on server
+      if (safeToSeekInPlayer(time)) {
         setCurrentTime(time);
+      } else {
+        loadTime(time);
       }
+    } else {
+      setCurrentTime(time);
+    }
   }
 
   function jumpTimeRelative(amt: number) {
@@ -260,7 +268,7 @@
       }
       player.src = source;
       localStorage.setItem(StorageKeys.LAST_FILE, item.path);
-      timeOffset=0;
+      timeOffset = 0;
       if (item.time != null && isFinite(item.time)) {
         setCurrentTime(item.time);
       }
@@ -379,7 +387,7 @@
     player.src = cachedItem.cachedUrl;
     cached = true;
     // $playItem.cached = true;
-    if (! keepPaused) {
+    if (!keepPaused) {
       progressValueChanging = true;
       playPlayer();
       player.addEventListener(
@@ -391,26 +399,34 @@
         { once: true }
       );
     } else {
-      setCurrentTime(pos, true)
+      setCurrentTime(pos, true);
     }
   }
 
   async function playPlayer() {
     try {
       preparingPlayback = true;
-      await player.play()
-      } catch(e) {
-        console.error("Playback start failed because of error: " + e);
-      }
-      preparingPlayback = false;
+      await player.play();
+    } catch (e) {
+      console.error("Playback start failed because of error: " + e);
+    }
+    preparingPlayback = false;
   }
 
   async function playPause() {
     reportPosition(true);
     if (paused) {
-      if (transcoded && !cached && progressValue > $config.transcodingJumpLimit) {
-        console.debug("Should seek to position "+ progressValue);
-        await loadTime(progressValue, true)
+      if (
+        transcoded &&
+        !cached &&
+        progressValue > $config.transcodingJumpLimit
+      ) {
+        if (safeToSeekInPlayer(progressValue)) {
+          await playPlayer();
+        } else {
+          console.debug(`Should seek to position ${progressValue}`);
+          await loadTime(progressValue, true);
+        }
       } else {
         await playPlayer();
       }
@@ -457,25 +473,28 @@
   }
 
   function updateBuffered() {
-    const arr = []
-    for (let i=0; i<player.buffered.length; i++) {
+    const arr = [];
+    for (let i = 0; i < player.buffered.length; i++) {
       arr.push({
         start: timeOffset + player.buffered.start(i),
-        end: timeOffset + player.buffered.end(i)
-      })
+        end: timeOffset + player.buffered.end(i),
+      });
     }
     const is_different = () => {
       if (buffered.length != arr.length) {
-        return true
+        return true;
       } else {
-        for (let i =0; i< arr.length; i++) {
-          if (arr[i].start !== buffered[i].start || arr[i].end != buffered[i].end ) {
-            return true
+        for (let i = 0; i < arr.length; i++) {
+          if (
+            arr[i].start !== buffered[i].start ||
+            arr[i].end != buffered[i].end
+          ) {
+            return true;
           }
         }
         return false;
       }
-    }
+    };
     if (is_different()) {
       buffered = arr;
     }
@@ -614,17 +633,27 @@
     <span class="control-button" on:click={playPrevious}>
       <PreviousIcon size={controlSize} />
     </span>
-    <span class="control-button" on:click={jumpTimeRelative(-$config.jumpBackTime)}>
+    <span
+      class="control-button"
+      on:click={jumpTimeRelative(-$config.jumpBackTime)}
+    >
       <RewindIcon size={controlSize} />
     </span>
-    <span class="control-button" class:blink="{preparingPlayback}" on:click={playPause}>
+    <span
+      class="control-button"
+      class:blink={preparingPlayback}
+      on:click={playPause}
+    >
       {#if paused}
         <PlayIcon size={controlSize} />
       {:else}
         <PauseIcon size={controlSize} />
       {/if}
     </span>
-    <span class="control-button" on:click={jumpTimeRelative($config.jumpForwardTime)}>
+    <span
+      class="control-button"
+      on:click={jumpTimeRelative($config.jumpForwardTime)}
+    >
       <ForwardIcon size={controlSize} />
     </span>
     <span class="control-button" on:click={playNext}>
@@ -762,21 +791,20 @@
   }
 
   .blink {
-            animation: blink 4s infinite both;
-}
-
-
-@keyframes blink {
-  0%,
-  50%,
-  100% {
-    opacity: 1;
+    animation: blink 4s infinite both;
   }
-  25%,
-  75% {
-    opacity: 0.5;
+
+  @keyframes blink {
+    0%,
+    50%,
+    100% {
+      opacity: 1;
+    }
+    25%,
+    75% {
+      opacity: 0.5;
+    }
   }
-}
 
   @media (max-height: 400px) {
     .info {
