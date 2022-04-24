@@ -376,7 +376,7 @@
     }
   }
 
-  cache.addListener(updateCurrentlyPlaying);
+  cache?.addListener(updateCurrentlyPlaying);
 
   function switchCurrentToCached(cachedItem: CachedItem, keepPaused = false) {
     console.debug(
