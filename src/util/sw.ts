@@ -115,6 +115,10 @@ export class AudioCache {
         (!pathPrefix || new URL(i.url).pathname.startsWith(pathPrefix))
       ) {
         i.abort.abort();
+        // Firefox seems not to generate error when aborting request, so delete it if it was not deleted due to error
+        setTimeout(() => {
+          this.delete(i.url);
+        }, 1000)
       }
     }
   }

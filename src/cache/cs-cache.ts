@@ -233,7 +233,7 @@ export class CacheStorageCache implements Cache {
         return !path.startsWith(this.prefixPath(pathPrefix));
       });
     }
-
+    this.updateQueueChanged();
     if (includingRunning) {
       this.worker.postMessage({
         kind: CacheMessageKind.AbortLoads,
