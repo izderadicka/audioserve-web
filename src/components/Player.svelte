@@ -193,7 +193,7 @@
     player.src = newUrl;
     //player.load()
     player.currentTime = 0;
-    if (wasPlaying || startPlay) {
+    if (wasPlaying || startPlayback) {
       await playPlayer();
     }
   }
@@ -288,6 +288,7 @@
 
       if (item.startPlay) {
         await playPlayer();
+        if (!cached) cache?.ensureStarted()
         reportPosition();
         tryCacheAhead(folderPosition);
       } else {
@@ -429,6 +430,7 @@
         }
       } else {
         await playPlayer();
+        if (!cached) cache?.ensureStarted();
       }
       tryCacheAhead(folderPosition);
     } else {

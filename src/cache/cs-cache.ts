@@ -41,7 +41,8 @@ export class CacheStorageCache implements Cache {
   private processing = 0;
   private listeners: CacheEventHandler[] = [];
   private worker: ServiceWorker;
-  private poller: number;
+  private poller: number = null;
+  private emptyPongs = 0;
 
   constructor(worker: ServiceWorker, private prefix?: string, maxParallelLoads?: number) {
     this.maxParallelLoads = maxParallelLoads || 1;
@@ -50,14 +51,31 @@ export class CacheStorageCache implements Cache {
     navigator.serviceWorker.addEventListener("message", (evt) =>
       this.processMessageEvent(evt)
     );
-
-    this.poller = setInterval(() => {
-      this.worker.postMessage({
-        kind: CacheMessageKind.Ping,
-        data: {}
-      })
-    }, 10000) as any;
   }
+
+  private startPoller() {
+    if (this.poller == null ) {
+      this.emptyPongs=0;
+      this.poller = setInterval(() => {
+        this.worker.postMessage({
+          kind: CacheMessageKind.Ping,
+          data: {}
+        })
+      }, 10000) as any;
+    }
+  }
+
+  private stopPoller() {
+    if (this.poller != null) {
+      clearInterval(this.poller);
+      this.emptyPongs = 0;
+    }
+    this.poller = null;
+  }
+
+   ensureStarted() {
+    this.startPoller()
+   }
 
   updateWorker(w: ServiceWorker) {
     this.worker = w;
@@ -86,6 +104,20 @@ export class CacheStorageCache implements Cache {
       );
     } else if (msg.kind === CacheMessageKind.Pong) {
       console.debug("Got PONG from worker: " + JSON.stringify(msg.data));
+      if ( msg.data.pendingAudio.length === 0) {
+        if (this.processing > 0) {
+          console.error(`${this.processing} prefetches was not finished, probably SW was restarted`);
+          this.processing = 0;
+          this.updateQueueChanged();
+          this.processQueue();
+        }
+        this.emptyPongs++;
+        if (this.emptyPongs>=3) {
+          this.stopPoller();
+        }
+      } else {
+        this.emptyPongs = 0;
+      }
     }
     
     else {
@@ -187,6 +219,7 @@ export class CacheStorageCache implements Cache {
         data: { url: item.url, folderPosition: item.folderPosition },
       });
       this.processing += 1;
+      this.startPoller();
     }
   }
 

@@ -27,6 +27,7 @@ export type CacheEventHandler = (evt: CacheEvent) => void;
 
 export interface Cache {
 
+    ensureStarted()
     getCachedUrl(url: string): Promise<CachedItem|null>;
     getCachedPaths(collection: number, folder: string): Promise<string[]>;
     cacheAhead(...urls: PrefetchRequest[]): void;
