@@ -79,6 +79,10 @@ export class AudioCache {
     private broadcastMessage: (msg: any) => Promise<any>
   ) {}
 
+  getQueue() {
+    return this.queue.map((item) => item.url);
+  }
+
   has(url: string) {
     return this.queue.findIndex((i) => i.url === url) >= 0;
   }
@@ -148,28 +152,30 @@ export class AudioCache {
                 return fetch(req, { signal: abort.signal }).then((resp) => {
                   // if not cached we can put it
                   const keyReq = removeQuery(evt.request.url);
-                  cache
-                    .put(keyReq, resp.clone())
-                    .then(async () => {
-                      await this.broadcastMessage({
-                        kind: CacheMessageKind.ActualCached,
-                        data: {
-                          originalUrl: resp.url,
-                          cachedUrl: keyReq,
-                        },
-                      });
-                      await evictCache(cache, this.sizeLimit, (req) => {
-                        return this.broadcastMessage({
-                          kind: CacheMessageKind.Deleted,
+                  evt.waitUntil(
+                    cache
+                      .put(keyReq, resp.clone())
+                      .then(async () => {
+                        await this.broadcastMessage({
+                          kind: CacheMessageKind.ActualCached,
                           data: {
-                            cachedUrl: req.url,
-                            originalUrl: req.url,
+                            originalUrl: resp.url,
+                            cachedUrl: keyReq,
                           },
-                        })
+                        });
+                        await evictCache(cache, this.sizeLimit, (req) => {
+                          return this.broadcastMessage({
+                            kind: CacheMessageKind.Deleted,
+                            data: {
+                              cachedUrl: req.url,
+                              originalUrl: req.url,
+                            },
+                          });
+                        });
                       })
-                    })
-                    .catch((e) => logFetchError(e, keyReq))
-                    .then(() => this.delete(keyReq));
+                      .catch((e) => logFetchError(e, keyReq))
+                      .then(() => this.delete(keyReq))
+                  );
                   return resp;
                 });
               }
@@ -191,13 +197,14 @@ export class AudioCache {
 
     if (this.has(keyUrl)) {
       evt.waitUntil(
-      this.broadcastMessage({
-        kind: CacheMessageKind.Skipped,
-        data: {
-          cachedUrl: keyUrl,
-          originalUrl: msg.data.url,
-        },
-      }));
+        this.broadcastMessage({
+          kind: CacheMessageKind.Skipped,
+          data: {
+            cachedUrl: keyUrl,
+            originalUrl: msg.data.url,
+          },
+        })
+      );
       return;
     }
 
@@ -227,8 +234,8 @@ export class AudioCache {
                   cachedUrl: req.url,
                   originalUrl: req.url,
                 },
-              })
-            })
+              });
+            });
             console.debug(
               `SW PREFETCH RESPONSE: ${resp.status} saving as ${keyUrl}`
             );
@@ -280,10 +287,11 @@ export class NetworkFirstCache {
           return caches.open(this.cacheName).then((cache) => {
             cache.put(evt.request, response.clone()).then(() => {
               return evictCache(cache, this.sizeLimit, (req) => {
-                console.debug(`Deleted ${req.url} from cache ${this.cacheName}`);
+                console.debug(
+                  `Deleted ${req.url} from cache ${this.cacheName}`
+                );
                 return Promise.resolve();
-              }
-              );
+              });
             });
             return response;
           });

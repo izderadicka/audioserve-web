@@ -16,6 +16,8 @@ export enum CacheMessageKind {
   PrefetchError = 30,
   ActualError = 31,
   OtherError = 39,
+  Ping = 40,
+  Pong = 41
 }
 
 const MAX_QUEUE_SIZE = 4096;
@@ -39,6 +41,7 @@ export class CacheStorageCache implements Cache {
   private processing = 0;
   private listeners: CacheEventHandler[] = [];
   private worker: ServiceWorker;
+  private poller: number;
 
   constructor(worker: ServiceWorker, private prefix?: string, maxParallelLoads?: number) {
     this.maxParallelLoads = maxParallelLoads || 1;
@@ -47,6 +50,13 @@ export class CacheStorageCache implements Cache {
     navigator.serviceWorker.addEventListener("message", (evt) =>
       this.processMessageEvent(evt)
     );
+
+    this.poller = setInterval(() => {
+      this.worker.postMessage({
+        kind: CacheMessageKind.Ping,
+        data: {}
+      })
+    }, 10000) as any;
   }
 
   updateWorker(w: ServiceWorker) {
@@ -74,7 +84,11 @@ export class CacheStorageCache implements Cache {
       console.debug(
         `Prefetch of  ${msg.data.originalUrl} skipped as is already being loaded`
       );
-    } else {
+    } else if (msg.kind === CacheMessageKind.Pong) {
+      console.debug("Got PONG from worker: " + JSON.stringify(msg.data));
+    }
+    
+    else {
       console.error("Cache error message", msg);
     }
 
