@@ -33,7 +33,7 @@ export async function buildResponse(
 export async function evictCache(
   cache: Cache,
   sizeLimit: number,
-  onDelete: (req: Request) => void
+  onDelete: (req: Request) => Promise<any>
 ): Promise<void> {
   const keys = await cache.keys();
   const toDelete = keys.length - sizeLimit;
@@ -41,7 +41,7 @@ export async function evictCache(
     const deleteList = keys.slice(0, toDelete);
     for (const key of deleteList.reverse()) {
       if (await cache.delete(key)) {
-        if (onDelete) onDelete(key);
+        if (onDelete) await onDelete(key);
       }
     }
   }
@@ -76,7 +76,7 @@ export class AudioCache {
   constructor(
     private audioCache: string,
     private sizeLimit: number,
-    private broadcastMessage: (msg: any) => void
+    private broadcastMessage: (msg: any) => Promise<any>
   ) {}
 
   has(url: string) {
@@ -133,31 +133,33 @@ export class AudioCache {
                 );
                 return fetch(evt.request);
               } else {
-                const posHeader = evt.request.headers.get("X-Folder-Position");
-                let folderPosition = posHeader ? Number(posHeader) : undefined;
-                if (isNaN(folderPosition)) {
-                  folderPosition = undefined;
-                }
+                // TODO: this is future feature support, not sure if will be able to use it
+                // probally will need to use query string
+                // const posHeader = evt.request.headers.get("X-Folder-Position");
+                // let folderPosition = posHeader ? Number(posHeader) : undefined;
+                // if (isNaN(folderPosition)) {
+                //   folderPosition = undefined;
+                // }
                 const req = cloneRequest(evt.request);
                 const abort = new AbortController();
 
-                this.add(keyReq, abort, true, folderPosition);
+                this.add(keyReq, abort, true);
                 req.headers.delete("Range"); // let remove range header so we can cache whole file
                 return fetch(req, { signal: abort.signal }).then((resp) => {
                   // if not cached we can put it
                   const keyReq = removeQuery(evt.request.url);
                   cache
                     .put(keyReq, resp.clone())
-                    .then(() => {
-                      this.broadcastMessage({
+                    .then(async () => {
+                      await this.broadcastMessage({
                         kind: CacheMessageKind.ActualCached,
                         data: {
                           originalUrl: resp.url,
                           cachedUrl: keyReq,
                         },
                       });
-                      evictCache(cache, this.sizeLimit, (req) => {
-                        this.broadcastMessage({
+                      await evictCache(cache, this.sizeLimit, (req) => {
+                        return this.broadcastMessage({
                           kind: CacheMessageKind.Deleted,
                           data: {
                             cachedUrl: req.url,
@@ -188,19 +190,19 @@ export class AudioCache {
     let abort: AbortController;
 
     if (this.has(keyUrl)) {
+      evt.waitUntil(
       this.broadcastMessage({
         kind: CacheMessageKind.Skipped,
         data: {
           cachedUrl: keyUrl,
           originalUrl: msg.data.url,
         },
-      });
+      }));
       return;
-    } else {
-      abort = new AbortController();
-      this.add(keyUrl, abort, false, msg.data.folderPosition);
     }
 
+    abort = new AbortController();
+    this.add(keyUrl, abort, false, msg.data.folderPosition);
     evt.waitUntil(
       fetch(msg.data.url, {
         credentials: "include",
@@ -211,15 +213,15 @@ export class AudioCache {
           if (resp.ok) {
             const cache = await self.caches.open(this.audioCache);
             await cache.put(keyUrl, resp);
-            this.broadcastMessage({
+            await this.broadcastMessage({
               kind: CacheMessageKind.PrefetchCached,
               data: {
                 cachedUrl: keyUrl,
                 originalUrl: resp.url,
               },
             });
-            evictCache(cache, this.sizeLimit, (req) => {
-              this.broadcastMessage({
+            await evictCache(cache, this.sizeLimit, (req) => {
+              return this.broadcastMessage({
                 kind: CacheMessageKind.Deleted,
                 data: {
                   cachedUrl: req.url,
@@ -234,7 +236,7 @@ export class AudioCache {
             console.error(
               `Cannot cache audio ${resp.url}: STATUS ${resp.status}`
             );
-            this.broadcastMessage({
+            await this.broadcastMessage({
               kind: CacheMessageKind.PrefetchError,
               data: {
                 cachedUrl: keyUrl,
@@ -277,8 +279,10 @@ export class NetworkFirstCache {
           }
           return caches.open(this.cacheName).then((cache) => {
             cache.put(evt.request, response.clone()).then(() => {
-              return evictCache(cache, this.sizeLimit, (req) =>
-                console.debug(`Deleted ${req.url} from cache ${this.cacheName}`)
+              return evictCache(cache, this.sizeLimit, (req) => {
+                console.debug(`Deleted ${req.url} from cache ${this.cacheName}`);
+                return Promise.resolve();
+              }
               );
             });
             return response;

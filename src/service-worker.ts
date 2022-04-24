@@ -17,7 +17,7 @@ import {
 import { APP_COMMIT, isDevelopment, ENVIRONMENT } from "./util/version";
 
 function broadcastMessage(msg: CacheMessage) {
-  self.clients.matchAll().then((clients) => {
+  return self.clients.matchAll({includeUncontrolled: true}).then((clients) => {
     for (const c of clients) {
       console.debug(`Sending ${msg} to client ${c.type}::${c.id}`);
       c.postMessage(msg);
