@@ -9,6 +9,7 @@ import {
   CacheMessage,
   AUDIO_CACHE_LIMIT,
 } from "./cache/cs-cache";
+import {API_CACHE_NAME, APP_CACHE_PREFIX} from "./types/constants";
 import { removeQuery, splitPath } from "./util";
 import {
   AudioCache,
@@ -47,9 +48,9 @@ const staticResources = [
   "static/extended.mp3",
 ];
 
-const cacheName = "static-" + APP_COMMIT;
+const cacheName = APP_CACHE_PREFIX + APP_COMMIT;
 const audioCache = AUDIO_CACHE_NAME;
-const apiCache = "api";
+const apiCache = API_CACHE_NAME;
 
 self.addEventListener("install", (evt) => {
   evt.waitUntil(

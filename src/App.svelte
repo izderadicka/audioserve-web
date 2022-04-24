@@ -38,6 +38,7 @@
   import { ShakeDetector } from "./util/movement";
   import ConfigEditor from "./components/ConfigEditor.svelte";
   import { HistoryWrapper } from "./util/history";
+  import { API_CACHE_NAME } from "./types/constants";
 
   export let cache: Cache;
   if (cache) {
@@ -95,10 +96,14 @@
         localStorage.setItem(StorageKeys.THEME, theme);
         break;
       case "clear-cache":
-        cache?.clearCache().then(() => {
+        Promise.all([
+          cache?.clearCache().then(() => {
           cache.cancelPendingLoads("", true);
-          window.location.reload();
-        });
+        }),
+          window?.caches.delete(API_CACHE_NAME),
+        ])
+        .then(() => window.location.reload())
+        .catch((e)=> console.log("Error clearing cache "+ e));
         break;
       case "show-preferences":
         showConfig = true;
