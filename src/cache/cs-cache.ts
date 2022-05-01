@@ -17,7 +17,7 @@ export enum CacheMessageKind {
   ActualError = 31,
   OtherError = 39,
   Ping = 40,
-  Pong = 41
+  Pong = 41,
 }
 
 const MAX_QUEUE_SIZE = 4096;
@@ -37,14 +37,18 @@ class QueueItem {
 
 export class CacheStorageCache implements Cache {
   private queue: QueueItem[] = [];
-  private queueChangedCB: (n:number)=>void;
-  private processing = 0;
+  private queueChangedCB: (n: number) => void;
+  private processing = [];
   private listeners: CacheEventHandler[] = [];
   private worker: ServiceWorker;
   private poller: number = null;
   private emptyPongs = 0;
 
-  constructor(worker: ServiceWorker, private prefix?: string, maxParallelLoads?: number) {
+  constructor(
+    worker: ServiceWorker,
+    private prefix?: string,
+    maxParallelLoads?: number
+  ) {
     this.maxParallelLoads = maxParallelLoads || 1;
     this.updateWorker(worker);
     /// @ts-ignore
@@ -54,13 +58,13 @@ export class CacheStorageCache implements Cache {
   }
 
   private startPoller() {
-    if (this.poller == null ) {
-      this.emptyPongs=0;
+    if (this.poller == null) {
+      this.emptyPongs = 0;
       this.poller = setInterval(() => {
         this.worker.postMessage({
           kind: CacheMessageKind.Ping,
-          data: {}
-        })
+          data: {},
+        });
       }, 10000) as any;
     }
   }
@@ -73,9 +77,9 @@ export class CacheStorageCache implements Cache {
     this.poller = null;
   }
 
-   ensureStarted() {
-    this.startPoller()
-   }
+  ensureStarted() {
+    this.startPoller();
+  }
 
   updateWorker(w: ServiceWorker) {
     this.worker = w;
@@ -104,23 +108,41 @@ export class CacheStorageCache implements Cache {
       );
     } else if (msg.kind === CacheMessageKind.Pong) {
       console.debug("Got PONG from worker: " + JSON.stringify(msg.data));
-      if ( msg.data.pendingAudio.length === 0) {
-        if (this.processing > 0) {
-          console.error(`${this.processing} prefetches was not finished, probably SW was restarted`);
-          this.processing = 0;
+      if (msg.data.pendingAudio.length === 0) {
+        if (this.processing.length > 0) {
+          console.warn(
+            `${JSON.stringify(
+              this.processing
+            )} prefetches were not finished, probably SW was restarted`
+          );
+          this.processing = [];
           this.updateQueueChanged();
           this.processQueue();
         }
         this.emptyPongs++;
-        if (this.emptyPongs>=3) {
+        if (this.emptyPongs >= 3) {
           this.stopPoller();
         }
       } else {
         this.emptyPongs = 0;
+        // Check if urls are still processing
+        const toDelete = [];
+        for (let i = 0; i < this.processing.length; i++) {
+          const keyUrl = removeQuery(this.processing[i]);
+          if (msg.data.pendingAudio.indexOf(keyUrl) < 0) {
+            console.warn(`Prefetch of ${keyUrl} was not finished in SW`);
+            toDelete.push(i);
+          }
+        }
+        if (toDelete.length > 0) {
+          for (const idx of toDelete) {
+            this.processing.splice(idx, 1);
+          }
+          this.updateQueueChanged();
+          this.processQueue();
+        }
       }
-    }
-    
-    else {
+    } else {
       console.error("Cache error message", msg);
     }
 
@@ -130,14 +152,15 @@ export class CacheStorageCache implements Cache {
       msg.kind === CacheMessageKind.PrefetchError ||
       msg.kind === CacheMessageKind.Skipped
     ) {
-      this.processing = this.processing > 0 ? this.processing - 1 : 0;
+      const url = msg.data.originalUrl;
+      this.processing = this.processing.filter((i) => i !== url);
       this.updateQueueChanged();
       this.processQueue();
     }
   }
 
   private prefixPath(path: string) {
-    return this.prefix?this.prefix+path:path
+    return this.prefix ? this.prefix + path : path;
   }
 
   getCachedUrl(url: string): Promise<CachedItem> {
@@ -171,7 +194,9 @@ export class CacheStorageCache implements Cache {
             const { folder: dir } = splitPath(path);
             return prefix === dir;
           })
-          .map((path) => path.substring((this.prefix.length || 0) + collLen + 8));
+          .map((path) =>
+            path.substring((this.prefix.length || 0) + collLen + 8)
+          );
       });
   }
 
@@ -187,6 +212,7 @@ export class CacheStorageCache implements Cache {
     }
     const newQueueEnd = this.queue.filter((i) => i.lowPriority === true);
     const newQueueBeginning: QueueItem[] = [];
+    const toAbort = new Set<string>();
     for (const urlObject of urls) {
       let url: string;
       let lowPriority: boolean;
@@ -203,12 +229,26 @@ export class CacheStorageCache implements Cache {
       (lowPriority ? newQueueEnd : newQueueBeginning).push(
         new QueueItem(url, lowPriority, folderPosition)
       );
+
+      if (!lowPriority) {
+        //Cancel running loads from other folders
+        const myFolder = splitPath(new URL(url).pathname).folder;
+        const runningOtherFolders = this.processing.map(
+          (i) => splitPath(new URL(i).pathname).folder
+        );
+        runningOtherFolders.forEach((i) => {
+          if (i !== myFolder) toAbort.add(i);
+        });
+      }
     }
     this.queue = newQueueBeginning.concat(newQueueEnd);
     this.updateQueueChanged();
-    if (this.processing < this.maxParallelLoads) {
+    if (this.processing.length < this.maxParallelLoads) {
       this.processQueue();
     }
+    toAbort.forEach((f) => {
+      this.cancelRunning(f, true); // TODO: check logic correct for keepRunning
+    });
   }
 
   private processQueue(): void {
@@ -218,16 +258,19 @@ export class CacheStorageCache implements Cache {
         kind: CacheMessageKind.Prefetch,
         data: { url: item.url, folderPosition: item.folderPosition },
       });
-      this.processing += 1;
+      this.processing.push(item.url);
       this.startPoller();
     }
   }
 
-  cancelPendingLoads(pathPrefix: string, includingRunning?: boolean, keepDirect?: boolean): void {
+  cancelPendingLoads(
+    pathPrefix: string,
+    includingRunning?: boolean,
+    keepDirect?: boolean
+  ): void {
     if (!pathPrefix) {
       this.queue = [];
     } else {
-
       this.queue = this.queue.filter((i) => {
         const path = new URL(i.url).pathname;
         return !path.startsWith(this.prefixPath(pathPrefix));
@@ -235,11 +278,15 @@ export class CacheStorageCache implements Cache {
     }
     this.updateQueueChanged();
     if (includingRunning) {
-      this.worker.postMessage({
-        kind: CacheMessageKind.AbortLoads,
-        data: { pathPrefix: this.prefixPath(pathPrefix), keepDirect },
-      });
+      this.cancelRunning(pathPrefix, keepDirect);
     }
+  }
+
+  private cancelRunning(pathPrefix: string, keepDirect: boolean) {
+    this.worker.postMessage({
+      kind: CacheMessageKind.AbortLoads,
+      data: { pathPrefix: this.prefixPath(pathPrefix), keepDirect },
+    });
   }
 
   addListener(l: CacheEventHandler) {
@@ -254,12 +301,12 @@ export class CacheStorageCache implements Cache {
 
   private updateQueueChanged() {
     if (this.queueChangedCB) {
-      this.queueChangedCB(this.processing + this.queue.length);
+      this.queueChangedCB(this.processing.length + this.queue.length);
     }
   }
-  
+
   onQueueSizeChanged(callback: (number: any) => void) {
-      this.queueChangedCB = callback;
+    this.queueChangedCB = callback;
   }
   private notifyListeners(kind: EventType, item: CachedItem): void {
     this.listeners.forEach((l) =>

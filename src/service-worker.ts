@@ -101,7 +101,7 @@ self.addEventListener("message", (evt) => {
   } else if (msg.kind === CacheMessageKind.AbortLoads) {
     audioCacheHandler.abort(msg.data.pathPrefix, msg.data.keepDirect);
   } else if (msg.kind === CacheMessageKind.Ping) {
-    console.debug("Got ping from client");
+    console.debug("Got PING from client");
     evt.source.postMessage({
       kind: CacheMessageKind.Pong,
       data: {

@@ -351,7 +351,6 @@
             collection,
             position: newPos,
           });
-          // TODO provide also folderPosition
           preCaches.push({
             url: item.url,
             folderPosition: item.position,
