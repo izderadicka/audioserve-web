@@ -226,9 +226,13 @@ export class CacheStorageCache implements Cache {
         folderPosition = urlObject.folderPosition;
       }
 
-      (lowPriority ? newQueueEnd : newQueueBeginning).push(
-        new QueueItem(url, lowPriority, folderPosition)
-      );
+      if (this.processing.indexOf(url) < 0) {
+        (lowPriority ? newQueueEnd : newQueueBeginning).push(
+          new QueueItem(url, lowPriority, folderPosition)
+        );
+      } else {
+        console.debug(`Url ${url} is already being prefetched`);
+      }
 
       if (!lowPriority) {
         //Cancel running loads from other folders
