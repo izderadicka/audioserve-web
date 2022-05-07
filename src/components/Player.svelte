@@ -408,7 +408,7 @@
       preparingPlayback = true;
       await player.play();
     } catch (e) {
-      console.error("Playback start failed because of error: " + e);
+      console.error("Playback start failed because of error", e);
     }
     preparingPlayback = false;
   }

@@ -141,8 +141,14 @@ export class CacheStorageCache implements Cache {
           this.processQueue();
         }
       }
+    } else if (msg.kind === CacheMessageKind.PrefetchError) {
+      if (msg.data.error && msg.data.error.name === "AbortError") {
+        console.debug(`Prefetch of ${msg.data.originalUrl} was aborted`);
+      } else {
+        console.error(`Prefetch error`, msg.data)
+      }
     } else {
-      console.error("Cache error message", msg);
+      console.error("Cache message from service worker error", msg);
     }
 
     // Process next queued prefetch
