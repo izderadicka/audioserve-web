@@ -141,13 +141,7 @@ export class AudioCache {
                 );
                 return fetch(evt.request);
               } else {
-                // TODO: this is future feature support, not sure if will be able to use it
-                // probally will need to use query string
-                // const posHeader = evt.request.headers.get("X-Folder-Position");
-                // let folderPosition = posHeader ? Number(posHeader) : undefined;
-                // if (isNaN(folderPosition)) {
-                //   folderPosition = undefined;
-                // }
+                
                 const req = cloneRequest(evt.request);
                 const abort = new AbortController();
 

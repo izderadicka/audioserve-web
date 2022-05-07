@@ -38,7 +38,7 @@ class QueueItem {
 export class CacheStorageCache implements Cache {
   private queue: QueueItem[] = [];
   private queueChangedCB: (n: number) => void;
-  private processing = [];
+  private processing:QueueItem[] = [];
   private listeners: CacheEventHandler[] = [];
   private worker: ServiceWorker;
   private poller: number = null;
@@ -111,9 +111,8 @@ export class CacheStorageCache implements Cache {
       if (msg.data.pendingAudio.length === 0) {
         if (this.processing.length > 0) {
           console.warn(
-            `${JSON.stringify(
-              this.processing
-            )} prefetches were not finished, probably SW was restarted`
+            `${this.processing.length} prefetches were not finished, probably SW was restarted`,
+            this.processing
           );
           this.processing = [];
           this.updateQueueChanged();
@@ -128,7 +127,7 @@ export class CacheStorageCache implements Cache {
         // Check if urls are still processing
         const toDelete = [];
         for (let i = 0; i < this.processing.length; i++) {
-          const keyUrl = removeQuery(this.processing[i]);
+          const keyUrl = removeQuery(this.processing[i].url);
           if (msg.data.pendingAudio.indexOf(keyUrl) < 0) {
             console.warn(`Prefetch of ${keyUrl} was not finished in SW`);
             toDelete.push(i);
@@ -153,7 +152,7 @@ export class CacheStorageCache implements Cache {
       msg.kind === CacheMessageKind.Skipped
     ) {
       const url = msg.data.originalUrl;
-      this.processing = this.processing.filter((i) => i !== url);
+      this.processing = this.processing.filter((i) => i.url !== url);
       this.updateQueueChanged();
       this.processQueue();
     }
@@ -226,7 +225,7 @@ export class CacheStorageCache implements Cache {
         folderPosition = urlObject.folderPosition;
       }
 
-      if (this.processing.indexOf(url) < 0) {
+      if (!this.processing.find((i) => i.url === url)) {
         (lowPriority ? newQueueEnd : newQueueBeginning).push(
           new QueueItem(url, lowPriority, folderPosition)
         );
@@ -239,7 +238,7 @@ export class CacheStorageCache implements Cache {
         const myFolder = splitPath(new URL(url).pathname).folder;
         
         this.processing.forEach((inProgress) => {
-          const runningFolder = splitPath(new URL(inProgress).pathname).folder;
+          const runningFolder = splitPath(new URL(inProgress.url).pathname).folder;
           if (runningFolder !== myFolder) {
             toAbort.add(runningFolder);
           } 
@@ -263,7 +262,7 @@ export class CacheStorageCache implements Cache {
         kind: CacheMessageKind.Prefetch,
         data: { url: item.url, folderPosition: item.folderPosition },
       });
-      this.processing.push(item.url);
+      this.processing.push(item);
       this.startPoller();
     }
   }
