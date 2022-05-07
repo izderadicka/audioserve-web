@@ -237,11 +237,12 @@ export class CacheStorageCache implements Cache {
       if (!lowPriority) {
         //Cancel running loads from other folders
         const myFolder = splitPath(new URL(url).pathname).folder;
-        const runningOtherFolders = this.processing.map(
-          (i) => splitPath(new URL(i).pathname).folder
-        );
-        runningOtherFolders.forEach((i) => {
-          if (i !== myFolder) toAbort.add(i);
+        
+        this.processing.forEach((inProgress) => {
+          const runningFolder = splitPath(new URL(inProgress).pathname).folder;
+          if (runningFolder !== myFolder) {
+            toAbort.add(runningFolder);
+          } 
         });
       }
     }
