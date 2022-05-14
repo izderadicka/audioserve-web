@@ -43,6 +43,7 @@
   import CacheIndicator from "./CacheIndicator.svelte";
   import { Throttler } from "../util/events";
   import { getLocationPath } from "../util/browser";
+  import { calculateAutorewind } from "../util/play";
 
   const fileIconSize = "1.5rem";
   const controlSize = "48px";
@@ -171,8 +172,9 @@
 
   $: formattedCurrentTime = formatTime(progressValue);
 
-  const lastPositionThrottler = new Throttler((time: number) => {
+  const lastPositionThrottler = new Throttler((_time: number) => {
     localStorage.setItem(StorageKeys.LAST_POSITION, currentTime.toString());
+    localStorage.setItem(StorageKeys.LAST_TIMESTAMP, Date.now().toString());
     reportPosition();
     updateBuffered();
   }, 250);
@@ -432,6 +434,21 @@
         }
       } else {
         await playPlayer();
+
+        if ($config.autorewind && progressValue > 0) {
+          const lastPosition =
+            Number(localStorage.getItem(StorageKeys.LAST_POSITION)) || 0;
+          const lastTimestamp =
+            Number(localStorage.getItem(StorageKeys.LAST_TIMESTAMP)) ||
+            Date.now();
+          const diff = Math.abs(progressValue - lastPosition); // used for sanity check, if we are in synch
+          const offset = calculateAutorewind(lastTimestamp);
+          if (offset > 0 && diff <= 1) {
+            let newTime = progressValue - offset;
+            if (newTime < timeOffset) newTime = timeOffset;
+            setCurrentTime(newTime, false);
+          }
+        }
         if (!cached) cache?.ensureStarted();
       }
       tryCacheAhead(folderPosition);

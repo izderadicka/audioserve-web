@@ -48,6 +48,16 @@ import { StorageKeys } from "../types/enums";
     />
     <p>Time for short backward jump (arc arrow icon left from play/pause button)</p>
 
+    <label for="autorewind">
+      <input
+      id="autorewind"
+      type="checkbox"
+      bind:checked={currentConfig.autorewind}
+    />
+      Automatically rewind on playback start
+    </label>
+    <p class="no-input">When you click on Play button current position will be be move back slightly to better catch up with previous text</p>
+
     <label for="sleep-time">Sleep Timer (minutes)</label>
     <input
       id="sleep-time"
@@ -111,5 +121,9 @@ import { StorageKeys } from "../types/enums";
         font-size: 0.75rem;
         font-style: italic;
         margin-top: -0.5rem;
+    }
+
+    p.no-input {
+      margin-top: 0.5rem;
     }
 </style>
