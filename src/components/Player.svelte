@@ -288,7 +288,7 @@
 
       if (item.startPlay) {
         await playPlayer();
-        if (!cached) cache?.ensureStarted()
+        if (!cached) cache?.ensureStarted();
         reportPosition();
         tryCacheAhead(folderPosition);
       } else {
@@ -360,7 +360,10 @@
       }
     }
     if (cache && preCaches) {
-      cache.cacheAhead(...preCaches);
+      cache.cacheAhead(preCaches, {
+        url: $playItem.url,
+        folderPosition: $playItem.position,
+      });
     }
   }
 

@@ -1,7 +1,7 @@
 import type { Cache } from ".";
 import { EventType } from ".";
 import { removeQuery, splitPath } from "../util";
-import type { CachedItem, CacheEventHandler, PrefetchRequest } from "./types";
+import type { CachedItem, CacheEventHandler, PrefetchPlaybackPosition, PrefetchRequest } from "./types";
 
 export const AUDIO_CACHE_NAME = "audio";
 export const AUDIO_CACHE_LIMIT = 1000;
@@ -205,7 +205,7 @@ export class CacheStorageCache implements Cache {
       });
   }
 
-  cacheAhead(...urls: PrefetchRequest[]) {
+  cacheAhead(urls: PrefetchRequest[], currentlyPlaying?: PrefetchPlaybackPosition) {
     console.debug(
       `Want to prefetch ${urls.length} files : ${urls
         .map((i) => JSON.stringify(i))
@@ -247,7 +247,9 @@ export class CacheStorageCache implements Cache {
           const runningFolder = splitPath(new URL(inProgress.url).pathname).folder;
           if (runningFolder !== myFolder) {
             toAbort.add(runningFolder);
-          } 
+          } else if (currentlyPlaying.folderPosition && currentlyPlaying.folderPosition > inProgress.folderPosition) {
+            toAbort.add(new URL(inProgress.url).pathname);
+          }
         });
       }
     }
