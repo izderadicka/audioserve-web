@@ -66,7 +66,8 @@
     const msg = e.message
       ? `${codeName(e.code)} : ${e.message}`
       : codeName(e.code);
-    alert("Player Error: " + msg);
+    alert(`Player Error: ${msg}, will reload window`);
+    window.location.reload();
   }
 
   const cache: Cache = getContext("cache");
@@ -272,7 +273,7 @@
           console.debug("Playing cached item", source);
           cached = true;
         } else {
-          console.error("Item was removed from cache");
+          console.warn("Item was removed from cache");
           cached = false;
           source = item.url;
         }

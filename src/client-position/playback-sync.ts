@@ -65,12 +65,12 @@ export class PlaybackSync {
         console.debug("Opening ws on url " + this.socketUrl);
         const webSocket = new WebSocket(this.socketUrl);
         webSocket.addEventListener("error", err => {
-            console.error(`WS Error (in row ${this.failures})`, err);
+            console.error(`Web socket error (in row ${this.failures})`, err);
             this.failures += 1;
         });
         webSocket.addEventListener("close", close => {
             this.socket = null;
-            console.debug("WS Close", close);
+            console.debug("Web socket close", close);
             // Do not reopen - it'll reopen only on demand
             // if (! this.closed && this.failures < 20) window.setTimeout(() => this.open(), 100 * Math.min(5, this.failures));
 
@@ -79,7 +79,7 @@ export class PlaybackSync {
             this.failures = 0;
             this.filePath = null;
             this.lastSend = null;
-            console.debug("WS is ready");
+            console.debug("Web socket is ready");
             // do we have pending time update?
             if (this.pendingPosition) {
                 if ((new Date().getTime() - this.pendingPosition.timestamp.getTime()) < 300000000) { // do not send old updates

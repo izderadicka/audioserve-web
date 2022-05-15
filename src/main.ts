@@ -37,7 +37,7 @@ if ("serviceWorker" in navigator) {
     // registration worked
     //console.log("After registration", reg.installing, reg.waiting, reg.active);
     const ctl = reg.active;
-    console.log("Service Worker registration succeeded. Scope is " + reg.scope, ctl);
+    console.debug("Service Worker registration succeeded. Scope is " + reg.scope, ctl);
 
     if (ctl) {
       ctl.onstatechange = reportWorkerStatus;
@@ -45,7 +45,7 @@ if ("serviceWorker" in navigator) {
       // has to watch for changes of ServiceWorker controller
       navigator.serviceWorker.oncontrollerchange = () => {
         if (navigator.serviceWorker.controller) {
-          console.log(
+          console.debug(
             `Service worker changed, state is ${navigator.serviceWorker.controller.state}`
           );
           navigator.serviceWorker.controller.onstatechange = reportWorkerStatus;
@@ -56,15 +56,8 @@ if ("serviceWorker" in navigator) {
       };
       createApp(cache);
     } else {
-      console.error("Controller is not ready!!!");
+      console.error("Service worker controller is not ready!!!");
     }
-
-    // navigator.serviceWorker.addEventListener("message", (evt: MessageEvent) => {
-    //   console.log("CLIENT: Got message", evt.data, evt.source);
-    //   navigator.serviceWorker.controller.postMessage({
-    //     txt: "Reply from client, got " + JSON.stringify(evt.data),
-    //   });
-    // });
   });
 } else {
   console.error(
@@ -75,7 +68,7 @@ if ("serviceWorker" in navigator) {
 
 function reportWorkerStatus() {
   if (navigator.serviceWorker?.controller) {
-    console.log("Service worker state changed to "+ navigator.serviceWorker.controller.state);
+    console.debug("Service worker state changed to "+ navigator.serviceWorker.controller.state);
   } else {
     console.error("Service worker is not available");
   }

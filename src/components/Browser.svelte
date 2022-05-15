@@ -140,7 +140,7 @@ import { Debouncer } from "../util/events";
                 localStorage.getItem(StorageKeys.LAST_POSITION)
               );
             } catch (e) {
-              console.log("Invalid last position", e);
+              console.warn("Invalid last position", e);
             }
             startPlaying(position, false, time)();
           }
@@ -271,7 +271,7 @@ import { Debouncer } from "../util/events";
     const item = evt.item;
     if (item) {
       const cached = evt.kind === EventType.FileCached;
-      console.log("File cached", item);
+      console.debug("File cached", item);
       const { collection, path } = splitUrl(item.originalUrl, globalPathPrefix);
 
       // update folder

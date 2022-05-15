@@ -111,7 +111,7 @@ export class CacheStorageCache implements Cache {
       if (msg.data.pendingAudio.length === 0) {
         if (this.processing.length > 0) {
           console.warn(
-            `${this.processing.length} prefetches were not finished, probably SW was restarted`,
+            `${this.processing.length} prefetches were not finished, probably service worker was restarted`,
             this.processing
           );
           this.processing = [];
@@ -129,7 +129,7 @@ export class CacheStorageCache implements Cache {
         for (let i = 0; i < this.processing.length; i++) {
           const keyUrl = removeQuery(this.processing[i].url);
           if (msg.data.pendingAudio.indexOf(keyUrl) < 0) {
-            console.warn(`Prefetch of ${keyUrl} was not finished in SW`);
+            console.warn(`Prefetch of ${keyUrl} was not finished in service worker`);
             toDelete.push(i);
           }
         }

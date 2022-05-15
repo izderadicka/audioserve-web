@@ -131,7 +131,7 @@ export class AudioCache {
         .then((cache) =>
           cache.match(evt.request).then((resp) => {
             if (resp) {
-              console.debug(`SERVING CACHED AUDIO: ${resp.url}`);
+              console.debug(`Serving cached audio file: ${resp.url}`);
               return buildResponse(resp, rangeHeader);
             } else {
               const keyReq = removeQuery(evt.request.url);
@@ -181,7 +181,7 @@ export class AudioCache {
           })
         )
         .catch((err) => {
-          console.error("SW Error", err);
+          console.error("Service worker Error", err);
           return new Response("Service Worker Cache Error", { status: 555 });
         })
     );
@@ -189,7 +189,7 @@ export class AudioCache {
 
   handlePrefetch(evt: ExtendableMessageEvent) {
     const msg: CacheMessage = evt.data;
-    console.debug("SW PREFETCH", msg.data.url);
+    console.debug("Service worker: Prefetch request", msg.data.url);
     const keyUrl = removeQuery(msg.data.url);
     let abort: AbortController;
 
@@ -235,11 +235,11 @@ export class AudioCache {
               });
             });
             console.debug(
-              `SW PREFETCH RESPONSE: ${resp.status} saving as ${keyUrl}`
+              `Service worker: Prefetch response ${resp.status} saving as ${keyUrl}`
             );
           } else {
             console.error(
-              `Cannot cache audio ${resp.url}: STATUS ${resp.status}`
+              `Cannot cache audio ${resp.url}: status ${resp.status}`
             );
             await this.broadcastMessage({
               kind: CacheMessageKind.PrefetchError,

@@ -103,7 +103,7 @@
           window?.caches.delete(API_CACHE_NAME),
         ])
         .then(() => window.location.reload())
-        .catch((e)=> console.log("Error clearing cache "+ e));
+        .catch((e)=> console.warn("Error clearing cache "+ e));
         break;
       case "show-preferences":
         showConfig = true;
@@ -118,7 +118,6 @@
 
   function checkSearch(evt: KeyboardEvent) {
     if (evt.key === "Enter" && searchValue.length > 0) {
-      console.debug("Start search for " + searchValue);
       $currentFolder = { value: searchValue, type: FolderType.SEARCH };
     }
   }

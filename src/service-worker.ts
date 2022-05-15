@@ -60,8 +60,8 @@ self.addEventListener("install", (evt) => {
         return cache.addAll(isDevelopment ? ["favicon.png"] : staticResources);
       })
       .then(() => {
-        console.log(
-          `SW Installation successful (dev ${isDevelopment} ) on path ${location.pathname}`
+        console.debug(
+          `Service worker Installation successful (dev ${isDevelopment} ) on path ${location.pathname}`
         );
         return self.skipWaiting(); // forces to immediately replace old SW
       })
@@ -85,7 +85,7 @@ self.addEventListener("activate", (evt) => {
         );
       })
       .then(() => {
-        console.log("SW Activation successful");
+        console.debug("Service worker Activation successful");
         return self.clients.claim(); // and forces immediately to take over current page
       })
   );
@@ -111,10 +111,6 @@ self.addEventListener("message", (evt) => {
   }
 });
 
-self.addEventListener("push", (evt) => {
-  console.log("Got push message", evt.data.text());
-});
-
 const AUDIO_REG_EXP: RegExp = new RegExp(`^${globalPathPrefix}\\d+/audio/`);
 const API_REG_EXP: RegExp = new RegExp(`^${globalPathPrefix}(\\d+/)?(folder|collections|transcodings)/?`);
 
@@ -131,11 +127,11 @@ self.addEventListener("fetch", (evt: FetchEvent) => {
     apiCacheHandler.handleRequest(evt);
       
   } else {
-    console.log(`Checking ${parsedUrl.pathname} against ${API_REG_EXP} result ${API_REG_EXP.test(parsedUrl.pathname)}`)
+    // console.debug(`Checking ${parsedUrl.pathname} against ${API_REG_EXP} result ${API_REG_EXP.test(parsedUrl.pathname)}`)
     evt.respondWith(
       caches.open(cacheName).then((cache) =>
         cache.match(evt.request).then((response) => {
-          console.log(
+          console.debug(
             `OTHER request: ${evt.request.url}`,
             evt.request,
             response
