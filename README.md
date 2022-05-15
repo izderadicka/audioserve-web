@@ -7,9 +7,9 @@ Now key focus is on efficient caching of audio files, something similar what is 
 
 My idea is that this application should fully replace mobile (Android), client.
 
-As per now it's definitely 'Work In Progress',  some basic things are working, but many things are still missing and there are many issues, so it's now available rather for testing, then for regular use.  But I'm definitely **interested in feedback** so you can log issues on this project.
+As per now it's definitely 'Work In Progress',  basic things are working, I'm already using it for some time and curious and fearless user are welcomed to try. I'm definitely **interested in feedback** so you can log issues on this project.
 
-For now works better in Chrome/Chromium.
+For now works better in Chrome/Chromium, but Firefox should be also fine most of the time (ServiceWorker seems to be more "stable" in Chrome).
 
 ## How to use?
 
@@ -22,7 +22,7 @@ You will need audioserve server running somewhere with this client. There are mu
 ```
 npm install && npm run build && npm run build-sw
 ```
-then either copy instead of classic web client, or use argument `--client-dir` to use directory with with client.
+then either copy and replace classic web client in client directory of audioserve, or use argument `--client-dir` to use directory with with client.
 
 - build your own audioserve image with `--build-arg NEW_CLIENT=1`
 
