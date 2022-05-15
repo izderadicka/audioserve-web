@@ -43,6 +43,7 @@
   import CacheIndicator from "./CacheIndicator.svelte";
   import { Throttler } from "../util/events";
   import { getLocationPath } from "../util/browser";
+  import { calculateAutorewind } from "../util/play";
 
   const fileIconSize = "1.5rem";
   const controlSize = "48px";
@@ -127,9 +128,23 @@
     localStorage.getItem(StorageKeys.PLAYBACK_SPEED) || 1.0
   );
 
-  $: if (player && playbackRate) {
-    player.defaultPlaybackRate = playbackRate;
-    localStorage.setItem(StorageKeys.PLAYBACK_SPEED, playbackRate.toString());
+  function onPlayStarted() {
+    autorewind();
+  }
+
+  function onPlayPaused() {
+    localStorage.setItem(StorageKeys.LAST_PAUSE, Date.now().toString());
+  }
+
+  $: if (player) {
+    if (playbackRate) {
+      player.defaultPlaybackRate = playbackRate;
+      localStorage.setItem(StorageKeys.PLAYBACK_SPEED, playbackRate.toString());
+    }
+
+    player.addEventListener("play", onPlayStarted);
+    player.addEventListener("pause", onPlayPaused);
+    player.addEventListener("progress", updateBuffered);
   }
 
   let volume: number = Number(
@@ -171,7 +186,7 @@
 
   $: formattedCurrentTime = formatTime(progressValue);
 
-  const lastPositionThrottler = new Throttler((time: number) => {
+  const lastPositionThrottler = new Throttler((_time: number) => {
     localStorage.setItem(StorageKeys.LAST_POSITION, currentTime.toString());
     reportPosition();
     updateBuffered();
@@ -242,7 +257,7 @@
   $: folderSize = $playList?.files.length || 0;
 
   function reportPosition(force?: boolean) {
-    if (paused && !force) return;
+    if ((paused && !force) || isNaN(currentTime)) return;
     const fullPath = `/${collection}/${filePath}`;
     $positionWsApi.enqueuePosition(fullPath, currentTime);
   }
@@ -441,6 +456,25 @@
     }
   }
 
+  function autorewind() {
+    if ($config.autorewind && progressValue > 0) {
+      const lastPosition =
+        Number(localStorage.getItem(StorageKeys.LAST_POSITION)) || 0;
+      const lastTimestamp =
+        Number(localStorage.getItem(StorageKeys.LAST_PAUSE)) || Date.now();
+      const diff = Math.abs(progressValue - lastPosition); // used for sanity check, if we are in synch
+      const offset = calculateAutorewind(lastTimestamp);
+      if (offset > 0 && diff <= 1) {
+        let newTime = progressValue - offset;
+        if (newTime < timeOffset) newTime = timeOffset;
+        if (cached || !transcoded || (transcoded && safeToSeekInPlayer(newTime))) {
+          console.debug("Autorewind to " + newTime);
+          setCurrentTime(newTime, false);
+        }
+      }
+    }
+  }
+
   function tryNextFile() {
     let pos = $playItem.position;
     const nextPosition = pos + 1;
@@ -504,8 +538,6 @@
     }
   }
 
-  $: if (player) player.addEventListener("progress", updateBuffered);
-
   onMount(async () => {
     if ($playItem) {
       await startPlay($playItem);
@@ -518,6 +550,8 @@
     window.removeEventListener("touchend", handleProgressMouseUp);
     cache.removeListener(updateCurrentlyPlaying);
     player?.removeEventListener("progress", updateBuffered);
+    player?.removeEventListener("play", onPlayStarted);
+    player?.removeEventListener("pause", onPlayPaused);
   });
 </script>
 

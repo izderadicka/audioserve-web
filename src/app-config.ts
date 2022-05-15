@@ -10,4 +10,5 @@ export const defaultConfig: AppConfig = {
     jumpBackTime: 15,
     jumpForwardTime: 10,
     transcodingJumpLimit: 5*60,
+    autorewind: false,
   };

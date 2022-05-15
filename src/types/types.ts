@@ -28,6 +28,7 @@ export interface AppConfig {
   jumpForwardTime: number;
   jumpBackTime: number;
   transcodingJumpLimit: number;
+  autorewind: boolean
 }
 
 export interface TranscodingDetail {
