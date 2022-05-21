@@ -6,6 +6,7 @@
   import SortNameIcon from "svelte-material-icons/SortAlphabeticalAscending.svelte";
   import SortTimeIcon from "svelte-material-icons/SortClockAscendingOutline.svelte";
   import DownloadFolderIcon from "svelte-material-icons/BriefcaseDownloadOutline.svelte";
+  import ClockIcon from "svelte-material-icons/ClockOutline.svelte";
 
   import type { AudioFile, PositionShort, Subfolder } from "../client";
   import {
@@ -30,6 +31,7 @@
   import type { HistoryRecord, HistoryWrapper } from "../util/history";
   import { getLocationPath } from "../util/browser";
 import { Debouncer } from "../util/events";
+import Badge from "./Badge.svelte";
 
   const cache: Cache = getContext("cache");
   const history: HistoryWrapper = getContext("history");
@@ -330,6 +332,7 @@ import { Debouncer } from "../util/events";
       <details open>
         <summary
           >Subfolders
+          <Badge value="{subfolders.length}"/>
           <span
             class="summary-icons"
             on:click|stopPropagation|preventDefault={toggleSubfoldersSort}
@@ -357,6 +360,9 @@ import { Debouncer } from "../util/events";
       <details open>
         <summary
           >Files
+          <Badge value="{files.length}"/>
+          <span class="files-duration"><ClockIcon/>
+            <span>{formatTime(folderTime)}</span></span>
           {#if $collections && $collections.folderDownload}
             <a href={generateDownloadPath()} target="_self"
               ><span class="summary-icons"><DownloadFolderIcon /></span></a
@@ -408,6 +414,12 @@ import { Debouncer } from "../util/events";
 </div>
 
 <style>
+  .files-duration {
+    font-size: 80%;
+    display: inline-block;
+    font-weight: normal;
+    vertical-align: text-bottom;
+  }
   .summary-icons {
     color: var(--primary);
   }
