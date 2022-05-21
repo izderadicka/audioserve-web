@@ -44,6 +44,7 @@
   const history: HistoryWrapper = getContext("history");
 
   export let container: HTMLDivElement;
+  export let infoOpen = false;
 
   let subfolders: Subfolder[] = [];
   let files: AudioFileExt[] = [];
@@ -402,7 +403,7 @@
         </div>
       {/if}
       {#if coverPath || descriptionPath || nonEmpty(folderTags)}
-        <details open>
+        <details bind:open={infoOpen}>
           <summary>Info</summary>
           {#if coverPath}
             <div id="folder-cover">

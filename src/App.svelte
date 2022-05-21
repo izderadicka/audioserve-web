@@ -280,10 +280,6 @@
     showComponent = "browser";
   });
 
-  selectedCollection.subscribe((_col) => {
-    showComponent = "browser";
-  });
-
   currentFolder.subscribe((_folder) => {
     showComponent = "browser";
   });
@@ -388,7 +384,7 @@
     {:else}
       <Breadcrumb />
       <div class="browser" bind:this={container}>
-        <Browser {container} />
+        <Browser {container} infoOpen={!smallScreen} />
       </div>
     {/if}
     {#if $playItem}
