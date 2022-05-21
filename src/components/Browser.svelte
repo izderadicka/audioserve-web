@@ -353,6 +353,7 @@ import Badge from "./Badge.svelte";
               <FolderItem
                 subfolder={fld}
                 extended={$currentFolder.type != FolderType.REGULAR}
+                finished={fld.finished}
               />
             </li>
           {/each}

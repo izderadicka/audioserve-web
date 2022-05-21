@@ -7,6 +7,7 @@ import { splitPath } from "../util";
 
     export let subfolder: Subfolder;
     export let extended = false;
+    export let finished = false;
 
     let basedir: string|undefined;
 
@@ -16,19 +17,32 @@ import { splitPath } from "../util";
 </script>
 
 <div>
-    <div>{subfolder.name}</div>
+    <h4 class="title" class:finished={finished}>{subfolder.name}</h4>
     {#if extended && basedir}
     <h6 class="subtitle">{basedir}</h6>
     {/if}
 </div>
 
 <style>
+    .title {
+        margin-bottom: 0.15rem;
+    }
+
+    .finished {
+        font-style: italic;
+
+    }
+
+    .finished::after {
+    content: " ✓";
+    color: var(--secondary);
+    }
+
     .subtitle {
-        font-size: 0.8rem;
         font-style: italic;
         margin-left: 1rem;
         font-weight: normal;
-        margin-bottom: 0.3rem;
+        margin-bottom: 0.1rem;
     }
 
 </style>
