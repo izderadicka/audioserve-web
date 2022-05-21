@@ -16,7 +16,7 @@
   export let position: number;
   export let container: HTMLElement;
   let tags: any = file.meta?.tags;
-  let title = preprocessTitle(tags);
+  let title: string;
 
   const scrollOffset = 26;
 
@@ -25,6 +25,7 @@
 
   $: {
     ({ baseName, extension } = splitExtInName(file));
+    title = preprocessTitle(tags);
   }
 
   let elem: HTMLElement;
@@ -39,8 +40,8 @@
   function preprocessTitle(tags: any) {
     let title = tags?.title;
     if (!title) return;
-    if (title == file.name) return;
-    if (title == file.name.replace("_", " ")) return;
+    if (title == baseName) return;
+    if (title == baseName.replace("_", " ")) return;
     return title;
   }
 

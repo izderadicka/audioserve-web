@@ -122,6 +122,24 @@ export function splitExtInName(file: AudioFile): {
   }
 }
 
+export function fileToHumanName(file: string) {
+  if (/\$\$/.test(file)) {
+    const parts = file.split("$$");
+    if (parts.length === 3) {
+      return parts[0];
+    } else if (parts.length == 4) {
+      return parts[1];
+    }
+  }
+
+  const lastDot = file.lastIndexOf(".");
+  if (lastDot > 0) {
+    return file.substring(0, lastDot);
+  } else {
+    return file;
+  }
+}
+
 export function nonEmpty(o: object | Array<any>): boolean {
   if (!o) return false;
   if (o instanceof Array) {
