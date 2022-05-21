@@ -15,6 +15,8 @@ import type { AudioFileExt } from "../types/types";
   export let file: AudioFileExt;
   export let position: number;
   export let container: HTMLElement;
+  let tags: any = file.meta?.tags;
+  let title = preprocessTitle(tags);
 
   const scrollOffset = 26;
 
@@ -32,6 +34,14 @@ import type { AudioFileExt } from "../types/types";
     UP,
     DOWN,
     NO,
+  }
+
+  function preprocessTitle(tags: any) {
+    let title = tags?.title;
+    if (!title) return;
+    if (title == file.name) return;
+    if (title == file.name.replace('_', ' ')) return;
+    return title;
   }
 
   function needScroll() {
@@ -70,7 +80,10 @@ import type { AudioFileExt } from "../types/types";
 <div bind:this={elem} class="item" class:active={isPlaying}>
   {#if isPlaying}<div><Play size="2rem" /></div>{/if}
   <div class="info">
-    <div class="file-name">{baseName}</div>
+    <h4 class="file-name">{baseName}</h4>
+    {#if title}
+    <h6 class="title">{title}</h6>
+    {/if}
     <div class="meta">
       <span class="time">{formattedDuration}</span>
       <span class="bitrate">{file.meta?.bitrate}kbps</span>
@@ -83,6 +96,9 @@ import type { AudioFileExt } from "../types/types";
 </div>
 
 <style>
+  .title {
+    margin-bottom: 0.1rem;
+  }
   .item {
     display: flex;
   }
@@ -110,7 +126,6 @@ import type { AudioFileExt } from "../types/types";
   }
 
   .file-name {
-    font-weight: bold;
-    font-size: 1.2rem;
+    margin-bottom: 0.15rem;
   }
 </style>
