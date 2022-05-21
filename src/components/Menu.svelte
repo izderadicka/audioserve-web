@@ -137,6 +137,17 @@
 </div>
 
 <style>
+  summary {
+    color: var(--primary);
+  }
+
+  summary:focus {
+    color: var(--primary);
+  }
+
+  summary:hover {
+    color: var(--primary-hover);
+  }
   .option {
     padding-left: 1rem;
     font-size: 75%;
