@@ -43,6 +43,7 @@ import Badge from "./Badge.svelte";
   let folderPath: string | undefined;
   let searchQuery: string | undefined;
   let folderTime: number;
+  let folderTags: object = null;
   let sharedPosition: PositionShort | null;
   let sharePositionDisplayName: string;
 
@@ -82,6 +83,7 @@ import Badge from "./Badge.svelte";
       sharedPosition = undefined;
       folderPath = undefined;
       folderTime = undefined;
+      folderTags = undefined;
       descriptionPath = undefined;
       coverPath = undefined;
     } catch (err) {}
@@ -124,6 +126,7 @@ import Badge from "./Badge.svelte";
       }
 
       folderTime = audioFolder.totalTime;
+      folderTags = audioFolder.tags;
       descriptionPath = audioFolder.description?.path;
       coverPath = audioFolder.cover?.path;
 
@@ -395,25 +398,44 @@ import Badge from "./Badge.svelte";
           >
         </div>
       {/if}
+      {#if coverPath || descriptionPath}
       <details open>
         <summary>Info</summary>
+        {#if coverPath}
         <div id="folder-cover">
-          {#if coverPath}
             <Cover {coverPath} />
-          {/if}
         </div>
-        <div id="folder-tags" />
+        {/if}
+        {#if folderTags}
+        <div id="folder-tags">
+          <table role="grid">
+            <tbody>
+            {#each Object.keys(folderTags) as k}
+              <tr>
+                <th>{k}</th>
+                <td>{folderTags[k]}</td>
+              </tr>
+            {/each}
+          </tbody>
+          </table>
+        </div>
+        {/if}
+        {#if descriptionPath}
         <div id="folder-description">
-          {#if descriptionPath}
             <Description {descriptionPath} />
-          {/if}
         </div>
+        {/if}
       </details>
+      {/if}
     </div>
   {/if}
 </div>
 
 <style>
+  #folder-tags {
+    margin-top: 1rem;
+  }
+
   .files-duration {
     font-size: 80%;
     display: inline-block;
