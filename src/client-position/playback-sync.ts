@@ -30,6 +30,7 @@ export class PlaybackSync {
     pendingQueryTimeout: number;
     pendingQueryAnswer: (any) => void;
     pendingQueryReject: (Error) => void;
+    pendingOpen: number = null;
 
     config: PlaybackSyncConfig;
 
@@ -58,6 +59,16 @@ export class PlaybackSync {
 
     disable() {
         this._enabled = false;
+    }
+
+    try_open() {
+        if (this.pendingOpen != null || this.opening) return;
+        this.pendingOpen = window.setTimeout(()=> {
+            this.open();
+            this.pendingOpen = null;
+
+        },
+        Math.min(10_000, this.failures<3?0: (this.failures-2) * 500)) // throttle retries progressively
     }
 
     open() {
@@ -136,10 +147,7 @@ export class PlaybackSync {
                 timestamp: new Date()
             };
 
-            if (!this.opening) {
-                this.open()
-            }
-
+            this.try_open();
             return;
         };
         filePath = this.groupPrefix + filePath;
@@ -200,9 +208,7 @@ export class PlaybackSync {
 
         } else if (this.groupPrefix && !this.active) {
             this.pendingQuery = folderPath ? this.groupPrefix + folderPath : "?";
-            if (!this.opening) {
-                this.open()
-            }
+            this.try_open()
             return this._makeQueryPromise();
         } else {
             return Promise.resolve(null);

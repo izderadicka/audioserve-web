@@ -17,7 +17,6 @@ export class Throttler<T> {
   throttle(arg: T) {
     if (this.skip) {
       return;
-    } else {
     }
     this.callBack(arg);
     this.skip = true;
