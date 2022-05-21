@@ -30,8 +30,8 @@
   import Cover from "./Cover.svelte";
   import type { HistoryRecord, HistoryWrapper } from "../util/history";
   import { getLocationPath } from "../util/browser";
-import { Debouncer } from "../util/events";
-import Badge from "./Badge.svelte";
+  import { Debouncer } from "../util/events";
+  import Badge from "./Badge.svelte";
 
   const cache: Cache = getContext("cache");
   const history: HistoryWrapper = getContext("history");
@@ -304,14 +304,11 @@ import Badge from "./Badge.svelte";
 
   cache?.addListener(handleCacheEvent);
 
-  let scrollDebouncer = new Debouncer<void>(
-    () => {
-      history.update(constructHistoryState(container.scrollTop));
-    },
-    250
-  );
+  let scrollDebouncer = new Debouncer<void>(() => {
+    history.update(constructHistoryState(container.scrollTop));
+  }, 250);
 
-  const  updateScroll = () => scrollDebouncer.debounce()
+  const updateScroll = () => scrollDebouncer.debounce();
   $: container?.addEventListener("scroll", updateScroll);
 
   onMount(async () => {});
@@ -335,7 +332,7 @@ import Badge from "./Badge.svelte";
       <details open>
         <summary
           >Subfolders
-          <Badge value="{subfolders.length}"/>
+          <Badge value={subfolders.length} />
           <span
             class="summary-icons"
             on:click|stopPropagation|preventDefault={toggleSubfoldersSort}
@@ -364,9 +361,11 @@ import Badge from "./Badge.svelte";
       <details open>
         <summary
           >Files
-          <Badge value="{files.length}"/>
-          <span class="files-duration"><ClockIcon/>
-            <span>{formatTime(folderTime)}</span></span>
+          <Badge value={files.length} />
+          <span class="files-duration"
+            ><ClockIcon />
+            <span>{formatTime(folderTime)}</span></span
+          >
           {#if $collections && $collections.folderDownload}
             <a href={generateDownloadPath()} target="_self"
               ><span class="summary-icons"><DownloadFolderIcon /></span></a
@@ -376,11 +375,7 @@ import Badge from "./Badge.svelte";
         <ul>
           {#each files as file, pos}
             <li on:click={startPlaying(pos, true, 0)}>
-              <FileItem
-                file = {file}
-                position={pos}
-                {container}
-              />
+              <FileItem {file} position={pos} {container} />
             </li>
           {/each}
         </ul>
@@ -400,33 +395,33 @@ import Badge from "./Badge.svelte";
         </div>
       {/if}
       {#if coverPath || descriptionPath}
-      <details open>
-        <summary>Info</summary>
-        {#if coverPath}
-        <div id="folder-cover">
-            <Cover {coverPath} />
-        </div>
-        {/if}
-        {#if folderTags}
-        <div id="folder-tags">
-          <table role="grid">
-            <tbody>
-            {#each Object.keys(folderTags) as k}
-              <tr>
-                <th>{k}</th>
-                <td>{folderTags[k]}</td>
-              </tr>
-            {/each}
-          </tbody>
-          </table>
-        </div>
-        {/if}
-        {#if descriptionPath}
-        <div id="folder-description">
-            <Description {descriptionPath} />
-        </div>
-        {/if}
-      </details>
+        <details open>
+          <summary>Info</summary>
+          {#if coverPath}
+            <div id="folder-cover">
+              <Cover {coverPath} />
+            </div>
+          {/if}
+          {#if folderTags}
+            <div id="folder-tags">
+              <table role="grid">
+                <tbody>
+                  {#each Object.keys(folderTags) as k}
+                    <tr>
+                      <th>{k}</th>
+                      <td>{folderTags[k]}</td>
+                    </tr>
+                  {/each}
+                </tbody>
+              </table>
+            </div>
+          {/if}
+          {#if descriptionPath}
+            <div id="folder-description">
+              <Description {descriptionPath} />
+            </div>
+          {/if}
+        </details>
       {/if}
     </div>
   {/if}

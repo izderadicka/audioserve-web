@@ -10,7 +10,7 @@
   import Cached from "svelte-material-icons/Cached.svelte";
   import Play from "svelte-material-icons/Play.svelte";
   import { FolderType } from "../types/enums";
-import type { AudioFileExt } from "../types/types";
+  import type { AudioFileExt } from "../types/types";
 
   export let file: AudioFileExt;
   export let position: number;
@@ -40,7 +40,7 @@ import type { AudioFileExt } from "../types/types";
     let title = tags?.title;
     if (!title) return;
     if (title == file.name) return;
-    if (title == file.name.replace('_', ' ')) return;
+    if (title == file.name.replace("_", " ")) return;
     return title;
   }
 
@@ -70,8 +70,8 @@ import type { AudioFileExt } from "../types/types";
     const scrollDirection = needScroll();
     if (scrollDirection !== Scroll.NO) {
       elem.scrollIntoView(scrollDirection === Scroll.DOWN ? true : false);
-      if (scrollDirection === Scroll.UP ) {
-        container.scrollBy({top: scrollOffset});
+      if (scrollDirection === Scroll.UP) {
+        container.scrollBy({ top: scrollOffset });
       }
     }
   }
@@ -82,7 +82,7 @@ import type { AudioFileExt } from "../types/types";
   <div class="info">
     <h4 class="file-name">{baseName}</h4>
     {#if title}
-    <h6 class="title">{title}</h6>
+      <h6 class="title">{title}</h6>
     {/if}
     <div class="meta">
       <span class="time">{formattedDuration}</span>
@@ -91,7 +91,7 @@ import type { AudioFileExt } from "../types/types";
     </div>
   </div>
   <div class="icons">
-    {#if file.cached}<Cached size="1.2em"/>{/if}
+    {#if file.cached}<Cached size="1.2em" />{/if}
   </div>
 </div>
 
@@ -105,7 +105,7 @@ import type { AudioFileExt } from "../types/types";
 
   .icons {
     vertical-align: middle;
-    margin:auto;
+    margin: auto;
   }
 
   .info {
@@ -121,7 +121,7 @@ import type { AudioFileExt } from "../types/types";
     font-size: 0.8rem;
   }
 
-  .meta span{
+  .meta span {
     margin-right: 0.5rem;
   }
 
