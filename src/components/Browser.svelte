@@ -23,7 +23,14 @@
   import { FolderType, StorageKeys } from "../types/enums";
   import { PlayItem } from "../types/play-item";
   import type { AudioFileExt } from "../types/types";
-  import { formatTime, splitExtInName, splitPath, splitUrl } from "../util";
+  import {
+    formatTime,
+    nonEmpty,
+    sorted,
+    splitExtInName,
+    splitPath,
+    splitUrl,
+  } from "../util";
   import FileItem from "./FileItem.svelte";
   import FolderItem from "./FolderItem.svelte";
   import Description from "./Description.svelte";
@@ -394,7 +401,7 @@
           >
         </div>
       {/if}
-      {#if coverPath || descriptionPath}
+      {#if coverPath || descriptionPath || nonEmpty(folderTags)}
         <details open>
           <summary>Info</summary>
           {#if coverPath}
@@ -402,11 +409,11 @@
               <Cover {coverPath} />
             </div>
           {/if}
-          {#if folderTags}
+          {#if nonEmpty(folderTags)}
             <div id="folder-tags">
               <table role="grid">
                 <tbody>
-                  {#each Object.keys(folderTags) as k}
+                  {#each sorted(Object.keys(folderTags)) as k}
                     <tr>
                       <th>{k}</th>
                       <td>{folderTags[k]}</td>

@@ -81,16 +81,30 @@ export function splitExtInName(file: AudioFile): {
 } {
   const idx = file.path.lastIndexOf(".");
   if (idx >= 0) {
-    const ext = file.path.substring(idx)
-    const baseName = file.name.endsWith(ext)?file.name.substring(0, file.name.length-ext.length):file.name;
+    const ext = file.path.substring(idx);
+    const baseName = file.name.endsWith(ext)
+      ? file.name.substring(0, file.name.length - ext.length)
+      : file.name;
     return {
       baseName,
-      extension: ext.substring(1)
-    }
+      extension: ext.substring(1),
+    };
   } else {
     return {
-      baseName: file.name
-    }
+      baseName: file.name,
+    };
   }
 }
 
+export function nonEmpty(o: object | Array<any>): boolean {
+  if (!o) return false;
+  if (o instanceof Array) {
+    return o.length > 0;
+  } else {
+    return Object.keys(o).length > 0;
+  }
+}
+
+export function sorted<T>(a: Array<T>): Array<T> {
+  return [...a].sort();
+}
