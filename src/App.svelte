@@ -383,7 +383,7 @@
       </div>
     {:else if showComponent == "recent"}
       <div class="browser">
-        <Recent />
+        <Recent on:close={() => (showComponent = "browser")} />
       </div>
     {:else}
       <Breadcrumb />

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { createEventDispatcher, onMount } from "svelte";
   import type { Position } from "../client";
   import {
     currentFolder,
@@ -8,8 +8,12 @@
     selectedCollection,
   } from "../state/stores";
   import { FolderType, StorageKeys } from "../types/enums";
+  import ClosableTitle from "./ClosableTitle.svelte";
   import PositionItem from "./PositionItem.svelte";
 
+  const dispatch = createEventDispatcher();
+
+  const close = () => dispatch("close");
   let items: Position[] = [];
   onMount(() => {
     $positionsApi
@@ -33,7 +37,7 @@
 </script>
 
 <div>
-  <h2>Recently Listened</h2>
+  <ClosableTitle on:close={close}>Recently Listened</ClosableTitle>
   <details open>
     <summary>Files</summary>
     <ul>

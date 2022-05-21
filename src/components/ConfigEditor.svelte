@@ -6,6 +6,7 @@
   import { config } from "../state/stores";
   import { StorageKeys } from "../types/enums";
   import type { AppConfig } from "../types/types";
+  import ClosableTitle from "./ClosableTitle.svelte";
 
   let currentConfig: AppConfig = get(config);
 
@@ -25,7 +26,7 @@
 </script>
 
 <div id="config-editor">
-  <h2>Audioserve Preferences</h2>
+  <ClosableTitle on:close={cancel}>Audioserve Preferences</ClosableTitle>
   <form>
     <label for="cache-ahead">Files to Cache Ahead</label>
     <input
