@@ -5,6 +5,7 @@ import {
   CollectionsApi,
   CollectionsInfo,
   Configuration,
+  PositionsApi,
   Transcoding,
   TranscodingsInfo,
 } from "../client";
@@ -66,6 +67,14 @@ export const pendingDownloads: Writable<number> = writable(0);
 export const colApi = derived(
   apiConfig,
   ($apiConfig) => new CollectionsApi($apiConfig)
+);
+
+export const positionsApi = derived(
+  [apiConfig, group],
+  ([$apiConfig, $group]) => {
+    if (!group) return null;
+    return new PositionsApi($apiConfig);
+  }
 );
 
 const getInitialConfig = () => {

@@ -39,6 +39,7 @@
   import ConfigEditor from "./components/ConfigEditor.svelte";
   import { HistoryWrapper } from "./util/history";
   import { API_CACHE_NAME } from "./types/constants";
+  import Recent from "./components/Recent.svelte";
 
   export let cache: Cache;
   if (cache) {
@@ -48,7 +49,7 @@
   }
 
   const historyChanged = () => {
-    showConfig = false;
+    showComponent = "browser";
   };
   const history = new HistoryWrapper(historyChanged);
   setContext("history", history);
@@ -98,18 +99,21 @@
       case "clear-cache":
         Promise.all([
           cache?.clearCache().then(() => {
-          cache.cancelPendingLoads("", true);
-        }),
+            cache.cancelPendingLoads("", true);
+          }),
           window?.caches.delete(API_CACHE_NAME),
         ])
-        .then(() => window.location.reload())
-        .catch((e)=> console.warn("Error clearing cache "+ e));
+          .then(() => window.location.reload())
+          .catch((e) => console.warn("Error clearing cache " + e));
         break;
       case "show-preferences":
-        showConfig = true;
+        showComponent = "config";
         break;
       case "about":
         showAboutDialog();
+        break;
+      case "recent":
+        showComponent = "recent";
         break;
     }
   }
@@ -137,7 +141,7 @@
             if (ok) {
               try {
                 await loadCollections();
-              } catch(e) {
+              } catch (e) {
                 error = `Fail to load collections after authentication, one reason can be insecure context and API on diffrent origin`;
               }
             }
@@ -270,7 +274,19 @@
     sleepTime = 0;
   }
 
-  let showConfig = false;
+  let showComponent: "browser" | "config" | "recent" = "browser";
+
+  selectedCollection.subscribe((_col) => {
+    showComponent = "browser";
+  });
+
+  selectedCollection.subscribe((_col) => {
+    showComponent = "browser";
+  });
+
+  currentFolder.subscribe((_folder) => {
+    showComponent = "browser";
+  });
 </script>
 
 <main>
@@ -357,13 +373,17 @@
       </nav>
     </div>
 
-    {#if showConfig}
+    {#if showComponent == "config"}
       <div class="browser">
         <ConfigEditor
           on:finished={() => {
-            showConfig = false;
+            showComponent = "browser";
           }}
         />
+      </div>
+    {:else if showComponent == "recent"}
+      <div class="browser">
+        <Recent />
       </div>
     {:else}
       <Breadcrumb />
@@ -404,7 +424,6 @@
 </ConfirmDialog>
 
 <style>
- 
   .icons span.withText {
     display: inline-flex;
   }

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
   import type { Transcoding } from "../client";
-  import { selectedTranscoding, transcodings } from "../state/stores";
+  import { group, selectedTranscoding, transcodings } from "../state/stores";
   import Menu from "svelte-material-icons/Menu.svelte";
   import {
     StorageKeys,
@@ -67,13 +67,19 @@
         <nav>
           <!-- svelte-ignore a11y-invalid-attribute -->
           <ul>
+            {#if $group}
+              <li>
+                <a
+                  href="#"
+                  data-menu="recent"
+                  on:click|preventDefault={menuClick}>Recently Listened</a
+                >
+              </li>
+            {/if}
             <li>
               <a href="#" data-menu="logout" on:click|preventDefault={menuClick}
-                >Logout</a>
-            </li>
-            <li>
-              <a href="#" data-menu="clear-cache" on:click|preventDefault={menuClick}
-                >Clear Cache</a>
+                >Logout</a
+              >
             </li>
             <li>
               <a
@@ -105,12 +111,23 @@
               </details>
             </li>
             <li>
-              <a href="#" data-menu="show-preferences" on:click|preventDefault={menuClick}
-                >Other Preferences</a>
+              <a
+                href="#"
+                data-menu="show-preferences"
+                on:click|preventDefault={menuClick}>Other Preferences</a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                data-menu="clear-cache"
+                on:click|preventDefault={menuClick}>Clear Cache</a
+              >
             </li>
             <li>
               <a href="#" data-menu="about" on:click|preventDefault={menuClick}
-                >About</a>
+                >About</a
+              >
             </li>
           </ul>
         </nav>
