@@ -32,14 +32,8 @@
   } from "../state/stores";
   import { FolderType, StorageKeys } from "../types/enums";
   import { PlayItem } from "../types/play-item";
-
-  import {
-    formatTime,
-    splitExtInName,
-    splitPath,
-    splitRootPath,
-    splitUrl,
-  } from "../util";
+  import { formatTime } from "../util/date";
+  import { splitExtInName, splitPath, splitRootPath, splitUrl } from "../util";
   import CacheIndicator from "./CacheIndicator.svelte";
   import { Throttler } from "../util/events";
   import { getLocationPath } from "../util/browser";
@@ -468,7 +462,11 @@
       if (offset > 0 && diff <= 1) {
         let newTime = progressValue - offset;
         if (newTime < timeOffset) newTime = timeOffset;
-        if (cached || !transcoded || (transcoded && safeToSeekInPlayer(newTime))) {
+        if (
+          cached ||
+          !transcoded ||
+          (transcoded && safeToSeekInPlayer(newTime))
+        ) {
           console.debug("Autorewind to " + newTime);
           setCurrentTime(newTime, false);
         }

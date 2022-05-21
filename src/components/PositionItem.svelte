@@ -1,7 +1,8 @@
 <script lang="ts">
   import { beforeUpdate } from "svelte";
   import type { Position } from "../client";
-  import { fileToHumanName, formatTime, formatTimeAgo } from "../util";
+  import { formatTime, formatTimeAgo } from "../util/date";
+  import { fileToHumanName } from "../util";
 
   export let position: Position;
   let name: string | undefined;

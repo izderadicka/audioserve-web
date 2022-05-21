@@ -5,8 +5,8 @@
     playList,
     selectedCollection,
   } from "../state/stores";
-
-  import { formatTime, splitExtInName } from "../util";
+  import { formatTime } from "../util/date";
+  import { splitExtInName } from "../util";
   import Cached from "svelte-material-icons/Cached.svelte";
   import Play from "svelte-material-icons/Play.svelte";
   import { FolderType } from "../types/enums";

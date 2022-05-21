@@ -23,8 +23,8 @@
   import { FolderType, StorageKeys } from "../types/enums";
   import { PlayItem } from "../types/play-item";
   import type { AudioFileExt } from "../types/types";
+  import { formatTime } from "../util/date";
   import {
-    formatTime,
     nonEmpty,
     sorted,
     splitExtInName,
