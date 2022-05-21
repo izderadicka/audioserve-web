@@ -7,7 +7,7 @@ Now key focus is on efficient caching of audio files, something similar what is 
 
 My idea is that this application should fully replace mobile (Android), client.
 
-As per now it's definitely 'Work In Progress',  basic things are working, I'm already using it for some time and curious and fearless user are welcomed to try. I'm definitely **interested in feedback** so you can log issues on this project.
+As per now it's still 'Work In Progress',  most things are working, I'm already using it for some time and curious and fearless user are welcomed to try. I'm definitely **interested in feedback** so you can log issues on this project.
 
 For now works better in Chrome/Chromium, but Firefox should be also fine most of the time (ServiceWorker seems to be more "stable" in Chrome).
 
