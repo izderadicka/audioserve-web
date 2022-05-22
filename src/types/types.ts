@@ -28,7 +28,8 @@ export interface AppConfig {
   jumpForwardTime: number;
   jumpBackTime: number;
   transcodingJumpLimit: number;
-  autorewind: boolean
+  autorewind: boolean;
+  recentDays: number;
 }
 
 export interface TranscodingDetail {

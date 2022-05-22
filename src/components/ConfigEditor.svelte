@@ -94,6 +94,19 @@
       it by n minutes by shaking device
     </p>
 
+    <label for="recent-days">Maximum history for recently listened (days)</label
+    >
+    <input
+      id="recent-days"
+      type="number"
+      bind:value={currentConfig.recentDays}
+    />
+    <p>
+      When showing recently listened files from menu only records newer then
+      given number of days are fetched from server. Put zero to fetch all
+      available records.
+    </p>
+
     <label for="pos-reporting">Playback Position Reporting Period (secs)</label>
     <input
       id="pos-reporting"

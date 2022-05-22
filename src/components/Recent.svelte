@@ -2,11 +2,13 @@
   import { createEventDispatcher, onMount } from "svelte";
   import type { Position } from "../client";
   import {
+    config,
     currentFolder,
     group,
     positionsApi,
     selectedCollection,
   } from "../state/stores";
+  import { DAY_IN_MILIS } from "../types/constants";
   import { FolderType, StorageKeys } from "../types/enums";
   import ClosableTitle from "./ClosableTitle.svelte";
   import PositionItem from "./PositionItem.svelte";
@@ -16,8 +18,12 @@
   const close = () => dispatch("close");
   let items: Position[] = [];
   onMount(() => {
+    let from: number = undefined;
+    if ($config.recentDays) {
+      from = Date.now() - $config.recentDays * DAY_IN_MILIS;
+    }
     $positionsApi
-      .positionsGroupGet({ group: $group })
+      .positionsGroupGet({ group: $group, to: from })
       .then((positions) => (items = positions))
       .catch((e) => console.error("Cannot fetch recent positions", e));
   });
