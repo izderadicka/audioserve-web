@@ -122,6 +122,14 @@
               <li>
                 <a
                   href="#"
+                  data-menu="download"
+                  on:click|preventDefault={menuClick}
+                  >Cache Current Folder
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
                   data-menu="clear-cache"
                   on:click|preventDefault={menuClick}>Clear Cache</a
                 >

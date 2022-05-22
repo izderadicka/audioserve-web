@@ -31,7 +31,7 @@
   import Breadcrumb from "./components/Breadcrumb.svelte";
   import { baseUrl, otherTheme } from "./util/browser";
   import Player from "./components/Player.svelte";
-  import type { Cache } from "./cache";
+  import type { Cache, PrefetchRequest } from "./cache";
   import { APP_COMMIT, APP_VERSION, isDevelopment } from "./util/version";
   import ConfirmDialog from "./components/ConfirmDialog.svelte";
   import { createAudioContext, loadAudioFile, playBuffer } from "./util/audio";
@@ -40,6 +40,7 @@
   import { HistoryWrapper } from "./util/history";
   import { API_CACHE_NAME } from "./types/constants";
   import Recent from "./components/Recent.svelte";
+  import { PlayItem } from "./types/play-item";
 
   export let cache: Cache;
   if (cache) {
@@ -68,6 +69,7 @@
   );
 
   let container: HTMLDivElement;
+  let browser: Browser;
 
   async function loadCollections() {
     const cols = await $colApi.collectionsGet();
@@ -115,6 +117,34 @@
       case "recent":
         showComponent = "recent";
         break;
+      case "download":
+        showComponent = "browser";
+        downloadCurrentFolder();
+    }
+  }
+
+  function downloadCurrentFolder() {
+    if (!cache || !browser) return;
+    const preCaches: PrefetchRequest[] = [];
+    const files = browser.getFiles();
+    for (let i = 0; i < files.length; i++) {
+      const nextFile = files[i];
+      if (!nextFile.cached) {
+        const item = new PlayItem({
+          file: nextFile,
+          collection: $selectedCollection,
+          position: i,
+        });
+        preCaches.push({
+          url: item.url,
+          folderPosition: item.position,
+          lowPriority: true,
+        });
+      }
+    }
+    if (cache && preCaches.length > 0) {
+      console.log(`Try to cache ${preCaches.length} files`);
+      cache.cacheAhead(preCaches);
     }
   }
 
@@ -384,7 +414,7 @@
     {:else}
       <Breadcrumb />
       <div class="browser" bind:this={container}>
-        <Browser {container} infoOpen={!smallScreen} />
+        <Browser {container} infoOpen={!smallScreen} bind:this={browser} />
       </div>
     {/if}
     {#if $playItem}

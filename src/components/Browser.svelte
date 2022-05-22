@@ -48,6 +48,7 @@
 
   let subfolders: Subfolder[] = [];
   let files: AudioFileExt[] = [];
+  export const getFiles = () => files;
   let folderPath: string | undefined;
   let searchQuery: string | undefined;
   let folderTime: number;
@@ -297,15 +298,17 @@
         }
       }
       // update playlist
-      const { folder, file } = splitPath(path);
-      if ($playList.collection == collection && $playList.folder == folder) {
-        playList.update((pl) => {
-          const position = pl.files.findIndex((f) => f.path == path);
-          if (position >= 0) {
-            pl.files[position].cached = cached;
-          }
-          return pl;
-        });
+      if ($playList) {
+        const { folder, file } = splitPath(path);
+        if ($playList.collection == collection && $playList.folder == folder) {
+          playList.update((pl) => {
+            const position = pl.files.findIndex((f) => f.path == path);
+            if (position >= 0) {
+              pl.files[position].cached = cached;
+            }
+            return pl;
+          });
+        }
       }
     }
   }
