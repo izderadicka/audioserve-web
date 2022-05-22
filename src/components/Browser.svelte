@@ -102,7 +102,7 @@
       const audioFolder = await $colApi.colIdFolderPathGet({
         colId: $selectedCollection,
         path: folder,
-        group: $group,
+        group: $group || undefined,
       });
       const cachedPaths = await cache?.getCachedPaths(
         $selectedCollection,
