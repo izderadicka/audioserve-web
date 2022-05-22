@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher, getContext } from "svelte";
   import type { Transcoding } from "../client";
   import { group, selectedTranscoding, transcodings } from "../state/stores";
   import Menu from "svelte-material-icons/Menu.svelte";
@@ -14,6 +14,7 @@
   import { otherTheme } from "../util/browser";
   import { clickOutside } from "../util/dom";
   const dispatch = createEventDispatcher();
+  const cache = getContext("cache");
 
   let menuVisible = false;
   let menuButton: HTMLAnchorElement;
@@ -117,13 +118,15 @@
                 on:click|preventDefault={menuClick}>Other Preferences</a
               >
             </li>
-            <li>
-              <a
-                href="#"
-                data-menu="clear-cache"
-                on:click|preventDefault={menuClick}>Clear Cache</a
-              >
-            </li>
+            {#if cache}
+              <li>
+                <a
+                  href="#"
+                  data-menu="clear-cache"
+                  on:click|preventDefault={menuClick}>Clear Cache</a
+                >
+              </li>
+            {/if}
             <li>
               <a href="#" data-menu="about" on:click|preventDefault={menuClick}
                 >About</a
