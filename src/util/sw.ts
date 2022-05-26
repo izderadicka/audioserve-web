@@ -118,7 +118,7 @@ export class AudioCache {
         // Firefox seems not to generate error when aborting request, so delete it if it was not deleted due to error
         setTimeout(() => {
           this.delete(i.url);
-        }, 1000)
+        }, 1000);
       }
     }
   }
@@ -141,7 +141,6 @@ export class AudioCache {
                 );
                 return fetch(evt.request);
               } else {
-                
                 const req = cloneRequest(evt.request);
                 const abort = new AbortController();
 
@@ -149,31 +148,38 @@ export class AudioCache {
                 req.headers.delete("Range"); // let remove range header so we can cache whole file
                 return fetch(req, { signal: abort.signal }).then((resp) => {
                   // if not cached we can put it
-                  const keyReq = removeQuery(evt.request.url);
-                  evt.waitUntil(
-                    cache
-                      .put(keyReq, resp.clone())
-                      .then(async () => {
-                        await this.broadcastMessage({
-                          kind: CacheMessageKind.ActualCached,
-                          data: {
-                            originalUrl: resp.url,
-                            cachedUrl: keyReq,
-                          },
-                        });
-                        await evictCache(cache, this.sizeLimit, (req) => {
-                          return this.broadcastMessage({
-                            kind: CacheMessageKind.Deleted,
+                  if (resp.status === 200) {
+                    const keyReq = removeQuery(evt.request.url);
+                    evt.waitUntil(
+                      cache
+                        .put(keyReq, resp.clone())
+                        .then(async () => {
+                          await this.broadcastMessage({
+                            kind: CacheMessageKind.ActualCached,
                             data: {
-                              cachedUrl: req.url,
-                              originalUrl: req.url,
+                              originalUrl: resp.url,
+                              cachedUrl: keyReq,
                             },
                           });
-                        });
-                      })
-                      .catch((e) => logFetchError(e, keyReq))
-                      .then(() => this.delete(keyReq))
-                  );
+                          await evictCache(cache, this.sizeLimit, (req) => {
+                            return this.broadcastMessage({
+                              kind: CacheMessageKind.Deleted,
+                              data: {
+                                cachedUrl: req.url,
+                                originalUrl: req.url,
+                              },
+                            });
+                          });
+                        })
+                        .catch((e) => logFetchError(e, keyReq))
+                        .then(() => this.delete(keyReq))
+                    );
+                  } else {
+                    console.error(
+                      "Audio fetch return non-success status " + resp.status
+                    );
+                    this.delete(keyReq);
+                  }
                   return resp;
                 });
               }
@@ -295,6 +301,10 @@ export class NetworkFirstCache {
           });
         })
         .catch((e: any) => {
+          // For 401 error we must not use cache!!!
+          if (e instanceof Response && e.status === 401) {
+            return e;
+          }
           const errorResponse = () => {
             if (e instanceof Response) {
               return e;
