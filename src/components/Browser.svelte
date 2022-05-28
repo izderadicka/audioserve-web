@@ -272,9 +272,10 @@
 
     done.then(() => {
       history.add(constructHistoryState());
-      if (scrollTo && !folderIsPlaying()) {
+      if (!folderIsPlaying()) {
         // Do not scroll to history postion if current folder is playing
-        container.scrollTo({ top: scrollTo });
+        // console.debug("History scroll to " + scrollTo);
+        container.scrollTo({ top: scrollTo || 0 });
       }
     });
   }
