@@ -35,11 +35,24 @@
       bind:value={currentConfig.cacheAheadFiles}
     />
     <p>
-      When you start to play file following n files will be loaded to cache on
+      When you start to play file next n files will be loaded to cache on
       background
     </p>
 
-    <label for="jump-fwd">Short Jump Forward (secs]</label>
+    <label for="cache-ahead-delay"
+      >Delay before start caching next files (secs)</label
+    >
+    <input
+      id="cache-ahead-delay"
+      type="number"
+      bind:value={currentConfig.cacheAheadDelay}
+    />
+    <p>
+      Wait n seconds after playback start before starting to cache next files
+      (for small files it's half of their duration).
+    </p>
+
+    <label for="jump-fwd">Short Jump Forward (secs)</label>
     <input
       id="jump-fwd"
       type="number"
@@ -49,7 +62,7 @@
       Time for short foward jump (arc arrow icon right from play/pause button)
     </p>
 
-    <label for="jump-back">Short Jump Backward (secs]</label>
+    <label for="jump-back">Short Jump Backward (secs)</label>
     <input
       id="jump-back"
       type="number"

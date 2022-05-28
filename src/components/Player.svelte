@@ -29,6 +29,7 @@
     playList,
     positionWsApi,
     selectedCollection,
+    windowSize,
   } from "../state/stores";
   import { FolderType, StorageKeys } from "../types/enums";
   import { PlayItem } from "../types/play-item";
@@ -298,9 +299,8 @@
 
       if (item.startPlay) {
         await playPlayer();
-        if (!cached) cache?.ensureStarted();
         reportPosition();
-        tryCacheAhead(folderPosition);
+        tryCacheAhead(folderPosition, cached);
       } else {
         paused = true;
       }
@@ -346,9 +346,29 @@
     }
   }
 
-  const unsubscribe = playItem.subscribe(startPlay);
+  let cacheAheadTimer: number;
+  const unsubscribePlayItem = playItem.subscribe(startPlay);
+  const unsubscribePlayList = playList.subscribe((pl) => {
+    if (pl.folder != folder || pl.collection != collection) {
+      window.clearTimeout(cacheAheadTimer);
+    }
+  });
 
-  function tryCacheAhead(pos: number) {
+  function tryCacheAhead(pos: number, currentCached = false) {
+    window.clearTimeout(cacheAheadTimer);
+    const delay = Math.min(
+      $config.cacheAheadDelay * 1000,
+      (1000 * $playItem.duration) / 2
+    );
+    cacheAheadTimer = window.setTimeout(
+      startCacheAhead,
+      delay,
+      pos,
+      currentCached
+    );
+  }
+
+  function startCacheAhead(pos: number, currentCached = false) {
     if (!cache) return;
     const cacheAheadCount = $config.cacheAheadFiles;
     const preCaches: PrefetchRequest[] = [];
@@ -369,7 +389,11 @@
         }
       }
     }
-    if (cache && preCaches) {
+    if (!currentCached || preCaches.length) {
+      cache.ensureStarted();
+    }
+
+    if (cache && preCaches.length) {
       cache.cacheAhead(preCaches, {
         url: $playItem.url,
         folderPosition: $playItem.position,
@@ -442,9 +466,8 @@
         }
       } else {
         await playPlayer();
-        if (!cached) cache?.ensureStarted();
       }
-      tryCacheAhead(folderPosition);
+      tryCacheAhead(folderPosition, cached);
     } else {
       player.pause();
       preparingPlayback = false;
@@ -544,7 +567,8 @@
   });
 
   onDestroy(() => {
-    unsubscribe();
+    unsubscribePlayItem();
+    unsubscribePlayList();
     window.removeEventListener("mouseup", handleProgressMouseUp);
     window.removeEventListener("touchend", handleProgressMouseUp);
     cache.removeListener(updateCurrentlyPlaying);

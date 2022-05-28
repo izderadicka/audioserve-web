@@ -21,6 +21,7 @@ export interface CurrentPlayList {
 export interface AppConfig {
   maxParallelDownload: number;
   cacheAheadFiles: number;
+  cacheAheadDelay: number;
   transcodingTolerance: number;
   positionReportingPeriod: number;
   sleepTimerPeriod: number;
