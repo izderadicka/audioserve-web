@@ -20,7 +20,7 @@
     playList,
     selectedCollection,
   } from "../state/stores";
-  import { FolderType, StorageKeys } from "../types/enums";
+  import { FolderType, NavigateTarget, StorageKeys } from "../types/enums";
   import { PlayItem } from "../types/play-item";
   import type { AudioFileExt } from "../types/types";
   import { formatTime } from "../util/date";
@@ -39,12 +39,25 @@
   import { getLocationPath } from "../util/browser";
   import { Debouncer } from "../util/events";
   import Badge from "./Badge.svelte";
+  import { Scroller } from "../util/dom";
 
   const cache: Cache = getContext("cache");
   const history: HistoryWrapper = getContext("history");
 
   export let container: HTMLDivElement;
   export let infoOpen = false;
+  export const navigate = (where: NavigateTarget) => {
+    if (!folderIsPlaying()) {
+      $selectedCollection = $playList.collection;
+      $currentFolder = { value: $playList.folder, type: FolderType.REGULAR };
+    } else if (where === NavigateTarget.PLAY_ITEM) {
+      const elem: HTMLElement = document.querySelector("div.item.active");
+      if (elem != null) {
+        const scroller = new Scroller(container);
+        scroller.scrollToView(elem);
+      }
+    }
+  };
 
   let subfolders: Subfolder[] = [];
   let files: AudioFileExt[] = [];

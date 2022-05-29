@@ -421,7 +421,10 @@
     {/if}
     {#if $playItem}
       <div class="player">
-        <Player bind:this={player} />
+        <Player
+          bind:this={player}
+          on:navigate={(evt) => browser?.navigate(evt.detail)}
+        />
       </div>
     {/if}
   {/if}

@@ -11,14 +11,15 @@
   import Play from "svelte-material-icons/Play.svelte";
   import { FolderType } from "../types/enums";
   import type { AudioFileExt } from "../types/types";
+  import { Scroller } from "../util/dom";
 
   export let file: AudioFileExt;
   export let position: number;
   export let container: HTMLElement;
+
+  $: scroller = container ? new Scroller(container) : null;
   let tags: any = file.meta?.tags;
   let title: string;
-
-  const scrollOffset = 26;
 
   let baseName: string;
   let extension: string;
@@ -31,32 +32,12 @@
   let elem: HTMLElement;
   let formattedDuration = formatTime(file.meta?.duration);
 
-  enum Scroll {
-    UP,
-    DOWN,
-    NO,
-  }
-
   function preprocessTitle(tags: any) {
     let title = tags?.title;
     if (!title) return;
     if (title == baseName) return;
     if (title == baseName.replace("_", " ")) return;
     return title;
-  }
-
-  function needScroll() {
-    const containerTop = container.scrollTop;
-    const containerBottom = containerTop + container.clientHeight;
-    const top = elem.offsetTop;
-    const bottom = top + elem.clientHeight;
-    if (top >= containerTop && bottom <= containerBottom) {
-      return Scroll.NO;
-    } else if (bottom > containerBottom) {
-      return Scroll.UP;
-    } else {
-      return Scroll.DOWN;
-    }
   }
 
   $: isPlaying =
@@ -67,14 +48,8 @@
     $playList.folder === $currentFolder.value &&
     $currentFolder.type === FolderType.REGULAR &&
     $playList.collection === $selectedCollection;
-  $: if (isPlaying && elem && container) {
-    const scrollDirection = needScroll();
-    if (scrollDirection !== Scroll.NO) {
-      elem.scrollIntoView(scrollDirection === Scroll.DOWN ? true : false);
-      if (scrollDirection === Scroll.UP) {
-        container.scrollBy({ top: scrollOffset });
-      }
-    }
+  $: if (isPlaying && elem && scroller) {
+    scroller.scrollToView(elem);
   }
 </script>
 

@@ -1,5 +1,10 @@
 <script lang="ts">
-  import { getContext, onDestroy, onMount } from "svelte";
+  import {
+    createEventDispatcher,
+    getContext,
+    onDestroy,
+    onMount,
+  } from "svelte";
   import {
     Cache,
     CachedItem,
@@ -31,7 +36,7 @@
     selectedCollection,
     windowSize,
   } from "../state/stores";
-  import { FolderType, StorageKeys } from "../types/enums";
+  import { FolderType, NavigateTarget, StorageKeys } from "../types/enums";
   import { PlayItem } from "../types/play-item";
   import { formatTime } from "../util/date";
   import { splitExtInName, splitPath, splitRootPath, splitUrl } from "../util";
@@ -65,6 +70,7 @@
     window.location.reload();
   }
 
+  const dispatch = createEventDispatcher();
   const cache: Cache = getContext("cache");
 
   let expanded = false;
@@ -518,10 +524,11 @@
   }
 
   function navigateToFolder() {
-    const col = $playList.collection;
-    const folder = $playList.folder;
-    $selectedCollection = col;
-    $currentFolder = { value: folder, type: FolderType.REGULAR };
+    dispatch("navigate", NavigateTarget.PLAYLIST_FOLDER);
+  }
+
+  function locateFile() {
+    dispatch("navigate", NavigateTarget.PLAY_ITEM);
   }
 
   function playPrevious() {
@@ -620,12 +627,12 @@
 
 <div class="info">
   <div class="item-info" id="folder-info">
-    <label for="folder-name" class="icon"
+    <label for="folder-name" class="icon clickable" on:click={navigateToFolder}
       ><FolderIcon size={fileIconSize} /></label
     >
     <span
       id="folder-name"
-      class="item-name"
+      class="item-name clickable"
       dir="rtl"
       on:click={navigateToFolder}>{folder}</span
     >
@@ -638,7 +645,7 @@
     <div class="total-time">{formattedTotalFolderTime}</div>
   </div>
   <div class="item-info" id="file-info">
-    <label for="file-name">
+    <label for="file-name" class="clickable" on:click={locateFile}>
       {#if cached}
         <CachedIcon size={fileIconSize} />
       {:else if transcoded}
@@ -647,12 +654,14 @@
         <AudioIcon size={fileIconSize} />
       {/if}
     </label>
-    <span class="label">
+    <span class="label clickable" on:click={locateFile}>
       (<span>{folderSize ? folderPosition + 1 : 0}</span>/<span
         >{folderSize}</span
       >)
     </span>
-    <span id="file-name" class="item-name">{fileDisplayName}</span>
+    <span id="file-name" class="item-name clickable" on:click={locateFile}>
+      {fileDisplayName}
+    </span>
   </div>
 </div>
 <div class="player">
@@ -814,7 +823,7 @@
     margin-bottom: 0;
   }
 
-  #folder-name {
+  .clickable {
     cursor: pointer;
   }
 
