@@ -30,6 +30,7 @@
   import { FolderType, StorageKeys } from "./types/enums";
   import Breadcrumb from "./components/Breadcrumb.svelte";
   import { baseUrl, otherTheme } from "./util/browser";
+  import { gainFocus } from "./util/dom";
   import Player from "./components/Player.svelte";
   import type { Cache, PrefetchRequest } from "./cache";
   import { APP_COMMIT, APP_VERSION, isDevelopment } from "./util/version";
@@ -358,6 +359,7 @@
                   placeholder="Search"
                   on:keyup={checkSearch}
                   bind:value={searchValue}
+                  use:gainFocus
                 />
                 {#if smallScreen}
                   <span on:click={closeNavInput}
