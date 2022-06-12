@@ -13,4 +13,5 @@ export const defaultConfig: AppConfig = {
   transcodingJumpLimit: 5 * 60,
   autorewind: false,
   recentDays: 365,
+  alwaysTranscode: "",
 };

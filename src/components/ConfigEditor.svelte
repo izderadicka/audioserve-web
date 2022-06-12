@@ -155,6 +155,18 @@
       date to load
     </p>
 
+    <label for="always-transcode">Mime types to always transcode</label>
+    <input
+      id="always-transcode"
+      type="text"
+      bind:value={currentConfig.alwaysTranscode}
+    />
+    <p>
+      List here comma separated list of audio Mime types, that you want always
+      to transcode - e.g. they are not supported by browser on this platform.
+      Typical example would be audio/ogg on iPhone/iPad
+    </p>
+
     <div class="grid">
       <button class="secondary" on:click|preventDefault={cancel}>Cancel</button>
       <button on:click|preventDefault={applyConfig}>Apply</button>
