@@ -162,9 +162,9 @@
       bind:value={currentConfig.alwaysTranscode}
     />
     <p>
-      List here comma separated list of audio Mime types, that you want always
-      to transcode - e.g. they are not supported by browser on this platform.
-      Typical example would be audio/ogg on iPhone/iPad
+      List audio Mime types (space separated), that you want always to transcode
+      - e.g. they are not supported by browser on this platform. Typical example
+      would be audio/ogg on iPhone/iPad
     </p>
 
     <div class="grid">

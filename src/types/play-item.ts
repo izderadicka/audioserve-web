@@ -1,5 +1,10 @@
 import { get } from "svelte/store";
-import { apiConfig, config, selectedCollection, selectedTranscodingDetails } from "../state/stores";
+import {
+  apiConfig,
+  config,
+  selectedCollection,
+  selectedTranscodingDetails,
+} from "../state/stores";
 import { TranscodingCode } from "./enums";
 import type { AudioFileExt, TranscodingDetail } from "./types";
 
@@ -12,7 +17,6 @@ export interface PlayItemParams {
 }
 
 export class PlayItem {
-
   url: string;
   duration: number;
   name: string;
@@ -26,7 +30,7 @@ export class PlayItem {
   mime: string;
 
   constructor(params: PlayItemParams) {
-    this.checkNeedsTranscoding(params.file.meta.bitrate)
+    this.checkNeedsTranscoding(params.file);
     this.url = this.constructURL(params.file, params.collection);
     this.duration = params.file.meta?.duration;
     this.name = params.file.name;
@@ -38,14 +42,26 @@ export class PlayItem {
     this.mime = params.file.mime;
   }
 
-  private checkNeedsTranscoding(bitrate: number) {
+  private checkNeedsTranscoding(file: AudioFileExt) {
     const currentTranscoding = get(selectedTranscodingDetails);
-    const tolerance = get(config).transcodingTolerance;
-    if (currentTranscoding.code != TranscodingCode.None && 
-            currentTranscoding.bitrate > 0 &&
-            bitrate > currentTranscoding.bitrate * (1+tolerance))  {
-        this.transcoding = currentTranscoding.code;
-        this.transcoded = true;
+    const cfg = get(config);
+    if (cfg.alwaysTranscode && cfg.alwaysTranscode.indexOf(file.mime) >= 0) {
+      this.transcoding =
+        currentTranscoding.code != TranscodingCode.None
+          ? TranscodingCode.Medium
+          : currentTranscoding.code;
+      this.transcoded = true;
+      return;
+    }
+    const tolerance = cfg.transcodingTolerance;
+    if (
+      currentTranscoding.code != TranscodingCode.None &&
+      currentTranscoding.bitrate > 0 &&
+      file.meta &&
+      file.meta.bitrate > currentTranscoding.bitrate * (1 + tolerance)
+    ) {
+      this.transcoding = currentTranscoding.code;
+      this.transcoded = true;
     }
   }
 
@@ -55,11 +71,11 @@ export class PlayItem {
     let url = basePath + "/" + col + "/audio/" + encodeURI(file.path);
     const query = new URLSearchParams();
     if (this.transcoding) {
-        query.append("trans", this.transcoding);
+      query.append("trans", this.transcoding);
     }
     const queryString = query.toString();
     if (queryString) {
-        url += '?' + queryString;
+      url += "?" + queryString;
     }
     return url;
   }
@@ -68,55 +84,55 @@ export class PlayItem {
   // 1) For reliable format support probably  webm/audio has to be used
   // 2) MP3 works only in chrome :-(
   // 3) If try to feed all audiofile, chrome fails on full buffer
-  // This means much more work is needed -  MediaSource will have to be available to player, which 
+  // This means much more work is needed -  MediaSource will have to be available to player, which
   // will manage cache buffer and will have to call remove for old parts
-  // On the other hand there is big potential for loading only required parts of audio, 
+  // On the other hand there is big potential for loading only required parts of audio,
   // Media source can handle widows of audio frames.
   // I guess to really leverage it on must read the specification first.
-         
+
   createMediaSourceUrl() {
     const mediaSource = new MediaSource();
-    mediaSource.addEventListener('sourceopen', (evt) => {
-        console.debug("Media source opened", evt);
-        fetch(this.url, {credentials: 'include'})
+    mediaSource.addEventListener("sourceopen", (evt) => {
+      console.debug("Media source opened", evt);
+      fetch(this.url, { credentials: "include" })
         .then((resp) => {
-            if (resp.status>=400) {
-                throw new Error("Error response from server: "+resp.status)
-            }
-            let mime = resp.headers.get("Content-Type");
-            // if (mime =="audio/ogg") {
-            //     mime= "audio/webm; codecs=opus"
-            // }
-            if (! MediaSource.isTypeSupported(mime)) {
-                throw new Error(`Mime type ${mime} is not supported as MediaSource`);
-            }
-            const mediaBuffer = mediaSource.addSourceBuffer(mime);
-            const inputStream = resp.body.getReader();
-            
-            let reader = ({done, value}:{done:boolean, value:any}) => {
-                if (done) {
-                    console.debug("End of stream for "+ this.url);
-                } else {
-                    console.debug(`Read ${value.length} bytes`);
-                    mediaBuffer.appendBuffer(value);
+          if (resp.status >= 400) {
+            throw new Error("Error response from server: " + resp.status);
+          }
+          let mime = resp.headers.get("Content-Type");
+          // if (mime =="audio/ogg") {
+          //     mime= "audio/webm; codecs=opus"
+          // }
+          if (!MediaSource.isTypeSupported(mime)) {
+            throw new Error(
+              `Mime type ${mime} is not supported as MediaSource`
+            );
+          }
+          const mediaBuffer = mediaSource.addSourceBuffer(mime);
+          const inputStream = resp.body.getReader();
 
-                }
-            };
-            inputStream.read().then(reader);
-            mediaBuffer.addEventListener('updateend', () => 
-                inputStream.read().then(reader)
-            )
-            mediaBuffer.addEventListener('error', (e) => {
-                console.error("Media stream error", e);
-            })
-        }
-        )
-        .catch((e) => {
-            console.error("Media source error", e);
-            mediaSource.endOfStream('network');
+          let reader = ({ done, value }: { done: boolean; value: any }) => {
+            if (done) {
+              console.debug("End of stream for " + this.url);
+            } else {
+              console.debug(`Read ${value.length} bytes`);
+              mediaBuffer.appendBuffer(value);
+            }
+          };
+          inputStream.read().then(reader);
+          mediaBuffer.addEventListener("updateend", () =>
+            inputStream.read().then(reader)
+          );
+          mediaBuffer.addEventListener("error", (e) => {
+            console.error("Media stream error", e);
+          });
         })
-    })
+        .catch((e) => {
+          console.error("Media source error", e);
+          mediaSource.endOfStream("network");
+        });
+    });
 
     return URL.createObjectURL(mediaSource);
-}
+  }
 }
