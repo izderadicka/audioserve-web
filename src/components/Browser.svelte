@@ -108,7 +108,17 @@
       folderTags = undefined;
       descriptionPath = undefined;
       coverPath = undefined;
-    } catch (err) {}
+    } catch (resp) {
+      console.error("Cannot search", resp);
+      if (resp.status === 401) {
+        $isAuthenticated = false;
+      } else {
+        window.alert("Failed to search");
+        if (folderPath) {
+          $currentFolder = { type: FolderType.REGULAR, value: folderPath };
+        }
+      }
+    }
   }
 
   async function loadFolder(folder: string) {
@@ -181,6 +191,11 @@
         $currentFolder = { value: "", type: FolderType.REGULAR };
       } else if (resp.status === 401) {
         $isAuthenticated = false;
+      } else {
+        window.alert("Failed to load folder, staying on current");
+        if (folderPath) {
+          $currentFolder = { type: FolderType.REGULAR, value: folderPath };
+        }
       }
     } finally {
       searchQuery = undefined;
