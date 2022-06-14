@@ -39,7 +39,7 @@
     "typescript": "^4.6.3"
   },
   "dependencies": {
-    "@picocss/pico": "^1.5.0",
+    "@picocss/pico": "^1.5.2",
     "base64-js": "^1.5.1",
     "isomorphic-fetch": "^3.0.0",
     "js-sha256": "^0.9.0",
