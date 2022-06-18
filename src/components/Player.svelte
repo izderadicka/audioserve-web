@@ -310,31 +310,35 @@
       } else {
         paused = true;
       }
+      updateMediaSessionMetadata(item);
+    }
+  }
 
-      if ("mediaSession" in navigator) {
-        navigator.mediaSession.setPositionState(null);
-        const { root: artist, path: album } = splitRootPath(
-          splitPath(item.path).folder
-        );
-        navigator.mediaSession.metadata = new MediaMetadata({
-          title: fileDisplayName,
-          album,
-          artist,
-          artwork: [{ src: "favicon.png" }],
-        });
+  function updateMediaSessionMetadata(item: PlayItem) {
+    document.title = `${fileDisplayName} (${item.path})`;
+    if ("mediaSession" in navigator) {
+      const { root: artist, path: album } = splitRootPath(
+        splitPath(item.path).folder
+      );
+      navigator.mediaSession.setPositionState(null);
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: fileDisplayName,
+        album,
+        artist,
+        artwork: [{ src: "favicon.png" }],
+      });
 
-        navigator.mediaSession.setActionHandler(
-          "seekbackward",
-          jumpTimeRelative(-$config.jumpBackTime)
-        );
-        navigator.mediaSession.setActionHandler(
-          "seekforward",
-          jumpTimeRelative($config.jumpForwardTime)
-        );
-        //navigator.mediaSession.setActionHandler('seekto', function() { /* Code excerpted. */ });
-        navigator.mediaSession.setActionHandler("previoustrack", playPrevious);
-        navigator.mediaSession.setActionHandler("nexttrack", playNext);
-      }
+      navigator.mediaSession.setActionHandler(
+        "seekbackward",
+        jumpTimeRelative(-$config.jumpBackTime)
+      );
+      navigator.mediaSession.setActionHandler(
+        "seekforward",
+        jumpTimeRelative($config.jumpForwardTime)
+      );
+      //navigator.mediaSession.setActionHandler('seekto', function() { /* Code excerpted. */ });
+      navigator.mediaSession.setActionHandler("previoustrack", playPrevious);
+      navigator.mediaSession.setActionHandler("nexttrack", playNext);
     }
   }
 
