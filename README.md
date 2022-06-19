@@ -9,11 +9,11 @@ My idea is that this application should fully replace mobile (Android), client.
 
 As per now it's still 'Work In Progress',  most things are working, I'm already using it for some time and curious and fearless user are welcomed to try. I'm definitely **interested in feedback** so you can log issues on this project.
 
-For now works better in Chrome/Chromium, but Firefox should be also fine most of the time (ServiceWorker seems to be more "stable" in Chrome).
+For now works better in Chrome/Chromium, but Firefox should be also fine most of the time (ServiceWorker seems to be more "stable" in Chrome). Apple (Safari) users should change transcoding configuration on server to `aac-in-adts`, see [audioserve README](https://github.com/izderadicka/audioserve#alternative-transcodings-and-transcoding-configuration-for-apple-users) and also should add `audio/ogg` to always transcoded setting in client.
 
 ## Known limitations 
 
-Comparing with native Android app there are some limitation, which are given by implementation of mobile browsers and I do not see any possible workaround:
+Comparing with native Android app there are some limitations, which are given by implementation of mobile browsers and I do not see any possible workaround:
 1. Sensors API works only for active - visible browser window, thus for extension of sleep time by shaking you have to unlock screen first - thus it is not so useful.
 2. MediaSession on mobile browser behaves differently from native app, thus media notification is not so useful and behaves inconsistently. This will require bit more research.
 3. Javascript is paused on inactive/background windows, from what I tried it's kept running, if audio is playing. This limits possibility to cache ahead audio files, when browser in in background and not playing. Again this will require more research. 
