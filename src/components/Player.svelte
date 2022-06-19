@@ -666,7 +666,7 @@
 </script>
 
 <div class="player-separator">
-  <div class="player-expand-button" on:click={() => (expanded = !expanded)}>
+  <div tabindex="0" role="button" aria-label="Volume and speed controls" aria-expanded={expanded} class="player-expand-button" on:click={() => (expanded = !expanded)}>
     {#if expanded}<CollapsIcon size="48px" />{:else}<ExpandIcon
         size="48px"
       />{/if}
@@ -676,14 +676,16 @@
 {#if expanded}
   <div class="extra-controls">
     <div class="volume-control slider-control extra-control">
-      <span><VolumeIcon size={fileIconSize} /></span>
+      <span ><VolumeIcon size={fileIconSize} /></span>
       <input
+        tabindex="0"
         type="range"
         name="volume"
         id="volume"
         min="0"
         max="1"
         step="0.01"
+        aria-label="Volume"
         bind:value={volume}
       />
       <span class="control-value">{volume.toFixed(2)}</span>
@@ -692,12 +694,14 @@
     <div class="speed-control slider-control extra-control">
       <span><SpeedIcon size={fileIconSize} /></span>
       <input
+        tabindex="0"
         type="range"
         name="playback-speed"
         id="playback-speed"
         min="0.5"
         max="3"
         step="0.1"
+        aria-label="Speed"
         bind:value={playbackRate}
       />
       <span class="control-value">{playbackRate.toFixed(1)}</span>
@@ -711,6 +715,7 @@
       ><FolderIcon size={fileIconSize} /></label
     >
     <span
+      role="link"
       id="folder-name"
       class="item-name clickable"
       dir="rtl"
@@ -739,7 +744,7 @@
         >{folderSize}</span
       >)
     </span>
-    <span id="file-name" class="item-name clickable" on:click={locateFile}>
+    <span role="link" id="file-name" class="item-name clickable" on:click={locateFile}>
       {fileDisplayName}
     </span>
   </div>
@@ -770,6 +775,7 @@
         bind:value={progressValue}
         on:mousedown={handleProgressMouseDown}
         on:touchstart={handleProgressMouseDown}
+        aria-label="Position"
       />
       <CacheIndicator ranges={buffered} totalTime={expectedDuration} />
     </div>
@@ -780,16 +786,19 @@
 </div>
 <div class="controls-bar">
   <div class="player-controls">
-    <span class="control-button" on:click={playPrevious}>
+    <span tabindex="0" role="button" aria-label="Previous" class="control-button" on:click={playPrevious}>
       <PreviousIcon size={controlSize} />
     </span>
-    <span
+    <span tabindex="0" role="button" aria-label="Jump back"
       class="control-button"
       on:click={jumpTimeRelative(-$config.jumpBackTime)}
     >
       <RewindIcon size={controlSize} />
     </span>
     <span
+      tabindex="0"
+      role="button"
+      aria-label={paused ? "Play" : "Pause"}
       class="control-button"
       class:blink={preparingPlayback}
       on:click={playPause}
@@ -800,18 +809,18 @@
         <PauseIcon size={controlSize} />
       {/if}
     </span>
-    <span
+    <span tabindex="0" role="button" aria-label="Jump ahead"
       class="control-button"
       on:click={jumpTimeRelative($config.jumpForwardTime)}
     >
       <ForwardIcon size={controlSize} />
     </span>
-    <span class="control-button" on:click={playNext}>
+    <span tabindex="0" role="button" aria-label="Next" class="control-button" on:click={playNext}>
       <NextIcon size={controlSize} />
     </span>
 
     <!-- <span class="control-button" on:click={null}>
-    <SpeedIcon size="{controlSize}" />
+    <span><SpeedIcon size="{controlSize}" /></span>
   </span> -->
   </div>
 </div>
