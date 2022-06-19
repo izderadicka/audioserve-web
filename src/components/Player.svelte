@@ -251,7 +251,13 @@
 
   function jumpTimeRelative(amt: number) {
     return (evt) => {
-      const toTime = progressValue + amt;
+      let toTime = progressValue + amt;
+      if (toTime < 0) {
+        toTime = 0;
+        // TODO: this is just workaround, find better way - it's because paused is set before ended
+      } else if (paused && toTime > expectedDuration - 1) {
+        toTime = expectedDuration - 1;
+      }
       jumpTime(toTime);
     };
   }
@@ -508,6 +514,11 @@
   }
 
   function tryNextFile() {
+    if (currentTime < expectedDuration - 60) {
+      console.warn(
+        `Playback ended at ${currentTime} before expected duration ${expectedDuration}, maybe problem with cached version`
+      );
+    }
     let pos = $playItem.position;
     const nextPosition = pos + 1;
     playPosition(nextPosition);
@@ -571,6 +582,69 @@
     }
   }
 
+  // handle arrows and space
+  // play and forward and rewind by keys
+  let longerJump = false;
+  window.addEventListener("keydown", handleKeyDown);
+  window.addEventListener("keyup", handleKeyUp);
+
+  function handleKeyUp(evt: KeyboardEvent) {
+    if (evt.key === "Shift") {
+      longerJump = false;
+    }
+  }
+
+  function handleKeyDown(evt: KeyboardEvent) {
+    if (evt.key === "Shift") {
+      longerJump = true;
+      return;
+    }
+    const multiplier = longerJump ? 5 : 1;
+
+    if (evt.key === "MediaPause" || evt.key === "MediaStop") {
+      pause();
+      return;
+    }
+
+    if (evt.key === "MediaPlay") {
+      if (paused) playPause();
+      return;
+    }
+
+    if (evt.key == "MediaPlayPause") {
+      playPause();
+    }
+
+    if (evt.key === "MediaTrackNext") {
+      playNext();
+      return;
+    }
+    if (evt.key == "MediaTrackPrevious") {
+      playPrevious();
+      return;
+    }
+
+    // disable for certain elements where keys plays a role
+    if (
+      !["INPUT", "SELECT", "TEXTAREA"].includes(
+        (evt.target as HTMLElement).tagName
+      ) &&
+      ["ArrowLeft", "ArrowRight", " "].includes(evt.key)
+    ) {
+      evt.preventDefault();
+      evt.stopPropagation();
+
+      if (evt.key === "ArrowRight") {
+        jumpTimeRelative($config.jumpForwardTime * multiplier)(null);
+      } else if (evt.key == "ArrowLeft") {
+        jumpTimeRelative(-$config.jumpBackTime * multiplier)(null);
+      } else if (evt.key == " ") {
+        playPause();
+      }
+      return false;
+    }
+  }
+
   onMount(async () => {
     if ($playItem) {
       await startPlay($playItem);
@@ -582,6 +656,8 @@
     unsubscribePlayList();
     window.removeEventListener("mouseup", handleProgressMouseUp);
     window.removeEventListener("touchend", handleProgressMouseUp);
+    window.removeEventListener("keydown", handleKeyDown);
+    window.removeEventListener("keyup", handleKeyUp);
     cache.removeListener(updateCurrentlyPlaying);
     player?.removeEventListener("progress", updateBuffered);
     player?.removeEventListener("play", onPlayStarted);
