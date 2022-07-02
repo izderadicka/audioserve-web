@@ -795,11 +795,13 @@
     </span>
     <span
       class="control-button"
+      title="You can also use Left Arrow key"
       on:click={jumpTimeRelative(-$config.jumpBackTime)}
     >
       <RewindIcon size={controlSize} />
     </span>
     <span
+      title="You can also use Space key"
       class="control-button"
       class:blink={preparingPlayback}
       on:click={playPause}
@@ -812,6 +814,7 @@
     </span>
     <span
       class="control-button"
+      title="You can also use Right Arrow key"
       on:click={jumpTimeRelative($config.jumpForwardTime)}
     >
       <ForwardIcon size={controlSize} />
