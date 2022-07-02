@@ -54,9 +54,9 @@
 </script>
 
 <div bind:this={elem} class="item" class:active={isPlaying}>
-  {#if isPlaying}<div><Play size="2rem" /></div>{/if}
+  {#if isPlaying}<div aria-label="Now playing"><Play size="2rem" /></div>{/if}
   <div class="info">
-    <h4 class="file-name">{baseName}</h4>
+    <h4 class="file-name" role="button">{baseName}</h4>
     {#if title}
       <h6 class="title">{title}</h6>
     {/if}
