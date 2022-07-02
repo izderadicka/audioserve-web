@@ -632,9 +632,11 @@
 
     // disable for certain elements where keys plays a role
     if (
-      !["INPUT", "SELECT", "TEXTAREA"].includes(
+      (!["INPUT", "SELECT", "TEXTAREA"].includes(
         (evt.target as HTMLElement).tagName
-      ) &&
+      ) ||
+        (evt.target instanceof HTMLInputElement &&
+          evt.target.classList.contains("allow-global-keys"))) &&
       ["ArrowLeft", "ArrowRight", " "].includes(evt.key)
     ) {
       evt.preventDefault();
@@ -769,6 +771,7 @@
   <div class="progress">
     <div class="progress-bar">
       <input
+        class="allow-global-keys"
         type="range"
         id="playback-progress"
         min="0"
@@ -776,6 +779,7 @@
         bind:value={progressValue}
         on:mousedown={handleProgressMouseDown}
         on:touchstart={handleProgressMouseDown}
+        on:keydown={(evt) => evt.preventDefault()}
       />
       <CacheIndicator ranges={buffered} totalTime={expectedDuration} />
     </div>
