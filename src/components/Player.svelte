@@ -123,6 +123,7 @@
     paused = true;
   };
   let preparingPlayback = false;
+  let wantPlay = false;
 
   let player: HTMLAudioElement;
   let buffered = [];
@@ -254,9 +255,8 @@
       let toTime = progressValue + amt;
       if (toTime < 0) {
         toTime = 0;
-        // TODO: this is just workaround, find better way - it's because paused is set before ended
-      } else if (paused && toTime > expectedDuration - 1) {
-        toTime = expectedDuration - 1;
+      } else if (paused && toTime > expectedDuration) {
+        toTime = expectedDuration;
       }
       jumpTime(toTime);
     };
@@ -310,11 +310,13 @@
       totalFolderTime = $playList.totalTime;
 
       if (item.startPlay) {
+        wantPlay = true;
         await playPlayer();
         reportPosition();
         tryCacheAhead(folderPosition, cached);
       } else {
         paused = true;
+        wantPlay = false;
       }
       updateMediaSessionMetadata(item);
     }
@@ -469,6 +471,7 @@
   async function playPause() {
     reportPosition(true);
     if (paused) {
+      wantPlay = true;
       if (
         transcoded &&
         !cached &&
@@ -485,6 +488,7 @@
       }
       tryCacheAhead(folderPosition, cached);
     } else {
+      wantPlay = false;
       player.pause();
       preparingPlayback = false;
     }
@@ -519,9 +523,11 @@
         `Playback ended at ${currentTime} before expected duration ${expectedDuration}, maybe problem with cached version`
       );
     }
-    let pos = $playItem.position;
-    const nextPosition = pos + 1;
-    playPosition(nextPosition);
+    if (wantPlay) {
+      let pos = $playItem.position;
+      const nextPosition = pos + 1;
+      playPosition(nextPosition);
+    }
   }
 
   function playPosition(nextPosition: number, startPlay = true) {
@@ -626,9 +632,11 @@
 
     // disable for certain elements where keys plays a role
     if (
-      !["INPUT", "SELECT", "TEXTAREA"].includes(
+      (!["INPUT", "SELECT", "TEXTAREA"].includes(
         (evt.target as HTMLElement).tagName
-      ) &&
+      ) ||
+        (evt.target instanceof HTMLInputElement &&
+          evt.target.classList.contains("allow-global-keys"))) &&
       ["ArrowLeft", "ArrowRight", " "].includes(evt.key)
     ) {
       evt.preventDefault();
@@ -768,6 +776,7 @@
   <div class="progress">
     <div class="progress-bar">
       <input
+        class="allow-global-keys"
         type="range"
         id="playback-progress"
         min="0"
@@ -776,6 +785,7 @@
         on:mousedown={handleProgressMouseDown}
         on:touchstart={handleProgressMouseDown}
         aria-label="Position"
+        on:keydown={(evt) => evt.preventDefault()}
       />
       <CacheIndicator ranges={buffered} totalTime={expectedDuration} />
     </div>
@@ -791,6 +801,7 @@
     </span>
     <span tabindex="0" role="button" aria-label="Jump back"
       class="control-button"
+      title="You can also use Left Arrow key"
       on:click={jumpTimeRelative(-$config.jumpBackTime)}
     >
       <RewindIcon size={controlSize} />
@@ -799,6 +810,7 @@
       tabindex="0"
       role="button"
       aria-label={paused ? "Play" : "Pause"}
+      title="You can also use Space key"
       class="control-button"
       class:blink={preparingPlayback}
       on:click={playPause}
@@ -811,6 +823,7 @@
     </span>
     <span tabindex="0" role="button" aria-label="Jump ahead"
       class="control-button"
+      title="You can also use Right Arrow key"
       on:click={jumpTimeRelative($config.jumpForwardTime)}
     >
       <ForwardIcon size={controlSize} />
