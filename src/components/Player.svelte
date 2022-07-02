@@ -123,6 +123,7 @@
     paused = true;
   };
   let preparingPlayback = false;
+  let wantPlay = false;
 
   let player: HTMLAudioElement;
   let buffered = [];
@@ -254,9 +255,8 @@
       let toTime = progressValue + amt;
       if (toTime < 0) {
         toTime = 0;
-        // TODO: this is just workaround, find better way - it's because paused is set before ended
-      } else if (paused && toTime > expectedDuration - 1) {
-        toTime = expectedDuration - 1;
+      } else if (paused && toTime > expectedDuration) {
+        toTime = expectedDuration;
       }
       jumpTime(toTime);
     };
@@ -310,11 +310,13 @@
       totalFolderTime = $playList.totalTime;
 
       if (item.startPlay) {
+        wantPlay = true;
         await playPlayer();
         reportPosition();
         tryCacheAhead(folderPosition, cached);
       } else {
         paused = true;
+        wantPlay = false;
       }
       updateMediaSessionMetadata(item);
     }
@@ -469,6 +471,7 @@
   async function playPause() {
     reportPosition(true);
     if (paused) {
+      wantPlay = true;
       if (
         transcoded &&
         !cached &&
@@ -485,6 +488,7 @@
       }
       tryCacheAhead(folderPosition, cached);
     } else {
+      wantPlay = false;
       player.pause();
       preparingPlayback = false;
     }
@@ -519,9 +523,11 @@
         `Playback ended at ${currentTime} before expected duration ${expectedDuration}, maybe problem with cached version`
       );
     }
-    let pos = $playItem.position;
-    const nextPosition = pos + 1;
-    playPosition(nextPosition);
+    if (wantPlay) {
+      let pos = $playItem.position;
+      const nextPosition = pos + 1;
+      playPosition(nextPosition);
+    }
   }
 
   function playPosition(nextPosition: number, startPlay = true) {
