@@ -56,6 +56,7 @@
     href="#"
     on:click|preventDefault={() => (menuVisible = !menuVisible)}
     aria-label="Menu"
+    aria-expanded={menuVisible}
     bind:this={menuButton}
     id="main-menu-button"><Menu size="1.9rem" /></a
   >

@@ -56,7 +56,7 @@
 <div bind:this={elem} class="item" class:active={isPlaying}>
   {#if isPlaying}<div aria-label="Now playing"><Play size="2rem" /></div>{/if}
   <div class="info">
-    <h4 class="file-name" role="button">{baseName}</h4>
+    <h4 class="file-name item-header" role="link">{baseName}</h4>
     {#if title}
       <h6 class="title">{title}</h6>
     {/if}
@@ -67,7 +67,9 @@
     </div>
   </div>
   <div class="icons">
-    {#if file.cached}<Cached size="1.2em" />{/if}
+    {#if file.cached}
+      <span aria-label="Cached"><Cached size="1.2em" /></span>
+    {/if}
   </div>
 </div>
 

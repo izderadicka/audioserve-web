@@ -674,7 +674,14 @@
 </script>
 
 <div class="player-separator">
-  <div tabindex="0" role="button" aria-label="Volume and speed controls" aria-expanded={expanded} class="player-expand-button" on:click={() => (expanded = !expanded)}>
+  <div
+    tabindex="0"
+    role="button"
+    aria-label="Volume and speed controls"
+    aria-expanded={expanded}
+    class="player-expand-button button-like"
+    on:click={() => (expanded = !expanded)}
+  >
     {#if expanded}<CollapsIcon size="48px" />{:else}<ExpandIcon
         size="48px"
       />{/if}
@@ -684,7 +691,7 @@
 {#if expanded}
   <div class="extra-controls">
     <div class="volume-control slider-control extra-control">
-      <span ><VolumeIcon size={fileIconSize} /></span>
+      <span><VolumeIcon size={fileIconSize} /></span>
       <input
         tabindex="0"
         type="range"
@@ -709,7 +716,7 @@
         min="0.5"
         max="3"
         step="0.1"
-        aria-label="Speed"
+        aria-label="Playback Speed"
         bind:value={playbackRate}
       />
       <span class="control-value">{playbackRate.toFixed(1)}</span>
@@ -724,21 +731,39 @@
     >
     <span
       role="link"
+      aria-label="Navigate to currently playing folder"
       id="folder-name"
-      class="item-name clickable"
+      class="item-name link-like"
       dir="rtl"
       on:click={navigateToFolder}>{folder}</span
     >
   </div>
   <div id="total-progress">
-    <div class="play-time">{formattedFolderTime}</div>
-    <div class="progress total">
-      <progress value={folderTime} max={totalFolderTime} />
+    <div class="play-time" aria-label="Current time in whole folder">
+      {formattedFolderTime}
     </div>
-    <div class="total-time">{formattedTotalFolderTime}</div>
+    <div class="progress total">
+      <progress
+        aria-label="Total folder playback progress"
+        value={folderTime}
+        max={totalFolderTime}
+      />
+    </div>
+    <div class="total-time" aria-label="Total playback time of whole folder">
+      {formattedTotalFolderTime}
+    </div>
   </div>
   <div class="item-info" id="file-info">
-    <label for="file-name" class="clickable" on:click={locateFile}>
+    <label
+      for="file-name"
+      class="clickable"
+      on:click={locateFile}
+      title={cached
+        ? "Playing cached file"
+        : transcoded
+        ? "Playing transcoded file"
+        : "Playing streamed file"}
+    >
       {#if cached}
         <CachedIcon size={fileIconSize} />
       {:else if transcoded}
@@ -747,12 +772,22 @@
         <AudioIcon size={fileIconSize} />
       {/if}
     </label>
-    <span class="label clickable" on:click={locateFile}>
+    <span
+      class="label clickable"
+      on:click={locateFile}
+      aria-label="Posion of currently playing file in folder"
+    >
       (<span>{folderSize ? folderPosition + 1 : 0}</span>/<span
         >{folderSize}</span
       >)
     </span>
-    <span role="link" id="file-name" class="item-name clickable" on:click={locateFile}>
+    <span
+      role="link"
+      aria-label="Locate currently playing file"
+      id="file-name"
+      class="item-name link-like"
+      on:click={locateFile}
+    >
       {fileDisplayName}
     </span>
   </div>
@@ -770,7 +805,7 @@
     on:error={playerError}
     on:ended={tryNextFile}
   />
-  <div class="play-time">
+  <div class="play-time" aria-label="Current time in file">
     {formattedCurrentTime}
   </div>
   <div class="progress">
@@ -784,23 +819,32 @@
         bind:value={progressValue}
         on:mousedown={handleProgressMouseDown}
         on:touchstart={handleProgressMouseDown}
-        aria-label="Position"
+        aria-label="File Playback Time"
         on:keydown={(evt) => evt.preventDefault()}
       />
       <CacheIndicator ranges={buffered} totalTime={expectedDuration} />
     </div>
   </div>
-  <div class="total-time">
+  <div class="total-time" aria-label="Total time of current file">
     {formattedDuration}
   </div>
 </div>
 <div class="controls-bar">
   <div class="player-controls">
-    <span tabindex="0" role="button" aria-label="Previous" class="control-button" on:click={playPrevious}>
+    <span
+      tabindex="0"
+      role="button"
+      aria-label="Previous"
+      class="control-button button-like"
+      on:click={playPrevious}
+    >
       <PreviousIcon size={controlSize} />
     </span>
-    <span tabindex="0" role="button" aria-label="Jump back"
-      class="control-button"
+    <span
+      tabindex="0"
+      role="button"
+      aria-label="Jump back"
+      class="control-button button-like"
       title="You can also use Left Arrow key"
       on:click={jumpTimeRelative(-$config.jumpBackTime)}
     >
@@ -811,7 +855,7 @@
       role="button"
       aria-label={paused ? "Play" : "Pause"}
       title="You can also use Space key"
-      class="control-button"
+      class="control-button button-like"
       class:blink={preparingPlayback}
       on:click={playPause}
     >
@@ -821,14 +865,23 @@
         <PauseIcon size={controlSize} />
       {/if}
     </span>
-    <span tabindex="0" role="button" aria-label="Jump ahead"
-      class="control-button"
+    <span
+      tabindex="0"
+      role="button"
+      aria-label="Jump ahead"
+      class="control-button button-like"
       title="You can also use Right Arrow key"
       on:click={jumpTimeRelative($config.jumpForwardTime)}
     >
       <ForwardIcon size={controlSize} />
     </span>
-    <span tabindex="0" role="button" aria-label="Next" class="control-button" on:click={playNext}>
+    <span
+      tabindex="0"
+      role="button"
+      aria-label="Next"
+      class="control-button button-like"
+      on:click={playNext}
+    >
       <NextIcon size={controlSize} />
     </span>
 
@@ -871,6 +924,7 @@
   }
 
   .player-expand-button {
+    display: block;
     margin-left: auto;
     margin-right: auto;
     width: 48px;

@@ -346,8 +346,11 @@
               {#if showCollectionSelect}
                 <CollectionSelector selected={$selectedCollection} />
                 {#if smallScreen}
-                  <span role="button" aria-label="Close collection list" on:click={closeNavInput}
-                    ><CloseIcon size="1.6rem" /></span
+                  <span
+                    role="button"
+                    class="button-like"
+                    aria-label="Close collection list"
+                    on:click={closeNavInput}><CloseIcon size="1.6rem" /></span
                   >
                 {/if}
               {/if}
@@ -362,8 +365,11 @@
                   use:gainFocus
                 />
                 {#if smallScreen}
-                  <span role="button" aria-label="Close search" on:click={closeNavInput}
-                    ><CloseIcon size="1.6rem" /></span
+                  <span
+                    role="button"
+                    class="button-like"
+                    aria-label="Close search"
+                    on:click={closeNavInput}><CloseIcon size="1.6rem" /></span
                   >
                 {/if}
               {/if}
@@ -371,26 +377,50 @@
           </li>
           <li class="icons">
             {#if !showCollectionSelect && !showSearch && smallScreen}
-              <span role="button" aria-label="Open collection list" on:click={toggleCollectionsSelect}
+              <span
+                role="button"
+                class="button-like"
+                aria-label="Open collection list"
+                on:click={toggleCollectionsSelect}
                 ><CollectionsIcon size="1.5rem" /></span
               >
-              <span role="button" aria-label="Open search" on:click={toggleSearch}><SearchIcon size="1.5rem" /></span>
+              <span
+                role="button"
+                class="button-like"
+                aria-label="Open search"
+                on:click={toggleSearch}><SearchIcon size="1.5rem" /></span
+              >
             {/if}
             {#if (!showCollectionSelect && !showSearch) || !smallScreen}
               {#if $pendingDownloads > 0}
-                <span role="button" aria-label="Show downloads" on:click={showDownloadDialog} class="withText">
+                <span
+                  role="button"
+                  aria-label="Pending downloads"
+                  on:click={showDownloadDialog}
+                  class="withText button-like"
+                >
                   <DownloadIcon size="1.5rem" />
-                  {$pendingDownloads}
+                  <span>{$pendingDownloads}</span>
                 </span>
               {/if}
 
               {#if sleepTime > 0}
-                <span role="button" aria-label="Stop sleep timer" on:click={stopSleepTimer} class="withText">
+                <span
+                  role="button"
+                  aria-label="Stop sleep timer"
+                  on:click={stopSleepTimer}
+                  class="withText button-like"
+                >
                   <SleepCancelIcon size="1.5rem" />
-                  {sleepTime}
+                  <span>{sleepTime}</span>
                 </span>
               {:else}
-                <span role="button" aria-label="Start sleep timer" on:click={startSleepTimer}>
+                <span
+                  role="button"
+                  class="button-like"
+                  aria-label="Start sleep timer"
+                  on:click={startSleepTimer}
+                >
                   <SleepIcon size="1.5rem" />
                 </span>
               {/if}
@@ -457,6 +487,11 @@
 <style>
   .icons span.withText {
     display: inline-flex;
+  }
+
+  .withText span {
+    color: var(--color);
+    margin-left: 0.2rem;
   }
 
   .logo {

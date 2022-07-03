@@ -16,7 +16,7 @@
 </script>
 
 <div>
-  <h4 class="title" class:finished>{subfolder.name}</h4>
+  <h4 class="title item-header" class:finished role="link">{subfolder.name}</h4>
   {#if extended && basedir}
     <h6 class="subtitle">{basedir}</h6>
   {/if}

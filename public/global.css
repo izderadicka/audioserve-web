@@ -100,5 +100,24 @@ input[type="range"]::-moz-range-thumb:hover {
     --background-rgb: 0, 0, 0;
   }
 
+  .item-header[role="link"] {
+    all:inherit;
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: var(--h4-color);
+  }
+
+  .link-like[role="link"] {
+    all:unset;
+    cursor: pointer;
+  }
+
+  .button-like[role="button"], .button-like[role="button"]:focus, .button-like[role="button"]:hover  {
+    all:unset;
+    background: none !important;
+    border: none !important;
+    color: var(--primary) !important;
+  }
+
 
 
