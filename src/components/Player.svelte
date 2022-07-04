@@ -820,6 +820,7 @@
         on:mousedown={handleProgressMouseDown}
         on:touchstart={handleProgressMouseDown}
         aria-label="File Playback Time"
+        aria-valuetext={`${formattedCurrentTime} of ${formattedDuration}`}
         on:keydown={(evt) => evt.preventDefault()}
       />
       <CacheIndicator ranges={buffered} totalTime={expectedDuration} />

@@ -450,7 +450,7 @@
       </div>
     {/if}
     {#if $playItem}
-      <div class="player">
+      <div class="player" role="region" aria-label="Player">
         <Player
           bind:this={player}
           on:navigate={(evt) => browser?.navigate(evt.detail)}

@@ -179,7 +179,7 @@
             } catch (e) {
               console.warn("Invalid last position", e);
             }
-            startPlaying(position, false, time)();
+            startPlaying(position, false, time);
           }
         }
       }
@@ -229,28 +229,26 @@
   function playSharedPosition() {
     const idx = files.findIndex((f) => f.path === sharedPosition.path);
     if (idx >= 0) {
-      startPlaying(idx, true, sharedPosition.position)();
+      startPlaying(idx, true, sharedPosition.position);
     }
   }
 
   function startPlaying(position: number, startPlay = true, time?: number) {
-    return () => {
-      const file = files[position];
-      const item = new PlayItem({
-        file,
-        position,
-        startPlay,
-        time,
-      });
-      console.debug("Action to start to play: " + item.url);
-      $playList = {
-        files,
-        collection: $selectedCollection,
-        folder: $currentFolder.value,
-        totalTime: folderTime,
-      };
-      $playItem = item;
+    const file = files[position];
+    const item = new PlayItem({
+      file,
+      position,
+      startPlay,
+      time,
+    });
+    console.debug("Action to start to play: " + item.url);
+    $playList = {
+      files,
+      collection: $selectedCollection,
+      folder: $currentFolder.value,
+      totalTime: folderTime,
     };
+    $playItem = item;
   }
 
   const unsubsribe: Unsubscriber[] = [];
@@ -369,14 +367,14 @@
 <div id="browser">
   <div class="main-browser-panel">
     {#if subfolders.length > 0}
-      <details open>
+      <details open role="region" aria-label="Subfolders">
         <summary
           >Subfolders
           <Badge value={subfolders.length} />
           <span
-            class="summary-icons"
+            class="summary-icons button-like"
             on:click|stopPropagation|preventDefault={toggleSubfoldersSort}
-            aria-label="Sort by {sortTime?'Time':'Name'}"
+            aria-label="Sort by {sortTime ? 'Time' : 'Name'}"
             role="button"
           >
             {#if sortTime}
@@ -386,7 +384,7 @@
             {/if}
           </span>
         </summary>
-        <ul>
+        <ul class="items-list">
           {#each subfolders as fld}
             <li on:click={navigateTo(fld.path)}>
               <FolderItem
@@ -400,7 +398,7 @@
       </details>
     {/if}
     {#if files.length > 0}
-      <details open>
+      <details open role="region" aria-label="Files">
         <summary
           >Files
           <Badge value={files.length} />
@@ -410,15 +408,20 @@
           >
           {#if $collections && $collections.folderDownload}
             <a href={generateDownloadPath()} target="_self"
-              ><span class="summary-icons" aria-label="Download"><DownloadFolderIcon /></span></a
+              ><span class="summary-icons" aria-label="Download"
+                ><DownloadFolderIcon /></span
+              ></a
             >
           {/if}
         </summary>
-        <ul>
+        <ul class="items-list">
           {#each files as file, pos}
-            <li on:click={startPlaying(pos, true, 0)}>
-              <FileItem {file} position={pos} {container} />
-            </li>
+            <FileItem
+              {file}
+              position={pos}
+              {container}
+              playFunction={startPlaying}
+            />
           {/each}
         </ul>
       </details>
@@ -428,7 +431,9 @@
     <div class="browser-sidebar">
       {#if sharedPosition}
         <div class="last-position" id="last-remote-position">
-          <button on:click={playSharedPosition}
+          <button
+            on:click={playSharedPosition}
+            aria-label="Continue on last position in this folder"
             ><ContinuePlay size="2rem" />
             {sharePositionDisplayName} at {formatTime(
               sharedPosition.position
@@ -437,7 +442,7 @@
         </div>
       {/if}
       {#if coverPath || descriptionPath || nonEmpty(folderTags)}
-        <details bind:open={infoOpen}>
+        <details bind:open={infoOpen} role="complementary">
           <summary>Info</summary>
           {#if coverPath}
             <div id="folder-cover">
@@ -515,17 +520,5 @@
     font-weight: bold;
     font-size: 1.5rem;
     line-height: 1.5rem;
-  }
-  ul {
-    padding-left: 0;
-  }
-  ul li {
-    list-style-type: none;
-    cursor: pointer;
-    border-bottom: 1px solid var(--accordion-border-color);
-  }
-
-  ul li:hover {
-    color: var(--primary) !important;
   }
 </style>

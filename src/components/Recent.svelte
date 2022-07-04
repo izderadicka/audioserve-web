@@ -46,7 +46,7 @@
   <ClosableTitle on:close={close}>Recently Listened</ClosableTitle>
   <details open>
     <summary>Files</summary>
-    <ul>
+    <ul class="items-list">
       {#each items as position}
         <li on:click={goToPosition(position)}><PositionItem {position} /></li>
       {/each}
@@ -59,14 +59,5 @@
     font-weight: bold;
     font-size: 1.5rem;
     line-height: 1.5rem;
-  }
-
-  ul {
-    padding-left: 0;
-  }
-  ul li {
-    list-style-type: none;
-    cursor: pointer;
-    border-bottom: 1px solid var(--accordion-border-color);
   }
 </style>

@@ -21,7 +21,7 @@ body {
   padding-bottom: 0;
   margin-bottom: 0.2rem !important;
   line-height: 0.7rem;
-  width:auto;
+  width: auto;
 }
 
 .nav-bar {
@@ -29,9 +29,9 @@ body {
 }
 
 .nav-bar svg {
-    color: var(--primary);
-    cursor: pointer;
-    margin-left: 0.75rem
+  color: var(--primary);
+  cursor: pointer;
+  margin-left: 0.75rem;
 }
 
 .nav-bar .icons svg:hover {
@@ -42,7 +42,7 @@ a#main-menu-button {
   padding-left: 0;
 }
 
-a#main-menu-button svg{
+a#main-menu-button svg {
   margin-left: 0;
 }
 
@@ -70,8 +70,8 @@ input[type="range"]::-moz-range-thumb:hover {
 
 /* and additional colors for menu */
 
-:root[data-theme=light], 
-  :root:not([data-theme="dark"]) {
+:root[data-theme="light"],
+:root:not([data-theme="dark"]) {
   --menu-background: #f9f9f9;
   --menu-shadow: rgba(0, 0, 0, 0.2);
 
@@ -79,8 +79,7 @@ input[type="range"]::-moz-range-thumb:hover {
 }
 
 @media only screen and (prefers-color-scheme: dark) {
-  :root:not([data-theme=light])
-   {
+  :root:not([data-theme="light"]) {
     --menu-background: #11191f;
     --menu-shadow: rgba(255, 255, 255, 0.2);
 
@@ -90,34 +89,47 @@ input[type="range"]::-moz-range-thumb:hover {
   }
 }
 
-:root[data-theme=dark]
-   {
-    --menu-background: #11191f;
-    --menu-shadow: rgba(255, 255, 255, 0.2);
+:root[data-theme="dark"] {
+  --menu-background: #11191f;
+  --menu-shadow: rgba(255, 255, 255, 0.2);
 
-    /* Override some colors for dark theme */
-    --background-color: #000 !important;
-    --background-rgb: 0, 0, 0;
-  }
+  /* Override some colors for dark theme */
+  --background-color: #000 !important;
+  --background-rgb: 0, 0, 0;
+}
 
-  .item-header[role="link"] {
-    all:inherit;
-    font-size: 1.25rem;
-    font-weight: bold;
-    color: var(--h4-color);
-  }
+ul.items-list li {
+  padding-left: 0;
+}
 
-  .link-like[role="link"] {
-    all:unset;
-    cursor: pointer;
-  }
+ul.items-list li {
+  list-style-type: none;
+  cursor: pointer;
+  border-bottom: 1px solid var(--accordion-border-color);
+}
 
-  .button-like[role="button"], .button-like[role="button"]:focus, .button-like[role="button"]:hover  {
-    all:unset;
-    background: none !important;
-    border: none !important;
-    color: var(--primary) !important;
-  }
+ul.items-list li:hover {
+  border-color: var(--primary-hover);
+}
 
+.item-header[role="link"] {
+  all: inherit;
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: var(--h4-color);
+}
 
+.link-like[role="link"] {
+  all: unset;
+  cursor: pointer;
+}
 
+.button-like[role="button"],
+.button-like[role="button"]:focus,
+.button-like[role="button"]:hover {
+  all: unset;
+  background: none !important;
+  border: none !important;
+  color: var(--primary) !important;
+  cursor: pointer;
+}

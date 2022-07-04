@@ -33,15 +33,30 @@
   }
 </script>
 
-<div class="breadcrumb">
-  <a href="/" on:click|preventDefault={goHome}>Home</a>
-  {#each pathSegments as seg, idx}
-    <!-- svelte-ignore a11y-invalid-attribute -->
-    / <a href="#" on:click|preventDefault={changeFolder(idx)}>{seg} </a>
-  {/each}
-</div>
+<nav aria-label="Breadcrumb">
+  <div class="breadcrumb">
+    <a
+      href="/"
+      on:click|preventDefault={goHome}
+      aria-current={pathSegments.length === 0 ? "page" : null}>Home</a
+    >
+    {#each pathSegments as seg, idx}
+      <!-- svelte-ignore a11y-invalid-attribute -->
+      /
+      <a
+        href="#"
+        on:click|preventDefault={changeFolder(idx)}
+        aria-current={idx === pathSegments.length - 1 ? "page" : null}
+        >{seg}
+      </a>
+    {/each}
+  </div>
+</nav>
 
 <style>
+  nav {
+    display: block;
+  }
   .breadcrumb {
     padding: 0.5rem;
     background-color: var(--secondary-focus);
