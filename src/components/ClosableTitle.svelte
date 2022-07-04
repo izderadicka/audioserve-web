@@ -8,7 +8,7 @@
 <!-- svelte-ignore a11y-missing-content -->
 <h2>
   <span><slot /></span>
-  <a href="#close" class="close" on:click|preventDefault={close} />
+  <a href="#close" class="close" on:click|preventDefault={close} aria-label="Close" />
 </h2>
 
 <style>

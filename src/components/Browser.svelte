@@ -376,6 +376,8 @@
           <span
             class="summary-icons"
             on:click|stopPropagation|preventDefault={toggleSubfoldersSort}
+            aria-label="Sort by {sortTime?'Time':'Name'}"
+            role="button"
           >
             {#if sortTime}
               <SortTimeIcon />
@@ -408,7 +410,7 @@
           >
           {#if $collections && $collections.folderDownload}
             <a href={generateDownloadPath()} target="_self"
-              ><span class="summary-icons"><DownloadFolderIcon /></span></a
+              ><span class="summary-icons" aria-label="Download"><DownloadFolderIcon /></span></a
             >
           {/if}
         </summary>

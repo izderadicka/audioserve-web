@@ -677,7 +677,7 @@
   <div
     tabindex="0"
     role="button"
-    aria-label="Volume and speed controls"
+    aria-label="More Controls"
     aria-expanded={expanded}
     class="player-expand-button button-like"
     on:click={() => (expanded = !expanded)}
