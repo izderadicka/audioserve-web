@@ -47,7 +47,8 @@
         href="#"
         on:click|preventDefault={changeFolder(idx)}
         aria-current={idx === pathSegments.length - 1 ? "page" : null}
-        >{seg}
+      >
+        {seg}&nbsp;
       </a>
     {/each}
   </div>
