@@ -1,6 +1,6 @@
 {
   "name": "audioserve-web",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "author": {
     "name": "Ivan",
     "email": "ivan.zderadicka@gmail.com"
@@ -21,22 +21,22 @@
     "@rollup/plugin-commonjs": "^17.0.0",
     "@rollup/plugin-node-resolve": "^11.0.0",
     "@rollup/plugin-replace": "^3.1.0",
-    "@rollup/plugin-typescript": "^8.3.1",
+    "@rollup/plugin-typescript": "^8.3.3",
     "@tsconfig/svelte": "^2.0.0",
-    "@types/jest": "^27.4.1",
+    "@types/jest": "^27.5.2",
     "@types/showdown": "^1.9.4",
     "git-commit-id": "^2.0.1",
-    "rollup": "^2.70.1",
+    "rollup": "^2.75.7",
     "rollup-plugin-css-only": "^3.1.0",
     "rollup-plugin-livereload": "^2.0.0",
     "rollup-plugin-svelte": "^7.0.0",
     "rollup-plugin-terser": "^7.0.0",
-    "svelte": "^3.46.4",
-    "svelte-check": "^2.4.6",
+    "svelte": "^3.48.0",
+    "svelte-check": "^2.8.0",
     "svelte-material-icons": "^2.0.2",
-    "svelte-preprocess": "^4.10.4",
-    "tslib": "^2.0.0",
-    "typescript": "^4.6.3"
+    "svelte-preprocess": "^4.10.7",
+    "tslib": "^2.4.0",
+    "typescript": "^4.7.4"
   },
   "dependencies": {
     "@picocss/pico": "^1.5.3",
