@@ -57,9 +57,9 @@ import { getContext } from 'svelte';
     {/if}
     <form on:submit|preventDefault="{login}">
         <label for="shared-secret">Shared Secret</label>
-        <input type="password" name="shared-secret" bind:value="{sharedSecret}">
+        <input type="password" name="shared-secret" id="shared-secret" bind:value="{sharedSecret}">
         <label for="playback-group">Playback Group</label>
-        <input type="text" name="playback-group" bind:value="{playbackGroup}">
+        <input type="text" name="playback-group" id="playback-group" bind:value="{playbackGroup}">
         <button id="login-button">Log in</button>
     </form>
 </div>
