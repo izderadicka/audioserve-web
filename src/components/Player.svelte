@@ -745,6 +745,7 @@
     <div class="progress total">
       <progress
         aria-label="Total folder playback progress"
+        aria-valuetext={`${formattedFolderTime} of ${formattedTotalFolderTime}`}
         value={folderTime}
         max={totalFolderTime}
       />
@@ -775,7 +776,7 @@
     <span
       class="label clickable"
       on:click={locateFile}
-      aria-label="Posion of currently playing file in folder"
+      aria-label="Position of currently playing file in folder"
     >
       (<span>{folderSize ? folderPosition + 1 : 0}</span>/<span
         >{folderSize}</span
