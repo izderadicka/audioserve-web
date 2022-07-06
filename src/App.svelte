@@ -397,7 +397,7 @@
                   role="button"
                   aria-label="Pending downloads"
                   on:click={showDownloadDialog}
-                  class="withText button-like"
+                  class="with-text button-like"
                 >
                   <DownloadIcon size="1.5rem" />
                   <span>{$pendingDownloads}</span>
@@ -409,7 +409,7 @@
                   role="button"
                   aria-label="Stop sleep timer"
                   on:click={stopSleepTimer}
-                  class="withText button-like"
+                  class="with-text button-like"
                 >
                   <SleepCancelIcon size="1.5rem" />
                   <span>{sleepTime}</span>
@@ -485,12 +485,12 @@
 </ConfirmDialog>
 
 <style>
-  .icons span.withText {
+  .icons span.with-text {
     display: inline-flex;
   }
 
-  .withText span {
-    color: var(--color);
+  .with-text span {
+    color: var(--contrast);
     margin-left: 0.2rem;
   }
 
