@@ -37,7 +37,10 @@ if ("serviceWorker" in navigator) {
     // registration worked
     //console.log("After registration", reg.installing, reg.waiting, reg.active);
     const ctl = reg.active;
-    console.debug("Service Worker registration succeeded. Scope is " + reg.scope, ctl);
+    console.debug(
+      "Service Worker registration succeeded. Scope is " + reg.scope,
+      ctl
+    );
 
     if (ctl) {
       ctl.onstatechange = reportWorkerStatus;
@@ -60,15 +63,16 @@ if ("serviceWorker" in navigator) {
     }
   });
 } else {
-  console.error(
-    "Service worker is not available - will start with no caching"
-  );
+  console.error("Service worker is not available - will start with no caching");
   createApp(null);
 }
 
 function reportWorkerStatus() {
   if (navigator.serviceWorker?.controller) {
-    console.debug("Service worker state changed to "+ navigator.serviceWorker.controller.state);
+    console.debug(
+      "Service worker state changed to " +
+        navigator.serviceWorker.controller.state
+    );
   } else {
     console.error("Service worker is not available");
   }

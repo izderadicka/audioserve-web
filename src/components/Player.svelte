@@ -310,10 +310,8 @@
       totalFolderTime = $playList.totalTime;
 
       if (item.startPlay) {
-        wantPlay = true;
-        await playPlayer();
+        await safePlayPlayer(true);
         reportPosition();
-        tryCacheAhead(folderPosition, cached);
       } else {
         paused = true;
         wantPlay = false;
@@ -468,25 +466,29 @@
     preparingPlayback = false;
   }
 
+  async function safePlayPlayer(coldStart = false) {
+    wantPlay = true;
+    if (
+      transcoded &&
+      !cached &&
+      (progressValue > $config.transcodingJumpLimit || coldStart)
+    ) {
+      if (safeToSeekInPlayer(progressValue)) {
+        await playPlayer();
+      } else {
+        console.debug(`Should seek to position ${progressValue}`);
+        await loadTime(progressValue, true);
+      }
+    } else {
+      await playPlayer();
+    }
+    tryCacheAhead(folderPosition, cached);
+  }
+
   async function playPause() {
     reportPosition(true);
     if (paused) {
-      wantPlay = true;
-      if (
-        transcoded &&
-        !cached &&
-        progressValue > $config.transcodingJumpLimit
-      ) {
-        if (safeToSeekInPlayer(progressValue)) {
-          await playPlayer();
-        } else {
-          console.debug(`Should seek to position ${progressValue}`);
-          await loadTime(progressValue, true);
-        }
-      } else {
-        await playPlayer();
-      }
-      tryCacheAhead(folderPosition, cached);
+      await safePlayPlayer();
     } else {
       wantPlay = false;
       player.pause();
