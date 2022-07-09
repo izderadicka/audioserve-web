@@ -471,7 +471,8 @@
     if (
       transcoded &&
       !cached &&
-      (progressValue > $config.transcodingJumpLimit || coldStart)
+      (progressValue > $config.transcodingJumpLimit ||
+        (coldStart && progressValue > 5))
     ) {
       if (safeToSeekInPlayer(progressValue)) {
         await playPlayer();
