@@ -63,6 +63,7 @@
   let files: AudioFileExt[] = [];
   export const getFiles = () => files;
   let folderPath: string | undefined;
+  let isCollapsed = false;
   let searchQuery: string | undefined;
   let folderTime: number;
   let folderTags: object = null;
@@ -104,6 +105,7 @@
       // Other properties are not relevant and should be reset
       sharedPosition = undefined;
       folderPath = undefined;
+      isCollapsed = false;
       folderTime = undefined;
       folderTags = undefined;
       descriptionPath = undefined;
@@ -185,6 +187,7 @@
       }
 
       folderPath = folder;
+      isCollapsed = !audioFolder.isFile && audioFolder.isCollapsed;
     } catch (resp) {
       console.error("Cannot load folder", resp);
       if (resp.status === 404) {
@@ -359,7 +362,8 @@
   function generateDownloadPath(): string {
     return (
       $apiConfig.basePath +
-      `/${$selectedCollection}/download/${encodeURI(folderPath)}`
+      `/${$selectedCollection}/download/${encodeURI(folderPath)}` +
+      (isCollapsed ? "?collapsed" : "")
     );
   }
 </script>
