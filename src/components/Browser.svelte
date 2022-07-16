@@ -433,7 +433,7 @@
   </div>
   {#if $currentFolder && $currentFolder.type === FolderType.REGULAR}
     <div class="browser-sidebar">
-      {#if sharedPosition}
+      {#if sharedPosition && sharePositionDisplayName}
         <div class="last-position" id="last-remote-position">
           <button
             on:click={playSharedPosition}
