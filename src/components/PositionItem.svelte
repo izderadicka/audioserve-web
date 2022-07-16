@@ -13,14 +13,12 @@
 </script>
 
 <div>
-  <h4
-    class="title item-header"
-    class:finished={position.folderFinished}
-    role="link"
-  >
+  <h4 class="title item-header" role="link">
     {name}
   </h4>
-  <h6 class="subtitle">{position.folder}</h6>
+  <h6 class="subtitle" class:finished={position.folderFinished}>
+    {position.folder}
+  </h6>
   <div class="position-time">
     {formatTimeAgo(position.timestamp)}
     (pos. {formatTime(position.position)})
@@ -33,7 +31,6 @@
   }
 
   .finished {
-    font-style: italic;
     color: var(--secondary);
   }
 

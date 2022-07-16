@@ -81,7 +81,9 @@ export function splitExtInName(file: AudioFile): {
 export function fileToHumanName(file: string) {
   if (/\$\$/.test(file)) {
     const parts = file.split("$$");
-    if (parts.length === 3) {
+    if (parts.length === 2) {
+      file = file.replace("$$", " ");
+    } else if (parts.length === 3) {
       return parts[0];
     } else if (parts.length == 4) {
       return parts[1];
