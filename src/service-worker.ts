@@ -9,21 +9,20 @@ import {
   CacheMessage,
   AUDIO_CACHE_LIMIT,
 } from "./cache/cs-cache";
-import {API_CACHE_NAME, APP_CACHE_PREFIX} from "./types/constants";
+import { API_CACHE_NAME, APP_CACHE_PREFIX } from "./types/constants";
 import { removeQuery, splitPath } from "./util";
-import {
-  AudioCache,
-  NetworkFirstCache,
-} from "./util/sw";
+import { AudioCache, NetworkFirstCache } from "./util/sw";
 import { APP_COMMIT, isDevelopment, ENVIRONMENT } from "./util/version";
 
 function broadcastMessage(msg: CacheMessage) {
-  return self.clients.matchAll({includeUncontrolled: true}).then((clients) => {
-    for (const c of clients) {
-      console.debug(`Sending ${msg} to client ${c.type}::${c.id}`);
-      c.postMessage(msg);
-    }
-  });
+  return self.clients
+    .matchAll({ includeUncontrolled: true })
+    .then((clients) => {
+      for (const c of clients) {
+        console.debug(`Sending ${msg} to client ${c.type}::${c.id}`);
+        c.postMessage(msg);
+      }
+    });
 }
 
 let globalPathPrefix: string = (() => {
@@ -77,7 +76,7 @@ self.addEventListener("activate", (evt) => {
           keyList.map((key) => {
             if (key.startsWith("static-") && key != cacheName) {
               return caches.delete(key);
-            } 
+            }
             // else if (key == apiCache) {
             //   return caches.delete(key);
             // }
@@ -91,7 +90,11 @@ self.addEventListener("activate", (evt) => {
   );
 });
 
-const audioCacheHandler = new AudioCache(audioCache, AUDIO_CACHE_LIMIT, broadcastMessage);
+const audioCacheHandler = new AudioCache(
+  audioCache,
+  AUDIO_CACHE_LIMIT,
+  broadcastMessage
+);
 const apiCacheHandler = new NetworkFirstCache(apiCache);
 
 self.addEventListener("message", (evt) => {
@@ -102,17 +105,19 @@ self.addEventListener("message", (evt) => {
     audioCacheHandler.abort(msg.data.pathPrefix, msg.data.keepDirect);
   } else if (msg.kind === CacheMessageKind.Ping) {
     console.debug("Got PING from client");
-    evt.source.postMessage({
+    evt.source?.postMessage({
       kind: CacheMessageKind.Pong,
       data: {
-        pendingAudio: audioCacheHandler.getQueue()
-      }
-    })
+        pendingAudio: audioCacheHandler.getQueue(),
+      },
+    });
   }
 });
 
 const AUDIO_REG_EXP: RegExp = new RegExp(`^${globalPathPrefix}\\d+/audio/`);
-const API_REG_EXP: RegExp = new RegExp(`^${globalPathPrefix}(\\d+/)?(folder|collections|transcodings)/?`);
+const API_REG_EXP: RegExp = new RegExp(
+  `^${globalPathPrefix}(\\d+/)?(folder|collections|transcodings)/?`
+);
 
 self.addEventListener("fetch", (evt: FetchEvent) => {
   const parsedUrl = new URL(evt.request.url);
@@ -121,11 +126,9 @@ self.addEventListener("fetch", (evt: FetchEvent) => {
     // we are not intercepting requests with seek query
     if (parsedUrl.searchParams.get("seek")) return;
     audioCacheHandler.handleRequest(evt);
-    
   } else if (API_REG_EXP.test(parsedUrl.pathname)) {
-    console.debug("API request "+ parsedUrl.pathname);
+    console.debug("API request " + parsedUrl.pathname);
     apiCacheHandler.handleRequest(evt);
-      
   } else {
     // console.debug(`Checking ${parsedUrl.pathname} against ${API_REG_EXP} result ${API_REG_EXP.test(parsedUrl.pathname)}`)
     evt.respondWith(

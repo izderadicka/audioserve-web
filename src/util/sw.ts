@@ -6,12 +6,12 @@ import { removeQuery } from ".";
 import { CacheMessage, CacheMessageKind } from "../cache/cs-cache";
 
 function parseRange(range: string): [number, number?] {
-  const r = /^bytes=(\d+)-?(\d+)?/.exec(range);
+  const r = /^bytes=(\d+)-?(\d+)?/.exec(range)!;
   return [Number(r[1]), r[2] ? Number(r[2]) : undefined];
 }
 export async function buildResponse(
   originalResponse: Response,
-  range: string
+  range?: string | null
 ): Promise<Response> {
   if (range) {
     const body = await originalResponse.blob();
@@ -22,7 +22,7 @@ export async function buildResponse(
       status: 206,
       headers: {
         "Content-Range": `bytes ${start}-${end ? end : size - 1}/${size}`,
-        "Content-Type": originalResponse.headers.get("Content-Type"),
+        "Content-Type": originalResponse.headers.get("Content-Type") as string,
       },
     });
   } else {
@@ -65,7 +65,7 @@ class FetchQueueItem {
   constructor(
     public url: string,
     public abort: AbortController,
-    public isDirect: boolean,
+    public isDirect?: boolean,
     public folderPosition?: number
   ) {}
 }
@@ -301,8 +301,10 @@ export class NetworkFirstCache {
           });
         })
         .catch((e: any) => {
-          // For 401 error we must not use cache!!!
-          if (e instanceof Response && e.status === 401) {
+          // For 401, 404 errors we must not use cache!!!
+          if (e instanceof Response && [401, 404].indexOf(e.status) >= 0) {
+            // delete it from cache
+            caches.open(this.cacheName).then((c) => c.delete(evt.request));
             return e;
           }
           const errorResponse = () => {
