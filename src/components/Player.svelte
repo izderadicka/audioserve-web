@@ -4,6 +4,7 @@
     getContext,
     onDestroy,
     onMount,
+    tick,
   } from "svelte";
   import {
     Cache,
@@ -525,11 +526,16 @@
       console.warn(
         `Playback ended at ${currentTime} before expected duration ${expectedDuration}, maybe problem with cached version`
       );
+    } else {
+      console.debug(`File ${$playItem.name} on ${$playItem.path} finished`);
     }
     if (wantPlay) {
-      let pos = $playItem.position;
-      const nextPosition = pos + 1;
+      const nextPosition = $playItem.position + 1;
       playPosition(nextPosition);
+      // This is a hack to stabilize transitions on Chromium, where finished is fired twice sometimes
+      const wasPlay = wantPlay;
+      wantPlay = false;
+      window.setTimeout(() => (wantPlay = wasPlay), 100);
     }
   }
 
