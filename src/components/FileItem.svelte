@@ -23,19 +23,18 @@
   ) => void;
 
   $: scroller = container ? new Scroller(container) : null;
-  let tags: any = file.meta?.tags;
   let title: string;
-
   let baseName: string;
   let extension: string;
+  let formattedDuration: string;
 
   $: {
     ({ baseName, extension } = splitExtInName(file));
-    title = preprocessTitle(tags);
+    title = preprocessTitle(file.meta?.tags);
+    formattedDuration = formatTime(file.meta?.duration);
   }
 
   let elem: HTMLElement;
-  let formattedDuration = formatTime(file.meta?.duration);
 
   function preprocessTitle(tags: any) {
     let title = tags?.title;
