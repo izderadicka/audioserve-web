@@ -329,7 +329,7 @@
           <ul>
             <li>
               <h4 class="logo">
-                <a href="/">
+                <a href=".">
                   {#if smallScreen}
                     as
                   {:else}
