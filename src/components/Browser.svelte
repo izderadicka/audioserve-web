@@ -74,6 +74,7 @@
   let coverPath: string;
 
   let sortTime = false;
+  let collator = new window.Intl.Collator(navigator.language);
   const toggleSubfoldersSort = () => {
     sortTime = !sortTime;
     subfolders = sortSubfolders(subfolders);
@@ -84,7 +85,7 @@
       if (sortTime) {
         return a.modified < b.modified ? 1 : a.modified > b.modified ? -1 : 0;
       } else {
-        return a.name > b.name ? 1 : a.name < b.name ? -1 : 0;
+        return collator.compare(a.name, b.name);
       }
     });
   }
@@ -145,9 +146,7 @@
               return file;
             })
           : audioFolder.files!;
-      subfolders = sortTime
-        ? sortSubfolders(audioFolder.subfolders!)
-        : audioFolder.subfolders!;
+      subfolders = sortSubfolders(audioFolder.subfolders!);
       localStorage.setItem(StorageKeys.LAST_FOLDER, folder);
       sharedPosition = audioFolder.position;
       sharePositionDisplayName = null;
