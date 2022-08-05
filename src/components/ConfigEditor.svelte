@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher, getContext } from "svelte";
 
   import { get } from "svelte/store";
 
@@ -9,6 +9,7 @@
   import ClosableTitle from "./ClosableTitle.svelte";
 
   let currentConfig: AppConfig = get(config);
+  let cache = getContext("cache");
 
   const dispatch = createEventDispatcher();
 
@@ -28,32 +29,33 @@
 <div id="config-editor">
   <ClosableTitle on:close={cancel}>Audioserve Preferences</ClosableTitle>
   <form>
-    <label for="cache-ahead">Files to Cache Ahead</label>
-    <input
-      id="cache-ahead"
-      aria-describedby="cache-ahead-desc"
-      type="number"
-      bind:value={currentConfig.cacheAheadFiles}
-    />
-    <p id="cache-ahead-desc">
-      When you start to play file next n files will be loaded to cache on
-      background
-    </p>
+    {#if cache}
+      <label for="cache-ahead">Files to Cache Ahead</label>
+      <input
+        id="cache-ahead"
+        aria-describedby="cache-ahead-desc"
+        type="number"
+        bind:value={currentConfig.cacheAheadFiles}
+      />
+      <p id="cache-ahead-desc">
+        When you start to play file next n files will be loaded to cache on
+        background
+      </p>
 
-    <label for="cache-ahead-delay"
-      >Delay before start caching next files (secs)</label
-    >
-    <input
-      id="cache-ahead-delay"
-      aria-describedby="cache-ahead-delay-desc"
-      type="number"
-      bind:value={currentConfig.cacheAheadDelay}
-    />
-    <p id="cache-ahead-delay-desc">
-      Wait n seconds after playback start before starting to cache next files
-      (for small files it's half of their duration).
-    </p>
-
+      <label for="cache-ahead-delay"
+        >Delay before start caching next files (secs)</label
+      >
+      <input
+        id="cache-ahead-delay"
+        aria-describedby="cache-ahead-delay-desc"
+        type="number"
+        bind:value={currentConfig.cacheAheadDelay}
+      />
+      <p id="cache-ahead-delay-desc">
+        Wait n seconds after playback start before starting to cache next files
+        (for small files it's half of their duration).
+      </p>
+    {/if}
     <label for="jump-fwd">Short Jump Forward (secs)</label>
     <input
       id="jump-fwd"

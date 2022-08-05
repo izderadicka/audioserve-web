@@ -173,7 +173,7 @@
               try {
                 await loadCollections();
               } catch (e) {
-                error = `Fail to load collections after authentication, one reason can be insecure context and API on diffrent origin`;
+                error = `Fail to load collections after authentication, one reason can be insecure context and API on different origin`;
               }
             }
           });
@@ -474,11 +474,14 @@
 <ConfirmDialog id={ABOUT_DIALOG_ID} noConfirm={true} bind:this={aboutDialog}>
   <svelte:fragment slot="header">Audioserve Web Client</svelte:fragment>
   <svelte:fragment slot="body">
-    <p>New PWA client built with Svelte and TypeScript</p>
     <p>
+      New PWA client built with Svelte and TypeScript<br />
       <a href="https://github.com/izderadicka/audioserve-web">Check it's site</a
       >
     </p>
+    {#if !cache}
+      <p class="red">Cache via service worker is not available</p>
+    {/if}
     <p>Version: {APP_VERSION}({APP_COMMIT})</p>
     <p>Server Version: {$collections?.version}</p>
   </svelte:fragment>
@@ -487,6 +490,10 @@
 <style>
   .icons span.with-text {
     display: inline-flex;
+  }
+
+  .red {
+    color: red;
   }
 
   .with-text span {

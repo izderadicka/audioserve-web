@@ -31,6 +31,7 @@ if ("serviceWorker" in navigator) {
     .catch((error) => {
       // registration failed
       console.error("Service worker registration failed with " + error, error);
+      createApp(null);
     });
 
   navigator.serviceWorker.ready.then((reg) => {

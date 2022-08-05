@@ -116,7 +116,7 @@
               <a
                 href="#"
                 data-menu="show-preferences"
-                on:click|preventDefault={menuClick}>Other Preferences</a
+                on:click|preventDefault={menuClick}>Preferences</a
               >
             </li>
             {#if cache}

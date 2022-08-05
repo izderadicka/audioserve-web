@@ -50,8 +50,8 @@
   {#if cache == null}
     <p class="warning" role="alert">
       Service Worker is not available. You're probably not using secure
-      connection connection or you have old browser. Some functionality
-      (especially caching] will not be available.
+      connection connection with trusted server certificate or you have old
+      browser. Some functionality (especially caching) will not be available.
     </p>
   {/if}
   {#if loginError}

@@ -675,7 +675,7 @@
     window.removeEventListener("touchend", handleProgressMouseUp);
     window.removeEventListener("keydown", handleKeyDown);
     window.removeEventListener("keyup", handleKeyUp);
-    cache.removeListener(updateCurrentlyPlaying);
+    cache?.removeListener(updateCurrentlyPlaying);
     player?.removeEventListener("progress", updateBuffered);
     player?.removeEventListener("play", onPlayStarted);
     player?.removeEventListener("pause", onPlayPaused);
