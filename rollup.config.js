@@ -7,9 +7,9 @@ import sveltePreprocess from 'svelte-preprocess';
 import typescript from '@rollup/plugin-typescript';
 import css from 'rollup-plugin-css-only';
 import replace from '@rollup/plugin-replace';
-import {production, VERSION, replaceConfig} from "./rollup-common";
+import { production, VERSION, replaceConfig } from "./rollup-common";
 
-console.log(`Building version ${VERSION} for ${production?"PRODUCTION":"DEVELOPMENT"}`);
+console.log(`Building version ${VERSION} for ${production ? "PRODUCTION" : "DEVELOPMENT"}`);
 
 function serve() {
 	let server;
@@ -35,7 +35,7 @@ function serve() {
 export default {
 	input: 'src/main.ts',
 	output: {
-		sourcemap: true,
+		sourcemap: !production,
 		format: 'iife',
 		name: 'app',
 		file: 'public/bundle.js'
