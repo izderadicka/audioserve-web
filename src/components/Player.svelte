@@ -103,6 +103,7 @@
     try {
       player.currentTime = val - timeOffset;
       progressValue = val;
+      console.debug("TIME SET TO  " + formatTime(val));
     } catch (e) {
       console.error(
         `Cannot set currentTime, val=${val}, offset=${timeOffset}: ${e}`
@@ -169,20 +170,34 @@
   let mime: string;
 
   let progressValue = 0;
+  let playbackProgress: HTMLInputElement;
   let progressValueChanging = false;
 
   const handleProgressMouseUp = () => {
     if (progressValueChanging) {
+      console.debug(
+        `TOUCH END - progress is ${formatTime(
+          progressValue
+        )} on input it is ${formatTime(Number(playbackProgress.value))}`
+      );
       window.removeEventListener("mouseup", handleProgressMouseUp);
       window.removeEventListener("touchend", handleProgressMouseUp);
-      jumpTime(progressValue);
-      setTimeout(() => {
-        progressValueChanging = false;
-      }, 200);
+      window.requestAnimationFrame(() => {
+        // on recent Chrome range value is sometime updated in next animation frame
+        jumpTime(progressValue);
+        setTimeout(() => {
+          progressValueChanging = false;
+        }, 200);
+      });
     }
   };
 
   const handleProgressMouseDown = () => {
+    console.debug(
+      `TOUCH START -  progress is ${formatTime(
+        progressValue
+      )} on input it is ${formatTime(Number(playbackProgress.value))}`
+    );
     progressValueChanging = true;
     window.addEventListener("mouseup", handleProgressMouseUp);
     window.addEventListener("touchend", handleProgressMouseUp);
@@ -198,6 +213,7 @@
 
   $: if (currentTime != undefined && isFinite(currentTime)) {
     if (!progressValueChanging) {
+      console.debug("PROGRESS set to " + formatTime(currentTime));
       progressValue = currentTime;
     }
     updateMediaSessionState();
@@ -826,6 +842,7 @@
         id="playback-progress"
         min="0"
         max={expectedDuration}
+        bind:this={playbackProgress}
         bind:value={progressValue}
         on:mousedown={handleProgressMouseDown}
         on:touchstart={handleProgressMouseDown}
