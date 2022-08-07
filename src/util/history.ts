@@ -25,13 +25,13 @@ export function constructHistoryFragment(rec: HistoryRecord): string {
 export function parseHistoryFragment(s: string): HistoryRecord | null {
   const res = /#(\d+)\/(search:)?(.*)/.exec(s);
   if (res) {
-    const collection = Number(res[0]);
-    const folderType = res[1] ? FolderType.SEARCH : FolderType.REGULAR;
+    const collection = Number(res[1]);
+    const folderType = res[2] ? FolderType.SEARCH : FolderType.REGULAR;
 
     return {
       folderType,
       collection,
-      value: res[2],
+      value: decodeURIComponent(res[3]),
     };
   } else {
     return null;
