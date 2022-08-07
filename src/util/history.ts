@@ -16,6 +16,28 @@ function historyEq(me: HistoryRecord, other: HistoryRecord): boolean {
   );
 }
 
+export function constructHistoryFragment(rec: HistoryRecord): string {
+  return `#${rec.collection}/${
+    rec.folderType === FolderType.SEARCH ? "search:" : ""
+  }${encodeURIComponent(rec.value)}`;
+}
+
+export function parseHistoryFragment(s: string): HistoryRecord | null {
+  const res = /(\d+)\/(search:)?(.*)/.exec(s);
+  if (res) {
+    const collection = Number(res[0]);
+    const folderType = res[1] ? FolderType.SEARCH : FolderType.REGULAR;
+
+    return {
+      folderType,
+      collection,
+      value: res[2],
+    };
+  } else {
+    return null;
+  }
+}
+
 export class HistoryWrapper {
   constructor(private beforeChange: () => void) {
     window.addEventListener("popstate", this.onPopup);
@@ -28,14 +50,8 @@ export class HistoryWrapper {
   }
 
   add(rec: HistoryRecord) {
-    if (rec && (!history.state || ! historyEq(history.state, rec))) {
-      history.pushState(
-        rec,
-        "",
-        `#${
-          rec.folderType === FolderType.SEARCH ? "search:" : ""
-        }${encodeURIComponent(rec.value)}`
-      );
+    if (rec && (!history.state || !historyEq(history.state, rec))) {
+      history.pushState(rec, "", constructHistoryFragment(rec));
     }
   }
 

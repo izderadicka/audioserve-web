@@ -1,6 +1,7 @@
 <script type="ts">
-  import { currentFolder } from "../state/stores";
+  import { currentFolder, selectedCollection } from "../state/stores";
   import { FolderType } from "../types/enums";
+  import { constructHistoryFragment } from "../util/history";
 
   const searchPrefix = "Search: ";
   let pathSegments: string[] = [];
@@ -36,7 +37,11 @@
 <nav aria-label="Breadcrumb">
   <div class="breadcrumb">
     <a
-      href="/"
+      href={constructHistoryFragment({
+        folderType,
+        collection: $selectedCollection,
+        value: "",
+      })}
       on:click|preventDefault={goHome}
       aria-current={pathSegments.length === 0 ? "page" : null}>Home</a
     >
@@ -44,7 +49,17 @@
       <!-- svelte-ignore a11y-invalid-attribute -->
       /
       <a
-        href="#"
+        href={folderType === FolderType.SEARCH
+          ? constructHistoryFragment({
+              folderType,
+              collection: $selectedCollection,
+              value: $currentFolder.value,
+            })
+          : constructHistoryFragment({
+              folderType: FolderType.REGULAR,
+              collection: $selectedCollection,
+              value: pathSegments.slice(0, idx + 1).join("/"),
+            })}
         on:click|preventDefault={changeFolder(idx)}
         aria-current={idx === pathSegments.length - 1 ? "page" : null}
       >
