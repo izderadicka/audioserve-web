@@ -22,7 +22,7 @@ jobs:
         npm install
         npm run build
         npm run build-sw
-
+        npm test
     - name: Pack
       id: pack
       run: |

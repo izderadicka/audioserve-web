@@ -26,6 +26,7 @@ jobs:
         npm install
         npm run build
         npm run build-sw
+        npm test
     - uses: actions/upload-artifact@v3
       with:
         name: web-build
