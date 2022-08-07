@@ -19,7 +19,7 @@ let app: App;
 function createApp(cache: Cache) {
   app = new App({
     target: document.body,
-    props: { cache },
+    props: { cache, initialHash: window.location.hash },
   });
 }
 

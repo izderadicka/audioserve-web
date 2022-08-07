@@ -38,7 +38,7 @@
   <div class="breadcrumb">
     <a
       href={constructHistoryFragment({
-        folderType,
+        folderType: FolderType.REGULAR,
         collection: $selectedCollection,
         value: "",
       })}

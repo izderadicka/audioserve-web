@@ -38,7 +38,7 @@
   import { createAudioContext, loadAudioFile, playBuffer } from "./util/audio";
   import { ShakeDetector } from "./util/movement";
   import ConfigEditor from "./components/ConfigEditor.svelte";
-  import { HistoryWrapper } from "./util/history";
+  import { HistoryWrapper, parseHistoryFragment } from "./util/history";
   import { API_CACHE_NAME } from "./types/constants";
   import Recent from "./components/Recent.svelte";
   import { PlayItem } from "./types/play-item";
@@ -48,6 +48,15 @@
     cache.maxParallelLoads = $config.maxParallelDownload;
     cache.onQueueSizeChanged((n) => pendingDownloads.set(n));
     setContext("cache", cache);
+  }
+  export let initialHash: string | undefined;
+
+  if (initialHash) {
+    const fld = parseHistoryFragment(initialHash);
+    if (fld) {
+      $selectedCollection = fld.collection;
+      $currentFolder = { type: fld.folderType, value: fld.value };
+    }
   }
 
   const historyChanged = () => {
