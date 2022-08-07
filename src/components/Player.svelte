@@ -175,10 +175,13 @@
     if (progressValueChanging) {
       window.removeEventListener("mouseup", handleProgressMouseUp);
       window.removeEventListener("touchend", handleProgressMouseUp);
-      jumpTime(progressValue);
-      setTimeout(() => {
-        progressValueChanging = false;
-      }, 200);
+      window.requestAnimationFrame(() => {
+        // on recent Chrome range value is sometime updated in next animation frame
+        jumpTime(progressValue);
+        setTimeout(() => {
+          progressValueChanging = false;
+        }, 200);
+      });
     }
   };
 
