@@ -258,22 +258,22 @@
   unsubsribe.push(
     selectedCollection.subscribe((col) => {
       if (col != undefined) {
-        if (!$currentFolder) {
-          // initiall app load
-          if (folderPath === undefined) {
+        // initiall app load
+        if (folderPath === undefined) {
+          if (!currentFolder) {
             // restore last path from localStorage
             $currentFolder = {
               value: localStorage.getItem(StorageKeys.LAST_FOLDER) || "",
               type: FolderType.REGULAR,
             };
-          } else {
-            // go to root of other collection
-            $currentFolder = { value: "", type: FolderType.REGULAR };
-            if (folderPath === "") {
-              // TODO: fix it by having currentFolder as object
-              // have to enforce reload
-              loadFolder("");
-            }
+          }
+        } else {
+          // go to root of other collection
+          $currentFolder = { value: "", type: FolderType.REGULAR };
+          if (folderPath === "") {
+            // TODO: fix it by having currentFolder as object
+            // have to enforce reload
+            loadFolder("");
           }
         }
         localStorage.setItem(
