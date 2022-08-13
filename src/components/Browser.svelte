@@ -260,7 +260,7 @@
       if (col != undefined) {
         // initiall app load
         if (folderPath === undefined) {
-          if (!currentFolder) {
+          if (!$currentFolder) {
             // restore last path from localStorage
             $currentFolder = {
               value: localStorage.getItem(StorageKeys.LAST_FOLDER) || "",
