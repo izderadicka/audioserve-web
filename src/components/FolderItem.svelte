@@ -2,7 +2,9 @@
   import { beforeUpdate } from "svelte";
 
   import type { Subfolder } from "../client";
+  import { selectedCollection, apiConfig } from "../state/stores";
   import { splitPath } from "../util";
+  import FolderIcon from "./FolderIcon.svelte";
 
   export let subfolder: Subfolder;
   export let extended = false;
@@ -15,14 +17,29 @@
   });
 </script>
 
-<div>
-  <h4 class="title item-header" class:finished role="link">{subfolder.name}</h4>
-  {#if extended && basedir}
-    <h6 class="subtitle">{basedir}</h6>
-  {/if}
+<div class="item">
+  <div class="icon">
+    <FolderIcon name={subfolder.name} path={subfolder.path} />
+  </div>
+  <div class="info">
+    <h4 class="title item-header" class:finished role="link">
+      {subfolder.name}
+    </h4>
+    {#if extended && basedir}
+      <h6 class="subtitle">{basedir}</h6>
+    {/if}
+  </div>
 </div>
 
 <style>
+  .item {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .icon {
+    margin-right: 1em;
+  }
   .title {
     margin-bottom: 0.15rem;
   }
