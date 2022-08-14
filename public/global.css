@@ -74,6 +74,7 @@ input[type="range"]::-moz-range-thumb:hover {
 :root:not([data-theme="dark"]) {
   --menu-background: #f9f9f9;
   --menu-shadow: rgba(0, 0, 0, 0.2);
+  --icon-background: lightGrey;
 
   --background-rgb: 255, 255, 255;
 }
@@ -82,6 +83,7 @@ input[type="range"]::-moz-range-thumb:hover {
   :root:not([data-theme="light"]) {
     --menu-background: #11191f;
     --menu-shadow: rgba(255, 255, 255, 0.2);
+    --icon-background: #222222;
 
     /* Override some colors for dark theme */
     --background-color: #000 !important;
@@ -92,6 +94,7 @@ input[type="range"]::-moz-range-thumb:hover {
 :root[data-theme="dark"] {
   --menu-background: #11191f;
   --menu-shadow: rgba(255, 255, 255, 0.2);
+  --icon-background: #222222;
 
   /* Override some colors for dark theme */
   --background-color: #000 !important;

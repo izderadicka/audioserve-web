@@ -4,7 +4,7 @@
   import { apiConfig, selectedCollection } from "../state/stores";
   export let name: string;
   export let path: string;
-  export let bgColor = "lightGrey";
+  export let bgColor = "";
   export let textColor = "white";
   export let size = "64px";
   let borderRadius = "0";
@@ -67,7 +67,9 @@
 <div
   aria-hidden="true"
   class="wrapper"
-  style="--borderRadius:{borderRadius}; --size:{size}; --bgColor:{background};
+  style="--borderRadius:{borderRadius}; --size:{size}; --bgColor:{background
+    ? background
+    : 'var(--icon-background)'};
     --textColor:{textColor}; --abbrLength:{abbrLength}"
 >
   {#if src && !imageFail}
