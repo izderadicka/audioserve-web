@@ -4,22 +4,33 @@
   import type { Subfolder } from "../client";
   import { selectedCollection, apiConfig } from "../state/stores";
   import { splitPath } from "../util";
+  import type { Observer } from "../util/intersect";
   import FolderIcon from "./FolderIcon.svelte";
 
   export let subfolder: Subfolder;
+  export let observer: Observer;
   export let extended = false;
   export let finished = false;
 
   let basedir: string | undefined;
+  let isVisible = false;
 
   beforeUpdate(() => {
     basedir = splitPath(subfolder.path).folder;
   });
+
+  const onIntersect = (evt: CustomEvent<IntersectionObserverEntry>) => {
+    isVisible = evt.detail.isIntersecting;
+  };
 </script>
 
-<div class="item">
+<div class="item" use:observer.observe on:intersect={onIntersect}>
   <div class="icon">
-    <FolderIcon name={subfolder.name} path={subfolder.path} />
+    <FolderIcon
+      name={subfolder.name}
+      path={subfolder.path}
+      visible={isVisible}
+    />
   </div>
   <div class="info">
     <h4 class="title item-header" class:finished role="link">

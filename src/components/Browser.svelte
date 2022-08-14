@@ -40,11 +40,19 @@
   import { Debouncer } from "../util/events";
   import Badge from "./Badge.svelte";
   import { Scroller } from "../util/dom";
+  import { Observer } from "../util/intersect";
 
   const cache: Cache = getContext("cache");
   const history: HistoryWrapper = getContext("history");
 
   export let container: HTMLDivElement;
+  let observer: Observer;
+  $: {
+    if (container) {
+      observer = new Observer(container, { rootMargin: "64px" });
+    }
+  }
+
   export let infoOpen = false;
   export const navigate = (where: NavigateTarget) => {
     if (!folderIsPlaying()) {
@@ -356,6 +364,7 @@
     unsubsribe.forEach((u) => u());
     cache?.removeListener(handleCacheEvent);
     container.removeEventListener("scroll", updateScroll);
+    observer.close();
   });
 
   function generateDownloadPath(): string {
@@ -391,6 +400,7 @@
           {#each subfolders as fld}
             <li on:click={navigateTo(fld.path)}>
               <FolderItem
+                {observer}
                 subfolder={fld}
                 extended={$currentFolder.type != FolderType.REGULAR}
                 finished={fld.finished}

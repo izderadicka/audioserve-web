@@ -7,39 +7,22 @@
   export let bgColor = "";
   export let textColor = "white";
   export let size = "64px";
+  export let visible = true;
   let borderRadius = "0";
-  export let randomBgColor = false;
-
-  function getRandomColor() {
-    const colors = [
-      "#F44336",
-      "#E91E63",
-      "#9C27B0",
-      "#673AB7",
-      "#3F51B5",
-      "#2196F3",
-      "#03A9F4",
-      "#00BCD4",
-      "#009688",
-      "#4CAF50",
-      "#FFEB3B",
-      "#FFC107",
-      "#FF5722",
-      "#795548",
-    ];
-    const i = Math.floor(Math.random() * colors.length);
-    return colors[i];
-  }
 
   function getInitials(name: string): string {
-    const initials = name
-      .split(" ")
-      .slice(0, 2)
-      .map((w) => w.substring(0, 1).toUpperCase());
+    let initials = name
+      .split(/[ -,;()\[\]\_]/)
+      .filter((x) => x.length > 0)
+      .slice(0, 2);
+    if (initials.length === 0) {
+      return "?";
+    } else if (/^\d+$/.test(initials[0])) {
+      return initials[0].slice(-2);
+    }
+    initials = initials.map((w) => w.substring(0, 1).toUpperCase());
     return initials.join("");
   }
-
-  const background = randomBgColor ? getRandomColor() : bgColor;
 
   let abbr: string;
   let abbrLength: number;
@@ -67,12 +50,12 @@
 <div
   aria-hidden="true"
   class="wrapper"
-  style="--borderRadius:{borderRadius}; --size:{size}; --bgColor:{background
-    ? background
+  style="--borderRadius:{borderRadius}; --size:{size}; --bgColor:{bgColor
+    ? bgColor
     : 'var(--icon-background)'};
     --textColor:{textColor}; --abbrLength:{abbrLength}"
 >
-  {#if src && !imageFail}
+  {#if src && !imageFail && visible}
     <div class:imageLoading class="imgWrapper">
       <img
         class:loading={imageLoading}
