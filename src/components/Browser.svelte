@@ -194,10 +194,7 @@
       } else if (resp.status === 401) {
         $isAuthenticated = false;
       } else {
-        window.alert("Failed to load folder, staying on current");
-        if (folderPath) {
-          $currentFolder = { type: FolderType.REGULAR, value: folderPath };
-        }
+        window.alert(`Failed to load folder ${$currentFolder}`);
       }
     } finally {
       searchQuery = undefined;
