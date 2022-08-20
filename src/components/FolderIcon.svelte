@@ -140,17 +140,4 @@
   .imageLoading {
     background-color: var(--bgColor);
   }
-  .imageLoading::before {
-    content: "↓";
-    font-size: var(--size);
-    line-height: var(--size);
-    text-align: center;
-    color: var(--textColor);
-    display: block;
-    height: 100%;
-    width: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-  }
 </style>
