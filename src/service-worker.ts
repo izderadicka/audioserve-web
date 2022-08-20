@@ -129,13 +129,17 @@ self.addEventListener("fetch", (evt: FetchEvent) => {
   } else if (API_REG_EXP.test(parsedUrl.pathname)) {
     console.debug("API request " + parsedUrl.pathname);
     apiCacheHandler.handleRequest(evt);
-  } else {
+  } else if (
+    staticResources.indexOf(
+      parsedUrl.pathname.substring(globalPathPrefix.length)
+    )
+  ) {
     // console.debug(`Checking ${parsedUrl.pathname} against ${API_REG_EXP} result ${API_REG_EXP.test(parsedUrl.pathname)}`)
     evt.respondWith(
       caches.open(cacheName).then((cache) =>
         cache.match(evt.request).then((response) => {
           console.debug(
-            `OTHER request: ${evt.request.url}`,
+            `STATIC request: ${parsedUrl.pathname}`,
             evt.request,
             response
           );
