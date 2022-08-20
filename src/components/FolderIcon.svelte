@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { beforeUpdate, afterUpdate, onMount } from "svelte";
-
   import { apiConfig, selectedCollection } from "../state/stores";
   export let name: string;
   export let path: string;
@@ -9,6 +7,47 @@
   export let size = "64px";
   export let visible = true;
   let borderRadius = "0";
+
+  let image: HTMLImageElement;
+
+  let pendingRequest: AbortController | null;
+
+  async function loadImage(path) {
+    imageFail = false;
+    imageLoading = true;
+    const url = `${$apiConfig.basePath}/${$selectedCollection}/icon/${encodeURI(
+      path
+    )}`;
+    pendingRequest = new AbortController();
+    try {
+      const resp = await fetch(url, {
+        signal: pendingRequest.signal,
+        credentials: "include",
+        mode: "cors",
+      });
+      if (resp.status === 200) {
+        const data = await resp.blob();
+        const imgUrl = URL.createObjectURL(data);
+        imageFail = false;
+        if (image) {
+          image.src = imgUrl;
+        }
+      } else {
+        imageFail = true;
+      }
+    } catch (e: any) {
+      if (e.name !== "AbortError") {
+        console.error(`Failed to load icon for ${path}`, e);
+      } else {
+        console.debug("icon request aborted");
+      }
+      imageFail = true;
+    } finally {
+      pendingRequest = null;
+      imageLoading = false;
+      loadedPath = path;
+    }
+  }
 
   function getInitials(name: string): string {
     let initials = name
@@ -28,23 +67,20 @@
   let abbrLength: number;
   let imageFail = false;
   let imageLoading = false;
-  let src: string;
+  let loadedPath: String | null;
 
   $: abbr = getInitials(name);
   $: abbrLength = abbr.length;
   $: {
-    src = `${$apiConfig.basePath}/${$selectedCollection}/icon/${encodeURI(
-      path
-    )}`;
-    imageFail = false;
-    imageLoading = true;
+    if (visible) {
+      if (!imageLoading && path !== loadedPath) loadImage(path);
+    } else {
+      if (pendingRequest) {
+        pendingRequest.abort("Out of view");
+      }
+      loadedPath = null;
+    }
   }
-
-  onMount(() => {});
-
-  beforeUpdate(() => {});
-
-  afterUpdate(() => {});
 </script>
 
 <div
@@ -55,21 +91,9 @@
     : 'var(--icon-background)'};
     --textColor:{textColor}; --abbrLength:{abbrLength}"
 >
-  {#if src && !imageFail && visible}
+  {#if !imageFail && visible}
     <div class:imageLoading class="imgWrapper">
-      <img
-        class:loading={imageLoading}
-        alt="Folder Icon"
-        {src}
-        on:error={() => {
-          imageFail = true;
-          imageLoading = false;
-        }}
-        on:load={() => {
-          imageLoading = false;
-          imageFail = false;
-        }}
-      />
+      <img bind:this={image} class:loading={imageLoading} alt="Folder Icon" />
     </div>
   {:else}
     <div class="innerInitials">{abbr}</div>
