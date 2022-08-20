@@ -118,6 +118,7 @@ const AUDIO_REG_EXP: RegExp = new RegExp(`^${globalPathPrefix}\\d+/audio/`);
 const API_REG_EXP: RegExp = new RegExp(
   `^${globalPathPrefix}(\\d+/)?(folder|collections|transcodings)/?`
 );
+const ICON_REG_EXP: RegExp = new RegExp(`^${globalPathPrefix}\\d+/icon/`);
 
 self.addEventListener("fetch", (evt: FetchEvent) => {
   const parsedUrl = new URL(evt.request.url);
@@ -130,11 +131,11 @@ self.addEventListener("fetch", (evt: FetchEvent) => {
     console.debug("API request " + parsedUrl.pathname);
     apiCacheHandler.handleRequest(evt);
   } else if (
+    parsedUrl.pathname === globalPathPrefix ||
     staticResources.indexOf(
       parsedUrl.pathname.substring(globalPathPrefix.length)
-    )
+    ) >= 0
   ) {
-    // console.debug(`Checking ${parsedUrl.pathname} against ${API_REG_EXP} result ${API_REG_EXP.test(parsedUrl.pathname)}`)
     evt.respondWith(
       caches.open(cacheName).then((cache) =>
         cache.match(evt.request).then((response) => {
@@ -147,5 +148,9 @@ self.addEventListener("fetch", (evt: FetchEvent) => {
         })
       )
     );
+  } else if (ICON_REG_EXP.test(parsedUrl.pathname)) {
+    console.debug(`ICON request: ${parsedUrl.pathname}`);
+  } else {
+    console.debug(`OTHER request: ${parsedUrl.pathname}`);
   }
 });
