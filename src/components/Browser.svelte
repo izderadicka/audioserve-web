@@ -457,29 +457,31 @@
       {#if coverPath || descriptionPath || nonEmpty(folderTags)}
         <details bind:open={infoOpen} role="complementary">
           <summary>Info</summary>
-          {#if coverPath}
-            <div id="folder-cover">
-              <Cover {coverPath} />
-            </div>
-          {/if}
-          {#if nonEmpty(folderTags)}
-            <div id="folder-tags">
-              <table role="grid">
-                <tbody>
-                  {#each sorted(Object.keys(folderTags)) as k}
-                    <tr>
-                      <th>{k}</th>
-                      <td>{folderTags[k]}</td>
-                    </tr>
-                  {/each}
-                </tbody>
-              </table>
-            </div>
-          {/if}
-          {#if descriptionPath}
-            <div id="folder-description">
-              <Description {descriptionPath} />
-            </div>
+          {#if infoOpen}
+            {#if coverPath}
+              <div id="folder-cover">
+                <Cover {coverPath} />
+              </div>
+            {/if}
+            {#if nonEmpty(folderTags)}
+              <div id="folder-tags">
+                <table role="grid">
+                  <tbody>
+                    {#each sorted(Object.keys(folderTags)) as k}
+                      <tr>
+                        <th>{k}</th>
+                        <td>{folderTags[k]}</td>
+                      </tr>
+                    {/each}
+                  </tbody>
+                </table>
+              </div>
+            {/if}
+            {#if descriptionPath}
+              <div id="folder-description">
+                <Description {descriptionPath} />
+              </div>
+            {/if}
           {/if}
         </details>
       {/if}
