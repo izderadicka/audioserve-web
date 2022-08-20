@@ -37,7 +37,6 @@ export class Observer {
     this.observer.observe(elem);
     return {
       destroy: () => {
-        console.log("Unobserve", elem);
         this.observer.unobserve(elem);
       },
     };
