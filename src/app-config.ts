@@ -14,4 +14,5 @@ export const defaultConfig: AppConfig = {
   autorewind: false,
   recentDays: 365,
   alwaysTranscode: "",
+  folderIconSize: 64,
 };

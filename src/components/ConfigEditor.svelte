@@ -92,6 +92,18 @@
       slightly to better catch up with previous text
     </p>
 
+    <label for="folder-icon-size"> Size of folder icons (in pixels) </label>
+    <input
+      id="folder-icon-size"
+      aria-describedby="folder-icon-size-desc"
+      type="number"
+      bind:value={currentConfig.folderIconSize}
+    />
+    <p id="folder-icon-size-desc">
+      Size in pixels of folder icons in browser, if set to 0 icons are not
+      displayed.
+    </p>
+
     <label for="sleep-time">Sleep Timer (minutes)</label>
     <input
       id="sleep-time"

@@ -2,7 +2,7 @@
   import { beforeUpdate } from "svelte";
 
   import type { Subfolder } from "../client";
-  import { selectedCollection, apiConfig } from "../state/stores";
+  import { selectedCollection, apiConfig, config } from "../state/stores";
   import { splitPath } from "../util";
   import type { Observer } from "../util/intersect";
   import FolderIcon from "./FolderIcon.svelte";
@@ -25,13 +25,16 @@
 </script>
 
 <div class="item" use:observer.observe on:intersect={onIntersect}>
-  <div class="icon">
-    <FolderIcon
-      name={subfolder.name}
-      path={subfolder.path}
-      visible={isVisible}
-    />
-  </div>
+  {#if $config.folderIconSize > 0}
+    <div class="icon">
+      <FolderIcon
+        name={subfolder.name}
+        path={subfolder.path}
+        visible={isVisible}
+        size="{$config.folderIconSize}px"
+      />
+    </div>
+  {/if}
   <div class="info">
     <h4 class="title item-header" class:finished role="link">
       {subfolder.name}

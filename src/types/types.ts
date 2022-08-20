@@ -32,6 +32,7 @@ export interface AppConfig {
   autorewind: boolean;
   recentDays: number;
   alwaysTranscode: string;
+  folderIconSize: number;
 }
 
 export interface TranscodingDetail {
