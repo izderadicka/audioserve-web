@@ -293,7 +293,23 @@ export class NotFoundCache extends CacheBase {
 
   async handleRequest(evt: FetchEvent) {
     if (!this.isEnabled) return;
-    evt.respondWith(fetch(evt.request));
+    evt.respondWith(this.useCache(evt.request));
+  }
+
+  async useCache(req: Request): Promise<Response> {
+    const cache = await caches.open(this.cacheName);
+    const resp = await cache.match(req);
+    if (resp) {
+      console.debug("ICONS CACHE: hit");
+      return resp;
+    } else {
+      console.debug("ICONS CACHE: miss");
+      const resp = await fetch(req);
+      if (resp.status === 404) {
+        cache.put(req, resp.clone());
+      }
+      return resp;
+    }
   }
 }
 

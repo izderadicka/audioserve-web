@@ -9,9 +9,14 @@ import {
   CacheMessage,
   AUDIO_CACHE_LIMIT,
 } from "./cache/cs-cache";
-import { API_CACHE_NAME, APP_CACHE_PREFIX } from "./types/constants";
+import {
+  API_CACHE_NAME,
+  APP_CACHE_PREFIX,
+  ICONS_CACHE_NAME,
+  ICONS_CACHE_SIZE,
+} from "./types/constants";
 import { removeQuery, splitPath } from "./util";
-import { AudioCache, NetworkFirstCache } from "./util/sw";
+import { AudioCache, NetworkFirstCache, NotFoundCache } from "./util/sw";
 import { APP_COMMIT, isDevelopment, ENVIRONMENT } from "./util/version";
 
 function broadcastMessage(msg: CacheMessage) {
@@ -50,6 +55,7 @@ const staticResources = [
 const cacheName = APP_CACHE_PREFIX + APP_COMMIT;
 const audioCache = AUDIO_CACHE_NAME;
 const apiCache = API_CACHE_NAME;
+const iconsCache = ICONS_CACHE_NAME;
 
 self.addEventListener("install", (evt) => {
   evt.waitUntil(
@@ -96,6 +102,7 @@ const audioCacheHandler = new AudioCache(
   broadcastMessage
 );
 const apiCacheHandler = new NetworkFirstCache(apiCache);
+const iconsCacheHandler = new NotFoundCache(iconsCache, ICONS_CACHE_SIZE);
 
 self.addEventListener("message", (evt) => {
   const msg: CacheMessage = evt.data;
@@ -150,6 +157,7 @@ self.addEventListener("fetch", (evt: FetchEvent) => {
     );
   } else if (ICON_REG_EXP.test(parsedUrl.pathname)) {
     console.debug(`ICON request: ${parsedUrl.pathname}`);
+    iconsCacheHandler.handleRequest(evt);
   } else {
     console.debug(`OTHER request: ${parsedUrl.pathname}`);
   }
