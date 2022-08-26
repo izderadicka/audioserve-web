@@ -286,17 +286,6 @@ class CacheBase {
   }
 }
 
-export class NotFoundCache extends CacheBase {
-  constructor(cacheName: string, sizeLimit = 1000) {
-    super(cacheName, sizeLimit);
-  }
-
-  async handleRequest(evt: FetchEvent) {
-    if (!this.isEnabled) return;
-    evt.respondWith(fetch(evt.request));
-  }
-}
-
 export class NetworkFirstCache extends CacheBase {
   constructor(cacheName: string, sizeLimit = 1000) {
     super(cacheName, sizeLimit);
