@@ -1,5 +1,5 @@
 # New audioserve web client 
-**[DEMO AVAILABLE](https://audioserve-new.zderadicka.eu) (shared secret: mypass)**
+**[DEMO AVAILABLE](https://audioserve.zderadicka.eu) (shared secret: mypass)**
   
 Main motivation is to try new technologies, so [Svelte](https://svelte.dev) and [TypeScript](https://www.typescriptlang.org/) are used as main languages and [PWA](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps) technologies are used.
 
@@ -26,16 +26,15 @@ Service workers work only in secure context and same origin (or localhost). Thus
 
 You will need audioserve server running somewhere with this client. There are multiple options:
 
-- use `izderadicka/audioserve:unstable` image from dockerhub. Soon new client will be also default on stable release.
+- use `izderadicka/audioserve` image from dockerhub. New client is already there.
   
-- clone this project and build client:
+- to have lastest verion clone this project and build client:
 
 ```
 npm install && npm run build && npm run build-sw
 ```
-then either copy and replace classic web client in client directory of audioserve, or use argument `--client-dir` to use directory with with client.
+then either copy and replace existing web client in client directory of audioserve, or use argument `--client-dir` to use directory with built client (built code is in `public` subdirectory).
 
-- build your own audioserve image from `master` branch
 
 ## License 
 MIT
