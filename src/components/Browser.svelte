@@ -254,6 +254,7 @@
       collection: $selectedCollection,
       folder: $currentFolder.value,
       totalTime: folderTime,
+      hasImage: coverPath && coverPath.length > 0,
     };
     $playItem = item;
   }

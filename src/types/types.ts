@@ -16,6 +16,7 @@ export interface CurrentPlayList {
   collection: number;
   folder: string;
   totalTime: number;
+  hasImage: boolean;
 }
 
 export interface AppConfig {

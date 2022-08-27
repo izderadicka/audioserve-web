@@ -30,7 +30,7 @@
 
   import {
     config,
-    currentFolder,
+    apiConfig,
     playItem,
     playList,
     positionWsApi,
@@ -327,6 +327,12 @@
   function updateMediaSessionMetadata(item: PlayItem) {
     document.title = `${fileDisplayName} (${item.path})`;
     if ("mediaSession" in navigator) {
+      let icon = "favicon.png";
+      if ($playList.hasImage) {
+        icon = `${$apiConfig.basePath}/${$selectedCollection}/icon/${encodeURI(
+          $playList.folder
+        )}`;
+      }
       const { root: artist, path: album } = splitRootPath(
         splitPath(item.path).folder
       );
@@ -335,7 +341,7 @@
         title: fileDisplayName,
         album,
         artist,
-        artwork: [{ src: "favicon.png" }],
+        artwork: [{ src: icon }],
       });
 
       navigator.mediaSession.setActionHandler(
