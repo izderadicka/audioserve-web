@@ -1,5 +1,3 @@
-import { windowSize } from "../state/stores";
-
 export class Debouncer<T> {
   private timer: number;
   constructor(private callBack: (arg: T) => void, private interval: number) {}

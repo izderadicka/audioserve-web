@@ -42,9 +42,11 @@
   import { formatTime } from "../util/date";
   import { splitExtInName, splitPath, splitRootPath, splitUrl } from "../util";
   import CacheIndicator from "./CacheIndicator.svelte";
+  import CoverIcon from "./FolderIcon.svelte";
   import { Throttler } from "../util/events";
   import { getLocationPath } from "../util/browser";
   import { calculateAutorewind } from "../util/play";
+  import { SMALL_SCREEN_WIDTH_LIMIT } from "../types/constants";
 
   const fileIconSize = "1.5rem";
   const controlSize = "48px";
@@ -741,177 +743,207 @@
     </div>
   </div>
 {/if}
-
-<div class="info">
-  <div class="item-info" id="folder-info">
-    <label for="folder-name" class="icon clickable" on:click={navigateToFolder}
-      ><FolderIcon size={fileIconSize} /></label
-    >
-    <span
-      role="link"
-      aria-label="Navigate to currently playing folder"
-      id="folder-name"
-      class="item-name link-like"
-      dir="rtl"
-      on:click={navigateToFolder}>{folder}</span
-    >
-  </div>
-  <div id="total-progress">
-    <div class="play-time" aria-label="Current time in whole folder">
-      {formattedFolderTime}
+<div class="player-wrapper">
+  {#if $windowSize.width > SMALL_SCREEN_WIDTH_LIMIT && $playList.hasImage}
+    <div class="icon" aria-hidden="true" on:click={navigateToFolder}>
+      <CoverIcon name="" path={$playList.folder} size="128px" />
     </div>
-    <div class="progress total">
-      <progress
-        aria-label="Total folder playback progress"
-        aria-valuetext={`${formattedFolderTime} of ${formattedTotalFolderTime}`}
-        value={folderTime}
-        max={totalFolderTime}
+  {/if}
+  <div class="player-inner">
+    <div class="info">
+      <div class="item-info" id="folder-info">
+        <label
+          for="folder-name"
+          class="icon clickable"
+          on:click={navigateToFolder}><FolderIcon size={fileIconSize} /></label
+        >
+        <span
+          role="link"
+          aria-label="Navigate to currently playing folder"
+          id="folder-name"
+          class="item-name link-like"
+          dir="rtl"
+          on:click={navigateToFolder}>{folder}</span
+        >
+      </div>
+      <div id="total-progress">
+        <div class="play-time" aria-label="Current time in whole folder">
+          {formattedFolderTime}
+        </div>
+        <div class="progress total">
+          <progress
+            aria-label="Total folder playback progress"
+            aria-valuetext={`${formattedFolderTime} of ${formattedTotalFolderTime}`}
+            value={folderTime}
+            max={totalFolderTime}
+          />
+        </div>
+        <div
+          class="total-time"
+          aria-label="Total playback time of whole folder"
+        >
+          {formattedTotalFolderTime}
+        </div>
+      </div>
+      <div class="item-info" id="file-info">
+        <label
+          for="file-name"
+          class="clickable"
+          on:click={locateFile}
+          title={cached
+            ? "Playing cached file"
+            : transcoded
+            ? "Playing transcoded file"
+            : "Playing streamed file"}
+        >
+          {#if cached}
+            <CachedIcon size={fileIconSize} />
+          {:else if transcoded}
+            <TranscodedIcon size={fileIconSize} />
+          {:else}
+            <AudioIcon size={fileIconSize} />
+          {/if}
+        </label>
+        <span
+          class="label clickable"
+          on:click={locateFile}
+          aria-label="Position of currently playing file in folder"
+        >
+          (<span>{folderSize ? folderPosition + 1 : 0}</span>/<span
+            >{folderSize}</span
+          >)
+        </span>
+        <span
+          role="link"
+          aria-label="Locate currently playing file"
+          id="file-name"
+          class="item-name link-like"
+          on:click={locateFile}
+        >
+          {fileDisplayName}
+        </span>
+      </div>
+    </div>
+    <div class="player">
+      <audio
+        preload="none"
+        crossorigin="use-credentials"
+        bind:duration
+        bind:currentTime={playbackTime}
+        bind:paused
+        bind:volume
+        bind:playbackRate
+        bind:this={player}
+        on:error={playerError}
+        on:ended={tryNextFile}
       />
+      <div class="play-time" aria-label="Current time in file">
+        {formattedCurrentTime}
+      </div>
+      <div class="progress">
+        <div class="progress-bar">
+          <input
+            class="allow-global-keys"
+            type="range"
+            id="playback-progress"
+            min="0"
+            max={expectedDuration}
+            bind:value={progressValue}
+            on:mousedown={handleProgressMouseDown}
+            on:touchstart={handleProgressMouseDown}
+            aria-label="File Playback Time"
+            aria-valuetext={`${formattedCurrentTime} of ${formattedDuration}`}
+            on:keydown={(evt) => evt.preventDefault()}
+          />
+          <CacheIndicator ranges={buffered} totalTime={expectedDuration} />
+        </div>
+      </div>
+      <div class="total-time" aria-label="Total time of current file">
+        {formattedDuration}
+      </div>
     </div>
-    <div class="total-time" aria-label="Total playback time of whole folder">
-      {formattedTotalFolderTime}
-    </div>
-  </div>
-  <div class="item-info" id="file-info">
-    <label
-      for="file-name"
-      class="clickable"
-      on:click={locateFile}
-      title={cached
-        ? "Playing cached file"
-        : transcoded
-        ? "Playing transcoded file"
-        : "Playing streamed file"}
-    >
-      {#if cached}
-        <CachedIcon size={fileIconSize} />
-      {:else if transcoded}
-        <TranscodedIcon size={fileIconSize} />
-      {:else}
-        <AudioIcon size={fileIconSize} />
-      {/if}
-    </label>
-    <span
-      class="label clickable"
-      on:click={locateFile}
-      aria-label="Position of currently playing file in folder"
-    >
-      (<span>{folderSize ? folderPosition + 1 : 0}</span>/<span
-        >{folderSize}</span
-      >)
-    </span>
-    <span
-      role="link"
-      aria-label="Locate currently playing file"
-      id="file-name"
-      class="item-name link-like"
-      on:click={locateFile}
-    >
-      {fileDisplayName}
-    </span>
-  </div>
-</div>
-<div class="player">
-  <audio
-    preload="none"
-    crossorigin="use-credentials"
-    bind:duration
-    bind:currentTime={playbackTime}
-    bind:paused
-    bind:volume
-    bind:playbackRate
-    bind:this={player}
-    on:error={playerError}
-    on:ended={tryNextFile}
-  />
-  <div class="play-time" aria-label="Current time in file">
-    {formattedCurrentTime}
-  </div>
-  <div class="progress">
-    <div class="progress-bar">
-      <input
-        class="allow-global-keys"
-        type="range"
-        id="playback-progress"
-        min="0"
-        max={expectedDuration}
-        bind:value={progressValue}
-        on:mousedown={handleProgressMouseDown}
-        on:touchstart={handleProgressMouseDown}
-        aria-label="File Playback Time"
-        aria-valuetext={`${formattedCurrentTime} of ${formattedDuration}`}
-        on:keydown={(evt) => evt.preventDefault()}
-      />
-      <CacheIndicator ranges={buffered} totalTime={expectedDuration} />
-    </div>
-  </div>
-  <div class="total-time" aria-label="Total time of current file">
-    {formattedDuration}
-  </div>
-</div>
-<div class="controls-bar">
-  <div class="player-controls">
-    <span
-      tabindex="0"
-      role="button"
-      aria-label="Previous"
-      class="control-button button-like"
-      on:click={playPrevious}
-    >
-      <PreviousIcon size={controlSize} />
-    </span>
-    <span
-      tabindex="0"
-      role="button"
-      aria-label="Jump back"
-      class="control-button button-like"
-      title="You can also use Left Arrow key"
-      on:click={jumpTimeRelative(-$config.jumpBackTime)}
-    >
-      <RewindIcon size={controlSize} />
-    </span>
-    <span
-      tabindex="0"
-      role="button"
-      aria-label={paused ? "Play" : "Pause"}
-      title="You can also use Space key"
-      class="control-button button-like"
-      class:blink={preparingPlayback}
-      on:click={playPause}
-    >
-      {#if paused}
-        <PlayIcon size={controlSize} />
-      {:else}
-        <PauseIcon size={controlSize} />
-      {/if}
-    </span>
-    <span
-      tabindex="0"
-      role="button"
-      aria-label="Jump ahead"
-      class="control-button button-like"
-      title="You can also use Right Arrow key"
-      on:click={jumpTimeRelative($config.jumpForwardTime)}
-    >
-      <ForwardIcon size={controlSize} />
-    </span>
-    <span
-      tabindex="0"
-      role="button"
-      aria-label="Next"
-      class="control-button button-like"
-      on:click={playNext}
-    >
-      <NextIcon size={controlSize} />
-    </span>
+    <div class="controls-bar">
+      <div class="player-controls">
+        <span
+          tabindex="0"
+          role="button"
+          aria-label="Previous"
+          class="control-button button-like"
+          on:click={playPrevious}
+        >
+          <PreviousIcon size={controlSize} />
+        </span>
+        <span
+          tabindex="0"
+          role="button"
+          aria-label="Jump back"
+          class="control-button button-like"
+          title="You can also use Left Arrow key"
+          on:click={jumpTimeRelative(-$config.jumpBackTime)}
+        >
+          <RewindIcon size={controlSize} />
+        </span>
+        <span
+          tabindex="0"
+          role="button"
+          aria-label={paused ? "Play" : "Pause"}
+          title="You can also use Space key"
+          class="control-button button-like"
+          class:blink={preparingPlayback}
+          on:click={playPause}
+        >
+          {#if paused}
+            <PlayIcon size={controlSize} />
+          {:else}
+            <PauseIcon size={controlSize} />
+          {/if}
+        </span>
+        <span
+          tabindex="0"
+          role="button"
+          aria-label="Jump ahead"
+          class="control-button button-like"
+          title="You can also use Right Arrow key"
+          on:click={jumpTimeRelative($config.jumpForwardTime)}
+        >
+          <ForwardIcon size={controlSize} />
+        </span>
+        <span
+          tabindex="0"
+          role="button"
+          aria-label="Next"
+          class="control-button button-like"
+          on:click={playNext}
+        >
+          <NextIcon size={controlSize} />
+        </span>
 
-    <!-- <span class="control-button" on:click={null}>
+        <!-- <span class="control-button" on:click={null}>
     <span><SpeedIcon size="{controlSize}" /></span>
   </span> -->
+      </div>
+    </div>
   </div>
 </div>
 
 <style>
+  .icon {
+    padding-right: 1em;
+    padding-top: 1em;
+    cursor: pointer;
+  }
+
+  .player-inner {
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-width: 250px;
+  }
+
+  .player-wrapper {
+    display: flex;
+    flex-direction: row;
+  }
+
   .extra-controls {
     margin-top: 1rem;
   }

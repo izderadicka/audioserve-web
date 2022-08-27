@@ -39,7 +39,7 @@
   import { ShakeDetector } from "./util/movement";
   import ConfigEditor from "./components/ConfigEditor.svelte";
   import { HistoryWrapper, parseHistoryFragment } from "./util/history";
-  import { API_CACHE_NAME } from "./types/constants";
+  import { API_CACHE_NAME, SMALL_SCREEN_WIDTH_LIMIT } from "./types/constants";
   import Recent from "./components/Recent.svelte";
   import { PlayItem } from "./types/play-item";
 
@@ -203,7 +203,7 @@
   let smallScreen = false;
 
   windowSize.subscribe((sz) => {
-    if (sz.width <= 770) {
+    if (sz.width <= SMALL_SCREEN_WIDTH_LIMIT) {
       if (!smallScreen) {
         showSearch = false;
         showCollectionSelect = false;
