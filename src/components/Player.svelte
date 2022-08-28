@@ -752,10 +752,8 @@
   <div class="player-inner">
     <div class="info">
       <div class="item-info" id="folder-info">
-        <label
-          for="folder-name"
-          class="icon clickable"
-          on:click={navigateToFolder}><FolderIcon size={fileIconSize} /></label
+        <label for="folder-name" class="clickable" on:click={navigateToFolder}
+          ><FolderIcon size={fileIconSize} /></label
         >
         <span
           role="link"
@@ -996,6 +994,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    margin-left: 0.2em;
   }
 
   .label {
