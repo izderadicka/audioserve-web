@@ -80,19 +80,27 @@
 
   let container: HTMLDivElement;
   let browser: Browser;
+  let isInitialized = false;
 
   async function loadCollections() {
-    const cols = await $colApi.collectionsGet();
-    console.debug("Got collections list", cols);
-    $collections = cols;
-    let parsedCollection: number = parseInt(
-      localStorage.getItem(StorageKeys.LAST_COLLECTION) || "0"
-    );
-    if (parsedCollection >= cols.names.length) parsedCollection = 0;
-    $selectedCollection = parsedCollection;
-    const trans = await $colApi.transcodingsGet();
-    console.debug("Got transcodings list", trans);
-    $transcodings = trans;
+    const res = Promise.all([
+      $colApi.collectionsGet().then((cols) => {
+        console.debug("Got collections list", cols);
+        $collections = cols;
+        let parsedCollection: number = parseInt(
+          localStorage.getItem(StorageKeys.LAST_COLLECTION) || "0"
+        );
+        if (parsedCollection >= cols.names.length) parsedCollection = 0;
+        $selectedCollection = parsedCollection;
+      }),
+      $colApi.transcodingsGet().then((trans) => {
+        console.debug("Got transcodings list", trans);
+        $transcodings = trans;
+      }),
+    ]);
+
+    await res;
+    isInitialized = true;
   }
 
   function actOnMenu(menuEvt) {
@@ -455,7 +463,9 @@
     {:else}
       <Breadcrumb />
       <div class="browser" bind:this={container}>
-        <Browser {container} infoOpen={!smallScreen} bind:this={browser} />
+        {#if isInitialized}
+          <Browser {container} infoOpen={!smallScreen} bind:this={browser} />
+        {/if}
       </div>
     {/if}
     {#if $playItem}
