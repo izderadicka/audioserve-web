@@ -51,7 +51,7 @@
 
   function getInitials(name: string): string {
     let initials = name
-      .split(/[ -,;()\[\]\_]/)
+      .split(/[ \-,;()\[\]\_]/)
       .filter((x) => x.length > 0)
       .slice(0, 2);
     if (initials.length === 0) {
