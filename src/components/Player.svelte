@@ -49,6 +49,7 @@
   import { getLocationPath } from "../util/browser";
   import { calculateAutorewind } from "../util/play";
   import { SMALL_SCREEN_WIDTH_LIMIT } from "../types/constants";
+  import TimerControl from "./TimerControl.svelte";
 
   const fileIconSize = "1.5rem";
   const controlSize = "48px";
@@ -715,16 +716,7 @@
     {#if $sleepTime > 0}
       <div class="timer-control slider-control extra-control">
         <span><SleepIcon size={fileIconSize} /></span>
-        <input
-          tabindex="0"
-          type="number"
-          name="timer"
-          id="timer"
-          min="0"
-          max="999"
-          aria-label="Timer"
-          bind:value={$sleepTime}
-        />
+        <TimerControl iconSize={fileIconSize} />
       </div>
     {/if}
 
