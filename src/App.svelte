@@ -21,6 +21,7 @@
     windowSize,
     playItem,
     pendingDownloads,
+    sleepTime,
   } from "./state/stores";
   import { onMount, setContext } from "svelte";
   import { Configuration } from "./client";
@@ -282,7 +283,6 @@
 
   // Sleep Timer Section
 
-  let sleepTime = 0;
   let sleepTimer: number;
   let player: Player;
   let shakeDetector: ShakeDetector = null;
@@ -298,17 +298,17 @@
     const soundSleep = await loadAudioFile("static/will_sleep_soon.mp3", ac);
     const soundExtended = await loadAudioFile("static/extended.mp3", ac);
 
-    sleepTime = $config.sleepTimerPeriod;
+    $sleepTime = $config.sleepTimerPeriod;
     sleepTimer = window.setInterval(() => {
-      sleepTime -= 1;
-      if (sleepTime === 1) {
+      $sleepTime -= 1;
+      if ($sleepTime === 1) {
         playBuffer(soundSleep, ac);
         shakeDetector = new ShakeDetector((how) => {
-          sleepTime += $config.sleepTimerExtend;
+          $sleepTime += $config.sleepTimerExtend;
           playBuffer(soundExtended, ac);
           clearShakeDetector();
         });
-      } else if (sleepTime === 0) {
+      } else if ($sleepTime === 0) {
         player?.pause();
         window.clearInterval(sleepTimer);
         clearShakeDetector();
@@ -319,7 +319,7 @@
   function stopSleepTimer() {
     window.clearInterval(sleepTimer);
     clearShakeDetector();
-    sleepTime = 0;
+    $sleepTime = 0;
   }
 
   let showComponent: "browser" | "config" | "recent" = "browser";
@@ -421,7 +421,7 @@
                 </span>
               {/if}
 
-              {#if sleepTime > 0}
+              {#if $sleepTime > 0}
                 <span
                   role="button"
                   aria-label="Stop sleep timer"
@@ -429,7 +429,7 @@
                   class="with-text button-like"
                 >
                   <SleepCancelIcon size="1.5rem" />
-                  <span>{sleepTime}</span>
+                  <span>{$sleepTime}</span>
                 </span>
               {:else}
                 <span

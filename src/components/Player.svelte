@@ -27,6 +27,7 @@
   import VolumeIcon from "svelte-material-icons/VolumeHigh.svelte";
   import ExpandIcon from "svelte-material-icons/ChevronUp.svelte";
   import CollapsIcon from "svelte-material-icons/ChevronDown.svelte";
+  import SleepIcon from "svelte-material-icons/AlarmSnooze.svelte";
 
   import {
     config,
@@ -36,6 +37,7 @@
     positionWsApi,
     selectedCollection,
     windowSize,
+    sleepTime,
   } from "../state/stores";
   import { FolderType, NavigateTarget, StorageKeys } from "../types/enums";
   import { PlayItem } from "../types/play-item";
@@ -710,6 +712,22 @@
 
 {#if expanded}
   <div class="extra-controls">
+    {#if $sleepTime > 0}
+      <div class="timer-control slider-control extra-control">
+        <span><SleepIcon size={fileIconSize} /></span>
+        <input
+          tabindex="0"
+          type="number"
+          name="timer"
+          id="timer"
+          min="0"
+          max="999"
+          aria-label="Timer"
+          bind:value={$sleepTime}
+        />
+      </div>
+    {/if}
+
     <div class="volume-control slider-control extra-control">
       <span><VolumeIcon size={fileIconSize} /></span>
       <input

@@ -115,3 +115,5 @@ function getWindowSize() {
 export const windowSize = readable(getWindowSize(), (set) => {
   window.addEventListener("resize", () => set(getWindowSize()));
 });
+
+export const sleepTime = writable(0);
