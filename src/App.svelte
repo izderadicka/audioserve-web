@@ -300,21 +300,27 @@
 
     $sleepTime = $config.sleepTimerPeriod;
     sleepTimer = window.setInterval(() => {
-      $sleepTime -= 1;
-      if ($sleepTime === 1) {
+      const nextTime = $sleepTime - 1;
+
+      if (nextTime === 1) {
         playBuffer(soundSleep, ac);
         shakeDetector = new ShakeDetector((how) => {
           $sleepTime += $config.sleepTimerExtend;
           playBuffer(soundExtended, ac);
           clearShakeDetector();
         });
-      } else if ($sleepTime === 0) {
+      } else if (nextTime === 0) {
         player?.pause();
-        window.clearInterval(sleepTimer);
-        clearShakeDetector();
       }
+      $sleepTime = nextTime;
     }, 60000);
   }
+
+  sleepTime.subscribe((time) => {
+    if (time == 0) {
+      stopSleepTimer();
+    }
+  });
 
   function stopSleepTimer() {
     window.clearInterval(sleepTimer);
