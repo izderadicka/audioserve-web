@@ -320,6 +320,9 @@
     if (time == 0) {
       stopSleepTimer();
     }
+    if (time > 1 && shakeDetector != null) {
+      clearShakeDetector();
+    }
   });
 
   function stopSleepTimer() {
