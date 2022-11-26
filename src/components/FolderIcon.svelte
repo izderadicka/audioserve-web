@@ -12,12 +12,12 @@
 
   let pendingRequest: AbortController | null;
 
-  async function loadImage(path) {
+  async function loadImage(path: string) {
     imageFail = false;
     imageLoading = true;
-    const url = `${$apiConfig.basePath}/${$selectedCollection}/icon/${encodeURI(
-      path
-    )}`;
+    const url = `${
+      $apiConfig.basePath
+    }/${$selectedCollection}/icon/${encodeURIComponent(path)}`;
     pendingRequest = new AbortController();
     try {
       const resp = await fetch(url, {

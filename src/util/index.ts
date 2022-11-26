@@ -13,12 +13,12 @@ export function removeQuery(url: string): string {
 }
 
 export function audioFilePath(collection: number, folder: string) {
-  return `/${collection}/audio/${encodeURI(folder)}`;
+  return `/${collection}/audio/${encodeURIComponent(folder)}`;
 }
 
 export function splitUrl(url: string, prefix?: string) {
   const parsedUrl = new URL(url);
-  let path = decodeURI(parsedUrl.pathname);
+  let path = decodeURIComponent(parsedUrl.pathname);
   if (prefix) {
     path = path.substring(prefix.length);
   }

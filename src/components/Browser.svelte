@@ -371,7 +371,7 @@
   function generateDownloadPath(): string {
     return (
       $apiConfig.basePath +
-      `/${$selectedCollection}/download/${encodeURI(folderPath)}` +
+      `/${$selectedCollection}/download/${encodeURIComponent(folderPath)}` +
       (isCollapsed ? "?collapsed" : "")
     );
   }

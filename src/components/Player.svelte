@@ -334,9 +334,9 @@
     if ("mediaSession" in navigator) {
       let icon = "favicon.png";
       if ($playList.hasImage) {
-        icon = `${$apiConfig.basePath}/${$selectedCollection}/icon/${encodeURI(
-          $playList.folder
-        )}`;
+        icon = `${
+          $apiConfig.basePath
+        }/${$selectedCollection}/icon/${encodeURIComponent($playList.folder)}`;
       }
       const { root: artist, path: album } = splitRootPath(
         splitPath(item.path).folder
