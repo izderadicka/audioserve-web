@@ -7,7 +7,8 @@ import sveltePreprocess from 'svelte-preprocess';
 import typescript from '@rollup/plugin-typescript';
 import css from 'rollup-plugin-css-only';
 import replace from '@rollup/plugin-replace';
-import { production, VERSION, replaceConfig } from "./rollup-common";
+import { production, VERSION, replaceConfig } from "./rollup-common.mjs";
+import child_process from 'child_process';
 
 console.log(`Building version ${VERSION} for ${production ? "PRODUCTION" : "DEVELOPMENT"}`);
 
@@ -21,7 +22,7 @@ function serve() {
 	return {
 		writeBundle() {
 			if (server) return;
-			server = require('child_process').spawn('npm', ['run', 'start', '--', '--dev'], {
+			server = child_process.spawn('npm', ['run', 'start', '--', '--dev', '--port', '5000'], {
 				stdio: ['ignore', 'inherit', 'inherit'],
 				shell: true
 			});

@@ -1,7 +1,8 @@
 <script lang="ts">
   import { getContext, onDestroy, onMount } from "svelte";
   import type { Unsubscriber } from "svelte/store";
-  import { Cache, CacheEvent, EventType } from "../cache";
+  import { EventType } from "../cache";
+  import type { Cache, CacheEvent } from "../cache";
   import ContinuePlay from "svelte-material-icons/PlayCircleOutline.svelte";
   import SortNameIcon from "svelte-material-icons/SortAlphabeticalAscending.svelte";
   import SortTimeIcon from "svelte-material-icons/SortClockAscendingOutline.svelte";

@@ -6,13 +6,13 @@
     onMount,
     tick,
   } from "svelte";
-  import {
+  import type {
     Cache,
     CachedItem,
     CacheEvent,
-    EventType,
     PrefetchRequest,
   } from "../cache";
+  import { EventType } from "../cache";
   import TranscodedIcon from "svelte-material-icons/ArrowCollapseVertical.svelte";
   import CachedIcon from "svelte-material-icons/Cached.svelte";
   import AudioIcon from "svelte-material-icons/SineWave.svelte";

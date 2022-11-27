@@ -7,9 +7,9 @@
     StorageKeys,
     TranscodingCode,
     transcodingCodeToName,
-    TranscodingName,
     transcodingNameToCode,
   } from "../types/enums";
+  import type { TranscodingName } from "../types/enums";
   import { capitalize } from "../util";
   import { otherTheme } from "../util/browser";
   import { clickOutside } from "../util/dom";
