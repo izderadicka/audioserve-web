@@ -110,3 +110,12 @@ export function nonEmpty(o: object | Array<any>): boolean {
 export function sorted<T>(a: Array<T>): Array<T> {
   return [...a].sort();
 }
+
+export function encodePathParameter(path: string): string {
+  const match = /^\/\d+\/\w+\//.exec(path);
+  if (match.length === 1) {
+    return match[0] + encodeURIComponent(path.substring(match[0].length));
+  } else {
+    return path;
+  }
+}

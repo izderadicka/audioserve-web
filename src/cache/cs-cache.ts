@@ -1,6 +1,6 @@
 import type { Cache } from ".";
 import { EventType } from ".";
-import { removeQuery, splitPath } from "../util";
+import { encodePathParameter, removeQuery, splitPath } from "../util";
 import type {
   CachedItem,
   CacheEventHandler,
@@ -251,14 +251,16 @@ export class CacheStorageCache implements Cache {
 
       if (!lowPriority) {
         //Cancel running loads from other folders
-        const myFolder = splitPath(new URL(url).pathname).folder;
+        const myFolder = splitPath(
+          decodeURIComponent(new URL(url).pathname)
+        ).folder;
 
         this.processing.forEach((inProgress) => {
           const runningFolder = splitPath(
-            new URL(inProgress.url).pathname
+            decodeURIComponent(new URL(inProgress.url).pathname)
           ).folder;
           if (runningFolder !== myFolder) {
-            toAbort.add(runningFolder);
+            toAbort.add(encodePathParameter(runningFolder));
           } else if (
             currentlyPlaying.folderPosition &&
             currentlyPlaying.folderPosition > inProgress.folderPosition
@@ -274,7 +276,7 @@ export class CacheStorageCache implements Cache {
       this.processQueue();
     }
     toAbort.forEach((f) => {
-      this.cancelRunning(f, true); // TODO: check logic correct for keepRunning
+      this.cancelRunning(f, false); // TODO: check logic is correct for keepRunning
     });
   }
 

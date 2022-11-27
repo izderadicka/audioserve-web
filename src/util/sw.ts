@@ -114,6 +114,7 @@ export class AudioCache {
         !(keepDirect && i.isDirect) &&
         (!pathPrefix || new URL(i.url).pathname.startsWith(pathPrefix))
       ) {
+        console.debug(`Aborting ${JSON.stringify(i)}`);
         i.abort.abort();
         // Firefox seems not to generate error when aborting request, so delete it if it was not deleted due to error
         setTimeout(() => {
