@@ -47,7 +47,13 @@ export default {
 			compilerOptions: {
 				// enable run-time checks when not in production
 				dev: !production
-			}
+			},
+			//TODO: If there will be spare time resolve this warning
+			// Also should be disabled in .vscode/settings.json
+			onwarn: (warning, handler) => {
+				if (warning.code == 'a11y-click-events-have-key-events') return
+				handler(warning)
+			},
 		}),
 		// we'll extract any component CSS out into
 		// a separate file - better for performance
