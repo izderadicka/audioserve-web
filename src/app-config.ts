@@ -15,4 +15,5 @@ export const defaultConfig: AppConfig = {
   recentDays: 365,
   alwaysTranscode: "",
   folderIconSize: 64,
+  showFolderRemainingTime: false,
 };

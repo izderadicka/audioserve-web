@@ -283,7 +283,7 @@
 
   // Sleep Timer Section
 
-  let sleepTimer: number;
+  let sleepTimer: number | null = null;
   let player: Player;
   let shakeDetector: ShakeDetector = null;
   const clearShakeDetector = () => {
@@ -298,7 +298,6 @@
     const soundSleep = await loadAudioFile("static/will_sleep_soon.mp3", ac);
     const soundExtended = await loadAudioFile("static/extended.mp3", ac);
 
-    $sleepTime = $config.sleepTimerPeriod;
     sleepTimer = window.setInterval(() => {
       const nextTime = $sleepTime - 1;
 
@@ -323,12 +322,17 @@
     if (time > 1 && shakeDetector != null) {
       clearShakeDetector();
     }
+
+    if (sleepTimer === null && time > 0) {
+      startSleepTimer();
+    }
   });
 
   function stopSleepTimer() {
     window.clearInterval(sleepTimer);
     clearShakeDetector();
     $sleepTime = 0;
+    sleepTimer = null;
   }
 
   let showComponent: "browser" | "config" | "recent" = "browser";
@@ -434,7 +438,9 @@
                 <span
                   role="button"
                   aria-label="Stop sleep timer"
-                  on:click={stopSleepTimer}
+                  on:click={() => {
+                    $sleepTime = 0;
+                  }}
                   class="with-text button-like"
                 >
                   <SleepCancelIcon size="1.5rem" />
@@ -445,7 +451,9 @@
                   role="button"
                   class="button-like"
                   aria-label="Start sleep timer"
-                  on:click={startSleepTimer}
+                  on:click={() => {
+                    $sleepTime = $config.sleepTimerPeriod;
+                  }}
                 >
                   <SleepIcon size="1.5rem" />
                 </span>

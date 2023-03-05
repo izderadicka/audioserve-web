@@ -9,7 +9,8 @@
 
   export let iconSize = "";
 
-  let time = 0;
+  let time: number = 0;
+  $: time_fmt = time && time > 0 ? time.toString() : "";
   let editing = false;
   let input: HTMLInputElement;
 
@@ -25,6 +26,10 @@
     }
   };
 
+  const decreaseSleepTime = (decr: number) => {
+    $sleepTime = Math.max($sleepTime - decr, 0);
+  };
+
   onMount(() => {
     time = $sleepTime;
   });
@@ -36,17 +41,11 @@
   <span
     role="button"
     class="button-like big-minus"
-    on:click={() =>
-      ($sleepTime =
-        $sleepTime - Math.min($sleepTime - 1, $config.sleepTimerExtend))}
+    on:click={() => decreaseSleepTime($config.sleepTimerExtend)}
   >
     <CircleMinusIcon size={iconSize} />
   </span>
-  <span
-    role="button"
-    class="button-like"
-    on:click={() => ($sleepTime = $sleepTime - Math.min($sleepTime - 1, 1))}
-  >
+  <span role="button" class="button-like" on:click={() => decreaseSleepTime(1)}>
     <MinusIcon size={iconSize} />
   </span>
   <input
@@ -58,7 +57,7 @@
     max="999"
     aria-label="Timer finer control"
     bind:this={input}
-    bind:value={time}
+    bind:value={time_fmt}
     on:focus={() => (editing = true)}
     on:blur={() => {
       editing = false;
@@ -109,5 +108,6 @@
     padding: 0;
     margin: 0;
     -moz-appearance: textfield !important;
+    appearance: textfield !important;
   }
 </style>

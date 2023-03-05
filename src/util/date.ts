@@ -1,5 +1,8 @@
 export function formatTime(dur: number) {
   if (!isFinite(dur)) return "?";
+  if (dur < 0) {
+    return "00:00";
+  }
   let hours = 0;
   let mins: number | string = Math.floor(dur / 60);
   let secs: number | string = Math.floor(dur % 60);

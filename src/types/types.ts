@@ -34,6 +34,7 @@ export interface AppConfig {
   recentDays: number;
   alwaysTranscode: string;
   folderIconSize: number;
+  showFolderRemainingTime: boolean;
 }
 
 export interface TranscodingDetail {

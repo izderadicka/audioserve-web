@@ -84,6 +84,9 @@
   let previousTime: number; // sum of time of previous items
   let totalFolderTime: number;
   $: formattedTotalFolderTime = formatTime(totalFolderTime);
+  $: displayFolderTime = $config.showFolderRemainingTime
+    ? formatTime(totalFolderTime - folderTime)
+    : formattedTotalFolderTime;
 
   let duration: number;
   let expectedDuration: number;
@@ -713,12 +716,10 @@
 
 {#if expanded}
   <div class="extra-controls">
-    {#if $sleepTime > 0}
-      <div class="timer-control slider-control extra-control">
-        <span><SleepIcon size={fileIconSize} /></span>
-        <TimerControl iconSize={fileIconSize} />
-      </div>
-    {/if}
+    <div class="timer-control slider-control extra-control">
+      <span><SleepIcon size={fileIconSize} /></span>
+      <TimerControl iconSize={fileIconSize} />
+    </div>
 
     <div class="volume-control slider-control extra-control">
       <span><VolumeIcon size={fileIconSize} /></span>
@@ -787,10 +788,15 @@
           />
         </div>
         <div
-          class="total-time"
-          aria-label="Total playback time of whole folder"
+          class="total-time clickable"
+          on:click={() =>
+            ($config.showFolderRemainingTime =
+              !$config.showFolderRemainingTime)}
+          aria-label={$config.showFolderRemainingTime
+            ? "Remaining time in the folder"
+            : "Total playback time of whole folder"}
         >
-          {formattedTotalFolderTime}
+          {displayFolderTime}
         </div>
       </div>
       <div class="item-info" id="file-info">
