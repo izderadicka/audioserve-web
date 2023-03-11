@@ -1,5 +1,4 @@
 import base64js from "base64-js";
-import { sha256 } from "js-sha256";
 
 export async function encodeSecret(secret: string) {
   let secretBytes = new TextEncoder().encode(secret);
@@ -10,7 +9,9 @@ export async function encodeSecret(secret: string) {
   concatedBytes.set(randomBytes, secretBytes.length);
   let digestPromise;
   if (!window.crypto.subtle) {
-    digestPromise = Promise.resolve(sha256.arrayBuffer(concatedBytes));
+    console.error(
+      "Crypto subtle is not available - too old browser. CLIENT WILL NOT WORK!"
+    );
   } else {
     digestPromise = window.crypto.subtle.digest("SHA-256", concatedBytes);
   }
