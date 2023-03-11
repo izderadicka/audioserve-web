@@ -1,4 +1,4 @@
-<script type="ts">
+<script lang="ts">
   import { currentFolder, selectedCollection } from "../state/stores";
   import { FolderType } from "../types/enums";
   import { constructHistoryFragment } from "../util/history";
