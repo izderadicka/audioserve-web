@@ -1,20 +1,13 @@
-import { writable, derived, Writable, Readable, readable } from "svelte/store";
+import { writable, derived, readable } from "svelte/store";
+import type { Writable, Readable } from "svelte/store";
 import { defaultConfig } from "../app-config";
-import type { CachedItem } from "../cache";
-import {
-  CollectionsApi,
-  CollectionsInfo,
-  Configuration,
-  PositionsApi,
-  Transcoding,
-  TranscodingsInfo,
-} from "../client";
+import { CollectionsApi, Configuration, PositionsApi } from "../client";
+import type { CollectionsInfo, Transcoding, TranscodingsInfo } from "../client";
 import { PlaybackSync } from "../client-position/playback-sync";
 import {
   StorageKeys,
   TranscodingCode,
   transcodingCodeToName,
-  transcodingNameToCode,
 } from "../types/enums";
 import type { PlayItem } from "../types/play-item";
 import type {
