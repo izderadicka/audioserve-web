@@ -966,6 +966,7 @@
     display: flex;
     flex-direction: row;
     gap: 1em;
+    height: 1.8em;
   }
   .slider-control {
     flex-grow: 1;
@@ -1080,7 +1081,7 @@
     font-weight: bold;
   }
   .info {
-    margin-top: 0.5em;
+    margin-top: 0em;
   }
 
   .blink {
