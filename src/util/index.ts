@@ -1,5 +1,10 @@
 import type { AudioFile } from "../client";
 import { StorageKeys } from "../types/enums";
+import type { AppConfig } from "../types/types";
+
+export function saveConfig(config: AppConfig) {
+  localStorage.setItem(StorageKeys.PREFERENCES, JSON.stringify(config));
+}
 
 export function capitalize(s: string) {
   if (s.length == 0) return "";

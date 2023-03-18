@@ -42,7 +42,13 @@
   import { FolderType, NavigateTarget, StorageKeys } from "../types/enums";
   import { PlayItem } from "../types/play-item";
   import { formatTime } from "../util/date";
-  import { splitExtInName, splitPath, splitRootPath, splitUrl } from "../util";
+  import {
+    saveConfig,
+    splitExtInName,
+    splitPath,
+    splitRootPath,
+    splitUrl,
+  } from "../util";
   import CacheIndicator from "./CacheIndicator.svelte";
   import CoverIcon from "./FolderIcon.svelte";
   import { Throttler } from "../util/events";
@@ -789,9 +795,10 @@
         </div>
         <div
           class="total-time clickable"
-          on:click={() =>
-            ($config.showFolderRemainingTime =
-              !$config.showFolderRemainingTime)}
+          on:click={() => {
+            $config.showFolderRemainingTime = !$config.showFolderRemainingTime;
+            saveConfig($config);
+          }}
           aria-label={$config.showFolderRemainingTime
             ? "Remaining time in the folder"
             : "Total playback time of whole folder"}

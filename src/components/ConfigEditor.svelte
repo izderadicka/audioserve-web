@@ -6,6 +6,7 @@
   import { config } from "../state/stores";
   import { StorageKeys } from "../types/enums";
   import type { AppConfig } from "../types/types";
+  import { saveConfig } from "../util";
   import ClosableTitle from "./ClosableTitle.svelte";
 
   let currentConfig: AppConfig = get(config);
@@ -15,10 +16,7 @@
 
   const applyConfig = () => {
     dispatch("finished");
-    localStorage.setItem(
-      StorageKeys.PREFERENCES,
-      JSON.stringify(currentConfig)
-    );
+    saveConfig(currentConfig);
     config.set(currentConfig);
   };
   const cancel = () => {
