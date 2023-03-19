@@ -42,17 +42,11 @@
   import { FolderType, NavigateTarget, StorageKeys } from "../types/enums";
   import { PlayItem } from "../types/play-item";
   import { formatTime } from "../util/date";
-  import {
-    saveConfig,
-    splitExtInName,
-    splitPath,
-    splitRootPath,
-    splitUrl,
-  } from "../util";
+  import { splitExtInName, splitPath, splitRootPath, splitUrl } from "../util";
   import CacheIndicator from "./CacheIndicator.svelte";
   import CoverIcon from "./FolderIcon.svelte";
   import { Throttler } from "../util/events";
-  import { getLocationPath } from "../util/browser";
+  import { getLocationPath, saveConfig } from "../util/browser";
   import { calculateAutorewind } from "../util/play";
   import { SMALL_SCREEN_WIDTH_LIMIT } from "../types/constants";
   import TimerControl from "./TimerControl.svelte";
@@ -973,7 +967,7 @@
     display: flex;
     flex-direction: row;
     gap: 1em;
-    height: 1.8em;
+    height: 2em;
   }
   .slider-control {
     flex-grow: 1;

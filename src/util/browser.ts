@@ -1,4 +1,9 @@
 import { StorageKeys } from "../types/enums";
+import type { AppConfig } from "../types/types";
+
+export function saveConfig(config: AppConfig) {
+  localStorage.setItem(StorageKeys.PREFERENCES, JSON.stringify(config));
+}
 
 export function otherTheme() {
   const currentTheme = localStorage.getItem(StorageKeys.THEME) || "light";
@@ -7,7 +12,7 @@ export function otherTheme() {
 
 export function getLocationPath(): string {
   let path = location.pathname;
-  path = path.replace(/index.html$/, "")
+  path = path.replace(/index.html$/, "");
   return path.replace(/\/+$/, "");
 }
 
@@ -33,14 +38,15 @@ function mapWsProtocol(p: string) {
 }
 
 export function baseWsUrl(dev: boolean, port: number): string {
-  let  baseUrl = dev
+  let baseUrl = dev
     ? `${mapWsProtocol(window.location.protocol)}//${
-        window.location.hostname}:${port}`
+        window.location.hostname
+      }:${port}`
     : `${mapWsProtocol(window.location.protocol)}//${window.location.host}`;
 
-  const path = getLocationPath()
+  const path = getLocationPath();
   if (path) {
-    baseUrl += path
+    baseUrl += path;
   }
 
   return baseUrl;

@@ -4,9 +4,8 @@
   import { get } from "svelte/store";
 
   import { config } from "../state/stores";
-  import { StorageKeys } from "../types/enums";
   import type { AppConfig } from "../types/types";
-  import { saveConfig } from "../util";
+  import { saveConfig } from "../util/browser";
   import ClosableTitle from "./ClosableTitle.svelte";
 
   let currentConfig: AppConfig = get(config);
