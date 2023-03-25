@@ -16,4 +16,5 @@ export const defaultConfig: AppConfig = {
   alwaysTranscode: "",
   folderIconSize: 64,
   showFolderRemainingTime: false,
+  expandedPlayerTray: false,
 };

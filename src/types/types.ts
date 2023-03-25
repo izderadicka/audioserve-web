@@ -35,6 +35,7 @@ export interface AppConfig {
   alwaysTranscode: string;
   folderIconSize: number;
   showFolderRemainingTime: boolean;
+  expandedPlayerTray: boolean;
 }
 
 export interface TranscodingDetail {

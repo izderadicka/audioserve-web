@@ -79,7 +79,7 @@
   const dispatch = createEventDispatcher();
   const cache: Cache = getContext("cache");
 
-  let expanded = false;
+  let expanded = $config.expandedPlayerTray;
 
   let previousTime: number; // sum of time of previous items
   let totalFolderTime: number;
@@ -706,7 +706,11 @@
     aria-label="More Controls"
     aria-expanded={expanded}
     class="player-expand-button button-like"
-    on:click={() => (expanded = !expanded)}
+    on:click={() => {
+      expanded = !expanded;
+      $config.expandedPlayerTray = expanded;
+      saveConfig($config);
+    }}
   >
     {#if expanded}<CollapsIcon size="48px" />{:else}<ExpandIcon
         size="48px"
