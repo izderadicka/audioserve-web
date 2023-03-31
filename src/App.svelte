@@ -24,7 +24,7 @@
     sleepTime,
   } from "./state/stores";
   import { onMount, setContext } from "svelte";
-  import { Configuration } from "./client";
+  import { Configuration, ResponseError } from "./client";
   import { deleteCookie } from "./util/auth";
   import CollectionSelector from "./components/CollectionSelector.svelte";
   import Browser from "./components/Browser.svelte";
@@ -182,11 +182,11 @@
       await loadCollections();
     } catch (e) {
       console.error("Error loading initial lists", e);
-      if (e instanceof Response) {
-        if (e.status === 401) {
+      if (e instanceof ResponseError) {
+        if (e.response.status === 401) {
           $isAuthenticated = false;
           // try to load again after authentication
-          const unsubsribe = isAuthenticated.subscribe(async (ok) => {
+          const _unsubsribe = isAuthenticated.subscribe(async (ok) => {
             if (ok) {
               try {
                 await loadCollections();
@@ -196,7 +196,7 @@
             }
           });
         } else {
-          error = `Unexpected respose from server: ${e.status} ${e.statusText}`;
+          error = `Unexpected respose from server: ${e.response.status} ${e}`;
         }
       } else {
         error = `Cannot contact server: ${e}`;
