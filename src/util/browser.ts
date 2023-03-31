@@ -51,3 +51,35 @@ export function baseWsUrl(dev: boolean, port: number): string {
 
   return baseUrl;
 }
+
+export function configurableClick(
+  node: HTMLElement,
+  options: { double: boolean; action: (evt: any) => void }
+) {
+  let action;
+  let evt: string;
+
+  function handler(e) {
+    e.preventDefault();
+    action(e);
+  }
+
+  function update(options: { double: boolean; action: (evt: any) => void }) {
+    action = options.action;
+    const newEvt = options.double ? "dblclick" : "click";
+    if (evt !== newEvt) {
+      node.removeEventListener(evt, handler);
+      node.addEventListener(newEvt, handler);
+      evt = newEvt;
+    }
+  }
+
+  update(options);
+
+  return {
+    update,
+    destroy() {
+      node.removeEventListener(evt, action);
+    },
+  };
+}

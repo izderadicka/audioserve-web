@@ -37,7 +37,7 @@
   import Description from "./Description.svelte";
   import Cover from "./Cover.svelte";
   import type { HistoryRecord, HistoryWrapper } from "../util/history";
-  import { getLocationPath } from "../util/browser";
+  import { configurableClick, getLocationPath } from "../util/browser";
   import { Debouncer } from "../util/events";
   import Badge from "./Badge.svelte";
   import { Scroller } from "../util/dom";
@@ -400,7 +400,12 @@
         </summary>
         <ul class="items-list">
           {#each subfolders as fld}
-            <li on:click={navigateTo(fld.path)}>
+            <li
+              use:configurableClick={{
+                double: true,
+                action: navigateTo(fld.path),
+              }}
+            >
               <FolderItem
                 {observer}
                 subfolder={fld}
