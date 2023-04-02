@@ -60,7 +60,9 @@
     scroller.scrollToView(elem);
   }
 
-  let slidePct = spring(0, { stiffness: 0.05, damping: 0.5 });
+  const DEFAULT_SPRING_PARAMS = { stiffness: 0.05, damping: 0.5 };
+  const SLIDING_SPRING_PARAMS = { stiffness: 1, damping: 1 };
+  let slidePct = spring(0, DEFAULT_SPRING_PARAMS);
   const playSlideActionIconSize = 2;
 
   function handleSlide(evt: CustomEvent) {
@@ -80,12 +82,16 @@
   use:slideAction={{ disabled: !$config.enableSlideInBrowser }}
   on:slidestart={(evt) => {
     $slidePct = 0;
+    slidePct.stiffness = SLIDING_SPRING_PARAMS.stiffness;
+    slidePct.damping = SLIDING_SPRING_PARAMS.damping;
   }}
   on:slidemove={handleSlide}
   on:slideend={(evt) => {
     if ($slidePct > 0.9999) {
       playFunction(position, true, 0);
     }
+    slidePct.stiffness = DEFAULT_SPRING_PARAMS.stiffness;
+    slidePct.damping = DEFAULT_SPRING_PARAMS.damping;
     $slidePct = 0;
   }}
 >
