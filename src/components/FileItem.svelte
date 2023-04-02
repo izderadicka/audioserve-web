@@ -14,6 +14,7 @@
   import type { AudioFileExt } from "../types/types";
   import { Scroller } from "../util/dom";
   import { slideAction } from "../util/browser";
+  import { spring } from "svelte/motion";
 
   export let file: AudioFileExt;
   export let position: number;
@@ -58,14 +59,14 @@
     scroller.scrollToView(elem);
   }
 
-  let slidePct = 0;
+  let slidePct = spring(0, { stiffness: 0.05, damping: 0.5 });
   const playSlideActionIconSize = 2;
 
   function handleSlide(evt: CustomEvent) {
     let delta = evt.detail.dx;
     delta = delta < 0 ? 0 : delta;
     let rel = delta / (elem.clientWidth / 2);
-    slidePct = rel > 1 ? 1 : rel;
+    $slidePct = rel > 1 ? 1 : rel;
   }
 </script>
 
@@ -75,22 +76,22 @@
   }}
   use:slideAction
   on:slidestart={(evt) => {
-    slidePct = 0;
+    $slidePct = 0;
   }}
   on:slidemove={handleSlide}
   on:slideend={(evt) => {
-    if (slidePct > 0.9999) {
+    if ($slidePct > 0.9999) {
       playFunction(position, true, 0);
     }
-    slidePct = 0;
+    $slidePct = 0;
   }}
 >
   <div bind:this={elem} class="item" draggable="false" class:active={isPlaying}>
-    {#if slidePct >= 0}
+    {#if $slidePct >= 0}
       <div
         class="play-slide-action"
-        style:width={`${playSlideActionIconSize * slidePct}rem`}
-        style:opacity={slidePct * slidePct}
+        style:width={`${playSlideActionIconSize * $slidePct}rem`}
+        style:opacity={$slidePct * $slidePct}
       >
         <span class="center-vertically">
           <PlayCircled size="{playSlideActionIconSize}rem" />
