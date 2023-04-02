@@ -9,9 +9,11 @@
   import { splitExtInName } from "../util";
   import Cached from "svelte-material-icons/Cached.svelte";
   import Play from "svelte-material-icons/Play.svelte";
+  import PlayCircled from "svelte-material-icons/PlayCircleOutline.svelte";
   import { FolderType } from "../types/enums";
   import type { AudioFileExt } from "../types/types";
   import { Scroller } from "../util/dom";
+  import { slideAction } from "../util/browser";
 
   export let file: AudioFileExt;
   export let position: number;
@@ -55,10 +57,46 @@
   $: if (isPlaying && elem && scroller) {
     scroller.scrollToView(elem);
   }
+
+  let slidePct = 0;
+  const playSlideActionIconSize = 2;
+
+  function handleSlide(evt: CustomEvent) {
+    let delta = evt.detail.dx;
+    delta = delta < 0 ? 0 : delta;
+    let rel = delta / (elem.clientWidth / 2);
+    slidePct = rel > 1 ? 1 : rel;
+  }
 </script>
 
-<li on:click={() => playFunction(position, true, 0)}>
-  <div bind:this={elem} class="item" class:active={isPlaying}>
+<li
+  on:click={() => {
+    // playFunction(position, true, 0)
+  }}
+  use:slideAction
+  on:slidestart={(evt) => {
+    slidePct = 0;
+  }}
+  on:slidemove={handleSlide}
+  on:slideend={(evt) => {
+    if (slidePct > 0.9999) {
+      playFunction(position, true, 0);
+    }
+    slidePct = 0;
+  }}
+>
+  <div bind:this={elem} class="item" draggable="false" class:active={isPlaying}>
+    {#if slidePct >= 0}
+      <div
+        class="play-slide-action"
+        style:width={`${playSlideActionIconSize * slidePct}rem`}
+        style:opacity={slidePct * slidePct}
+      >
+        <span class="center-vertically">
+          <PlayCircled size="{playSlideActionIconSize}rem" />
+        </span>
+      </div>
+    {/if}
     {#if isPlaying}<div aria-label="Now playing"><Play size="2rem" /></div>{/if}
     <div class="info">
       <h4 class="file-name item-header" role="link">{baseName}</h4>
@@ -82,6 +120,22 @@
 <style>
   .title {
     margin-bottom: 0.1rem;
+  }
+
+  .play-slide-action {
+    overflow-x: hidden;
+    color: var(--primary);
+    opacity: 1;
+    position: relative;
+    margin-right: 0.5rem;
+  }
+
+  .center-vertically {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
   }
   .item {
     display: flex;
