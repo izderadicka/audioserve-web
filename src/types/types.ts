@@ -36,6 +36,7 @@ export interface AppConfig {
   folderIconSize: number;
   showFolderRemainingTime: boolean;
   expandedPlayerTray: boolean;
+  enableSlideInBrowser: boolean;
 }
 
 export interface TranscodingDetail {

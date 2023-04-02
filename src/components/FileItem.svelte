@@ -1,5 +1,6 @@
 <script lang="ts">
   import {
+    config,
     currentFolder,
     playItem,
     playList,
@@ -72,9 +73,11 @@
 
 <li
   on:click={() => {
-    // playFunction(position, true, 0)
+    if (!$config.enableSlideInBrowser) {
+      playFunction(position, true, 0);
+    }
   }}
-  use:slideAction
+  use:slideAction={{ disabled: !$config.enableSlideInBrowser }}
   on:slidestart={(evt) => {
     $slidePct = 0;
   }}

@@ -17,4 +17,5 @@ export const defaultConfig: AppConfig = {
   folderIconSize: 64,
   showFolderRemainingTime: false,
   expandedPlayerTray: false,
+  enableSlideInBrowser: false,
 };

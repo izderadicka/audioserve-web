@@ -52,9 +52,9 @@ export function baseWsUrl(dev: boolean, port: number): string {
   return baseUrl;
 }
 
-export function slideAction(node) {
-  let x;
-  let y;
+export function slideAction(node: HTMLElement, options: { disabled: boolean }) {
+  let x: number;
+  let y: number;
 
   function handleMousedown(event) {
     if (event.type.startsWith("touch")) {
@@ -114,13 +114,15 @@ export function slideAction(node) {
     window.removeEventListener("touchend", handleMouseup);
   }
 
-  node.addEventListener("mousedown", handleMousedown);
-  node.addEventListener("touchstart", handleMousedown, { passive: true });
+  if (!options.disabled) {
+    node.addEventListener("mousedown", handleMousedown);
+    node.addEventListener("touchstart", handleMousedown, { passive: true });
 
-  return {
-    destroy() {
-      node.removeEventListener("mousedown", handleMousedown);
-      node.removeEventListener("touchstart", handleMousedown);
-    },
-  };
+    return {
+      destroy() {
+        node.removeEventListener("mousedown", handleMousedown);
+        node.removeEventListener("touchstart", handleMousedown);
+      },
+    };
+  }
 }

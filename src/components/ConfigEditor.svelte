@@ -190,6 +190,20 @@
       would be audio/ogg on iPhone/iPad
     </p>
 
+    <label for="browser-slide">
+      <input
+        id="browser-slide"
+        aria-describedby="browser-slide-desc"
+        type="checkbox"
+        bind:checked={currentConfig.enableSlideInBrowser}
+      />
+      Use slide gesture in browser
+    </label>
+    <p class="no-input" id="browser-slide-desc">
+      In file browser use slide gesture to play a file instead of click. Useful
+      on touch devices to prevent accidental touches.
+    </p>
+
     <div class="grid">
       <button class="secondary" on:click|preventDefault={cancel}>Cancel</button>
       <button on:click|preventDefault={applyConfig}>Apply</button>
