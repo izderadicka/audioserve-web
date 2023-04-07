@@ -101,8 +101,13 @@ input[type="range"]::-moz-range-thumb:hover {
   --background-rgb: 0, 0, 0;
 }
 
+ul.items-list {
+  overflow-x: hidden;
+}
+
 ul.items-list li {
   padding-left: 0;
+  position: relative;
 }
 
 ul.items-list li {

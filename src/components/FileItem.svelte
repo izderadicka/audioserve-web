@@ -1,3 +1,9 @@
+<script lang="ts" context="module">
+  let remFactor: number = parseFloat(
+    getComputedStyle(document.documentElement).fontSize
+  );
+</script>
+
 <script lang="ts">
   import {
     config,
@@ -63,7 +69,12 @@
   const DEFAULT_SPRING_PARAMS = { stiffness: 0.05, damping: 0.5 };
   const SLIDING_SPRING_PARAMS = { stiffness: 1, damping: 1 };
   let slidePct = spring(0, DEFAULT_SPRING_PARAMS);
-  const playSlideActionIconSize = 2;
+  const slideActionIconSize = 2;
+  let slideActionIconTop = 0;
+  $: if (elem) {
+    slideActionIconTop =
+      (elem.clientHeight - remFactor * slideActionIconSize) / 2;
+  }
 
   function handleSlide(evt: CustomEvent) {
     let delta = evt.detail.dx;
@@ -95,19 +106,28 @@
     $slidePct = 0;
   }}
 >
-  <div bind:this={elem} class="item" draggable="false" class:active={isPlaying}>
-    {#if $slidePct >= 0}
-      <div
-        class="play-slide-action"
-        style:width={`${playSlideActionIconSize * $slidePct}rem`}
-        style:opacity={$slidePct * $slidePct}
-      >
-        <span class="center-vertically">
-          <PlayCircled size="{playSlideActionIconSize}rem" />
-        </span>
-      </div>
-    {/if}
-    {#if isPlaying}<div aria-label="Now playing"><Play size="2rem" /></div>{/if}
+  {#if $slidePct > 0}
+    <div
+      class="play-slide-action"
+      style:opacity={$slidePct * $slidePct}
+      style:top={`${slideActionIconTop}px`}
+    >
+      <span>
+        <PlayCircled size="{slideActionIconSize}rem" />
+      </span>
+    </div>
+  {/if}
+
+  <div
+    bind:this={elem}
+    class="item"
+    draggable="false"
+    class:active={isPlaying}
+    style:transform={`translateX(${1.15 * slideActionIconSize * $slidePct}rem)`}
+  >
+    {#if isPlaying}<div aria-label="Now playing">
+        <Play size="2rem" />
+      </div>{/if}
     <div class="info">
       <h4 class="file-name item-header" role="link">{baseName}</h4>
       {#if title}
@@ -136,17 +156,10 @@
     overflow-x: hidden;
     color: var(--primary);
     opacity: 1;
-    position: relative;
-    margin-right: 0.5rem;
+    position: absolute;
+    z-index: 9999;
   }
 
-  .center-vertically {
-    margin: 0;
-    position: absolute;
-    top: 50%;
-    -ms-transform: translateY(-50%);
-    transform: translateY(-50%);
-  }
   .item {
     display: flex;
   }
