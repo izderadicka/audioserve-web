@@ -85,6 +85,7 @@
 </script>
 
 <li
+  bind:this={elem}
   on:click={() => {
     if (!$config.enableSlideInBrowser) {
       playFunction(position, true, 0);
@@ -119,7 +120,6 @@
   {/if}
 
   <div
-    bind:this={elem}
     class="item"
     draggable="false"
     class:active={isPlaying}

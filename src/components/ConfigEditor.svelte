@@ -125,7 +125,7 @@
       it by n minutes by shaking device
     </p>
 
-    <label for="recent-days">Maximum history for recently listened (days)</label
+    <label for="recent-days">Maximum History for Recently Listened (days)</label
     >
     <input
       id="recent-days"
@@ -177,7 +177,7 @@
       data to load
     </p>
 
-    <label for="always-transcode">Mime types to always transcode</label>
+    <label for="always-transcode">Mime Types to Always Transcode</label>
     <input
       id="always-transcode"
       aria-describedby="always-transcode-desc"
@@ -197,11 +197,11 @@
         type="checkbox"
         bind:checked={currentConfig.enableSlideInBrowser}
       />
-      Use slide gesture in browser
+      Use Slide Gesture in Browser
     </label>
     <p class="no-input" id="browser-slide-desc">
       In file browser use slide gesture to play a file instead of click. Useful
-      on touch devices to prevent accidental touches.
+      on touch devices to prevent accidental touches and thus jumps in playback.
     </p>
 
     <div class="grid">
