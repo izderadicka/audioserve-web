@@ -63,7 +63,7 @@
       const elem: HTMLElement = document.querySelector("div.item.active");
       if (elem != null) {
         const scroller = new Scroller(container);
-        scroller.scrollToView(elem);
+        scroller.scrollToView(elem.parentElement);
       }
     }
   };
