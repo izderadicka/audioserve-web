@@ -1,6 +1,7 @@
 /node_modules/
 /public/build/
 /build
+/public/*.gz
 /public/bundle*
 /public/service-worker.js
 
