@@ -57,16 +57,23 @@
 <div>
   <span
     role="button"
+    tabindex="0"
     class="button-like big-minus"
     on:click={() => decreaseSleepTime($config.sleepTimerExtend)}
   >
     <CircleMinusIcon size={iconSize} />
   </span>
-  <span role="button" class="button-like" on:click={() => decreaseSleepTime(1)}>
+  <span
+    role="button"
+    tabindex="0"
+    class="button-like"
+    on:click={() => decreaseSleepTime(1)}
+  >
     <MinusIcon size={iconSize} />
   </span>
   <input
     tabindex="0"
+    enterkeyhint="done"
     type="number"
     name="timer"
     id="timer"
@@ -90,11 +97,17 @@
       }
     }}
   />
-  <span role="button" class="button-like" on:click={() => ($sleepTime += 1)}>
+  <span
+    role="button"
+    tabindex="0"
+    class="button-like"
+    on:click={() => ($sleepTime += 1)}
+  >
     <PlusIcon size={iconSize} />
   </span>
   <span
     role="button"
+    tabindex="0"
     class="button-like big-plus"
     on:click={() => ($sleepTime += $config.sleepTimerExtend)}
   >
@@ -104,7 +117,8 @@
   {#if $sleepTime > 0}
     <span
       role="button"
-      class="button-like cancel-sleep "
+      tabindex="0"
+      class="button-like cancel-sleep"
       on:click={() => ($sleepTime = 0)}
     >
       <SleepCancelIcon size={iconSize} />

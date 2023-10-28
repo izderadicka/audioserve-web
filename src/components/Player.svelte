@@ -772,6 +772,7 @@
         >
         <span
           role="link"
+          tabindex="0"
           aria-label="Navigate to currently playing folder"
           id="folder-name"
           class="item-name link-like"
@@ -834,6 +835,7 @@
         </span>
         <span
           role="link"
+          tabindex="0"
           aria-label="Locate currently playing file"
           id="file-name"
           class="item-name link-like"

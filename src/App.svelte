@@ -378,6 +378,7 @@
                 {#if smallScreen}
                   <span
                     role="button"
+                    tabindex="0"
                     class="button-like"
                     aria-label="Close collection list"
                     on:click={closeNavInput}><CloseIcon size="1.6rem" /></span
@@ -389,6 +390,8 @@
                 <input
                   type="text"
                   name="search"
+                  enterkeyhint="search"
+                  inputmode="search"
                   placeholder="Search"
                   on:keyup={checkSearch}
                   bind:value={searchValue}
@@ -397,6 +400,7 @@
                 {#if smallScreen}
                   <span
                     role="button"
+                    tabindex="0"
                     class="button-like"
                     aria-label="Close search"
                     on:click={closeNavInput}><CloseIcon size="1.6rem" /></span
@@ -409,6 +413,7 @@
             {#if !showCollectionSelect && !showSearch && smallScreen}
               <span
                 role="button"
+                tabindex="0"
                 class="button-like"
                 aria-label="Open collection list"
                 on:click={toggleCollectionsSelect}
@@ -416,6 +421,7 @@
               >
               <span
                 role="button"
+                tabindex="0"
                 class="button-like"
                 aria-label="Open search"
                 on:click={toggleSearch}><SearchIcon size="1.5rem" /></span
@@ -425,6 +431,7 @@
               {#if $pendingDownloads > 0}
                 <span
                   role="button"
+                  tabindex="0"
                   aria-label="Pending downloads"
                   on:click={showDownloadDialog}
                   class="with-text button-like"
@@ -437,6 +444,7 @@
               {#if $sleepTime > 0}
                 <span
                   role="button"
+                  tabindex="0"
                   aria-label="Stop sleep timer"
                   on:click={() => {
                     $sleepTime = 0;
@@ -449,6 +457,7 @@
               {:else}
                 <span
                   role="button"
+                  tabindex="0"
                   class="button-like"
                   aria-label="Start sleep timer"
                   on:click={() => {
