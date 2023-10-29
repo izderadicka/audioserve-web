@@ -1,14 +1,23 @@
 {
   "extends": "@tsconfig/svelte/tsconfig.json",
-
-  "include": ["src/**/*"],
-  "exclude": ["node_modules/*", "__sapper__/*", "public/*", "src/service-worker.ts", "src/util/sw.ts"],
-
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules/*",
+    "__sapper__/*",
+    "public/*",
+    "src/service-worker.ts",
+    "src/util/sw.ts"
+  ],
   "compilerOptions": {
-    "types": ["jest"],
+    "strict": false,
+    "types": [
+      "jest"
+    ],
     "lib": [
       "DOM",
       "ES2020",
-      ],
+    ],
   }
 }
