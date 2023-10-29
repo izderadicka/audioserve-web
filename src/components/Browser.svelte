@@ -390,6 +390,7 @@
             on:click|stopPropagation|preventDefault={toggleSubfoldersSort}
             aria-label="Sort by {sortTime ? 'Time' : 'Name'}"
             role="button"
+            tabindex="0"
           >
             {#if sortTime}
               <SortTimeIcon />

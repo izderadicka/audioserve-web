@@ -129,7 +129,9 @@
         <Play size="2rem" />
       </div>{/if}
     <div class="info">
-      <h4 class="file-name item-header" role="link">{baseName}</h4>
+      <h4 class="file-name">
+        <div class="item-header" role="link">{baseName}</div>
+      </h4>
       {#if title}
         <h6 class="title">{title}</h6>
       {/if}

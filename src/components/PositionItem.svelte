@@ -13,8 +13,8 @@
 </script>
 
 <div>
-  <h4 class="title item-header" role="link">
-    {name}
+  <h4 class="title">
+    <div class="item-header" role="link">{name}</div>
   </h4>
   <h6 class="subtitle" class:finished={position.folderFinished}>
     {position.folder}

@@ -36,8 +36,8 @@
     </div>
   {/if}
   <div class="info">
-    <h4 class="title item-header" class:finished role="link">
-      {subfolder.name}
+    <h4 class="title">
+      <div role="link" class="item-header" class:finished>{subfolder.name}</div>
     </h4>
     {#if extended && basedir}
       <h6 class="subtitle">{basedir}</h6>
