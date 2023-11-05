@@ -6,13 +6,12 @@ declare var self: ServiceWorkerGlobalScope;
 import {
   AUDIO_CACHE_NAME,
   CacheMessageKind,
-  CacheMessage,
   AUDIO_CACHE_LIMIT,
 } from "./cache/cs-cache";
 import { API_CACHE_NAME, APP_CACHE_PREFIX } from "./types/constants";
 import { removeQuery, splitPath } from "./util";
 import { AudioCache, NetworkFirstCache } from "./util/sw";
-import { APP_COMMIT, isDevelopment, ENVIRONMENT } from "./util/version";
+import type {CacheMessage} from "./cache/cs-cache";
 
 function broadcastMessage(msg: CacheMessage) {
   return self.clients
@@ -47,7 +46,9 @@ const staticResources = [
   "static/extended.mp3",
 ];
 
-const cacheName = APP_CACHE_PREFIX + APP_COMMIT;
+const COMMIT_HASH_SHORT = "na";
+const IS_DEVELOPMENT = true;
+const cacheName = APP_CACHE_PREFIX + COMMIT_HASH_SHORT;
 const audioCache = AUDIO_CACHE_NAME;
 const apiCache = API_CACHE_NAME;
 
@@ -56,11 +57,12 @@ self.addEventListener("install", (evt) => {
     caches
       .open(cacheName)
       .then((cache) => {
-        return cache.addAll(isDevelopment ? ["favicon.png"] : staticResources);
+        return cache.addAll(IS_DEVELOPMENT ? ["favicon.png"] : staticResources);
       })
+      .catch(e=> console.error("Fail to add static resources due to error: " + e))
       .then(() => {
         console.debug(
-          `Service worker Installation successful (dev ${isDevelopment} ) on path ${location.pathname}`
+          `Service worker Installation successful (dev ${IS_DEVELOPMENT} ) on path ${location.pathname}`
         );
         return self.skipWaiting(); // forces to immediately replace old SW
       })

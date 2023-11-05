@@ -1,4 +1,5 @@
 /// <reference types="svelte" />
+/// <reference types="vite/client" />
 
 //This can be used to add custom events to HtmlElements
 declare namespace svelte.JSX {

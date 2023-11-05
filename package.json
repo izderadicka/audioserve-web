@@ -13,18 +13,23 @@
   "scripts": {
     "dev": "vite --port 5000",
     "build": "vite build",
+    "build-sw": "rollup -c rollup-sw.config.mjs",
+    "dev-sw": "rollup -c rollup-sw.config.mjs -w",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.4.2",
+    "@rollup/plugin-replace": "^5.0.5",
+    "@rollup/plugin-typescript": "^11.1.5",
     "@tsconfig/svelte": "^5.0.0",
+    "git-commit-id": "^2.0.1",
     "svelte": "^4.0.5",
     "svelte-check": "^3.4.6",
+    "svelte-material-icons": "^3.0.4",
     "tslib": "^2.6.0",
     "typescript": "^5.0.2",
-    "vite": "^4.4.5",
-    "svelte-material-icons": "^3.0.4"
+    "vite": "^4.4.5"
   },
   "dependencies": {
     "@picocss/pico": "^1.5.7",

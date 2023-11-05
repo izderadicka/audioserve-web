@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+        "target": "ES6",
+        "strict": false,
+        "lib": [
+            "es6",
+            "WebWorker"
+        ],
+        "moduleResolution": "Node",
+        "module": "ES6",
+        "types": []
+    },
+    "include": [
+        "src/service-worker.ts"
+    ],
+    "exclude": [
+        "node_modules/*",
+        "__sapper__/*",
+        "public/*",
+        "dist/*"
+    ]
+}
