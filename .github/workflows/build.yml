@@ -26,5 +26,5 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: web-build
-          path: public
+          path: dist
           retention-days: 5
