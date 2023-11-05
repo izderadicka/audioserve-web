@@ -28,12 +28,15 @@ You will need audioserve server running somewhere with this client. There are mu
 
 - use `izderadicka/audioserve` image from dockerhub. New client is already there.
   
-- to have lastest verion clone this project and build client:
+- to have lastest version clone this project and build client:
 
 ```
-npm install && npm run build && npm run build-sw
+npm install && npm run build-sw && npm run build 
 ```
-then either copy and replace existing web client in client directory of audioserve, or use argument `--client-dir` to use directory with built client (built code is in `public` subdirectory).
+> important build-sw must be run first
+
+
+then either copy and replace existing web client in client directory of audioserve, or use argument `--client-dir` to use directory with built client (built code is in `dist` subdirectory).
 
 
 ## License 
