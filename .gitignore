@@ -9,3 +9,4 @@
 
 .vscode
 public/*.map
+/dist
