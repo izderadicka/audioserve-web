@@ -4,29 +4,27 @@ on:
   push:
   pull_request:
   workflow_dispatch:
-    
-  
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Setup node
-      uses: actions/setup-node@v3
-      with:
-        node-version: 16
-        cache: 'npm'
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: "npm"
 
-    - name: Build
-      run: |
-        npm install
-        npm run build
-        npm run build-sw
-        npm test
-    - uses: actions/upload-artifact@v3
-      with:
-        name: web-build
-        path: public
-        retention-days: 5
+      - name: Build
+        run: |
+          npm install
+          npm run build-sw
+          npm run build
+          npm test
+      - uses: actions/upload-artifact@v3
+        with:
+          name: web-build
+          path: public
+          retention-days: 5
