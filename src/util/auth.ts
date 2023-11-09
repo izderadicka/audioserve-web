@@ -10,7 +10,7 @@ export async function encodeSecret(secret: string) {
   let digestPromise;
   if (!window.crypto.subtle) {
     console.error(
-      "Crypto subtle is not available - too old browser. CLIENT WILL NOT WORK!"
+      "Crypto subtle is not available - insecure context or old browser. CLIENT WILL NOT WORK!"
     );
   } else {
     digestPromise = window.crypto.subtle.digest("SHA-256", concatedBytes);
