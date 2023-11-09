@@ -10,12 +10,6 @@
   let bar: HTMLDivElement;
   let svelteBarClass = "";
 
-  onMount(() => {
-    svelteBarClass = Array.from(bar.classList).filter((c) =>
-      c.includes("s-")
-    )[0];
-  });
-
   function update() {
     if (!indicator) return;
     let totalLength = indicator.offsetWidth;
@@ -32,7 +26,7 @@
       end = Math.min(totalLength, end);
 
       let bar = document.createElement("div");
-      bar.setAttribute("class", "cache-bar " + svelteBarClass);
+      bar.setAttribute("class", "cache-bar");
       bar.style.left = `${start}px`;
       bar.style.width = `${end - start}px`;
       indicator.appendChild(bar);
@@ -46,9 +40,7 @@
   $: if (ranges) update();
 </script>
 
-<div class="player-cache" bind:this={indicator}>
-  <div bind:this={bar} class="cache-bar" style="width: Opx;" />
-</div>
+<div class="player-cache" bind:this={indicator} />
 
 <style>
   .player-cache {
@@ -60,8 +52,7 @@
     cursor: default;
   }
 
-  /* @ts-ignore */
-  .cache-bar {
+  :global(.player-cache .cache-bar) {
     background-color: rgb(138, 207, 168);
     position: absolute;
     height: 3px;
