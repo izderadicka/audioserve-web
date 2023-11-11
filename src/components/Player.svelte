@@ -455,7 +455,7 @@
       if (
         cachedCollection === collection &&
         cachedPath === filePath &&
-        paused
+        (paused || $config.enableEagerSwitchToCached)
       ) {
         switchCurrentToCached(evt.item, paused);
       }
