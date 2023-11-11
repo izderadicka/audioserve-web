@@ -216,11 +216,16 @@
     updateMediaSessionState();
     lastPositionThrottler.throttle(currentTime);
   }
+
+  function prepareSeekUrl(url: string, time: number) {
+    const newUrl = url + `&seek=${time}`;
+    timeOffset = time;
+    return newUrl;
+  }
   async function loadTime(time: number, startPlayback = false) {
     console.debug(`Seeking time on url ${$playItem.url} to time ${time}`);
-    const newUrl = $playItem.url + `&seek=${time}`;
+    const newUrl = prepareSeekUrl($playItem.url, time);
     let wasPlaying = !paused;
-    timeOffset = time;
     //player.src = null;
     player.src = newUrl;
     //player.load()
@@ -325,9 +330,14 @@
         source = item.url;
         cached = false;
       }
+      timeOffset = 0;
+      if (!cached && item.transcoded && item.time > 5) {
+        source = prepareSeekUrl(source, item.time);
+      }
+
       player.src = source;
       localStorage.setItem(StorageKeys.LAST_FILE, item.path);
-      timeOffset = 0;
+
       if (item.time != null && isFinite(item.time)) {
         setCurrentTime(item.time);
       }
@@ -526,10 +536,10 @@
     }
 
     if (
+      !coldStart &&
       transcoded &&
       !cached &&
-      (progressValue > $config.transcodingJumpLimit ||
-        (coldStart && progressValue > 5))
+      progressValue > $config.transcodingJumpLimit
     ) {
       if (safeToSeekInPlayer(progressValue)) {
         await playPlayer();
