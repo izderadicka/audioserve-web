@@ -11,6 +11,7 @@ process.env.VITE_VERSION = VERSION;
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: "./",
   plugins: [svelte()],
   build: {
     rollupOptions: {
