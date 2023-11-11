@@ -255,7 +255,18 @@
       if (safeToSeekInPlayer(time)) {
         setCurrentTime(time);
       } else {
-        loadTime(time);
+        // maybe file was cached meanwhile
+        if (!cached) {
+          const cachedItem = cache
+            .getCachedUrl($playItem.url)
+            .then((cachedItem) => {
+              if (cachedItem) {
+                switchCurrentToCached(cachedItem, false, time);
+              } else {
+                loadTime(time);
+              }
+            });
+        }
       }
     } else {
       setCurrentTime(time);
@@ -441,7 +452,11 @@
         evt.item.originalUrl,
         getLocationPath()
       );
-      if (cachedCollection === collection && cachedPath === filePath) {
+      if (
+        cachedCollection === collection &&
+        cachedPath === filePath &&
+        (paused || $config.enableEagerSwitchToCached)
+      ) {
         switchCurrentToCached(evt.item, paused);
       }
     }
@@ -449,12 +464,15 @@
 
   cache?.addListener(updateCurrentlyPlaying);
 
-  function switchCurrentToCached(cachedItem: CachedItem, keepPaused = false) {
+  function switchCurrentToCached(
+    cachedItem: CachedItem,
+    keepPaused = false,
+    atTime?: number
+  ) {
     console.debug(
-      `Current file ${$playItem.url} gets cached on url ${cachedItem.cachedUrl}`
+      `Current file ${$playItem.url} switched to cached on url ${cachedItem.cachedUrl}`
     );
-    const pos = currentTime;
-    const oldSrc = player.src;
+    const pos = atTime !== undefined ? atTime : currentTime;
     player.src = cachedItem.cachedUrl;
     cached = true;
     // $playItem.cached = true;
@@ -486,6 +504,14 @@
 
   async function safePlayPlayer(coldStart = false) {
     wantPlay = true;
+    // might get cached in the meantime
+    if (!cached) {
+      const cachedItem = await cache?.getCachedUrl($playItem.url);
+      if (cachedItem) {
+        switchCurrentToCached(cachedItem, true);
+      }
+    }
+
     if (
       transcoded &&
       !cached &&
@@ -700,6 +726,7 @@
 </script>
 
 <div class="player-separator">
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
     tabindex="0"
     role="button"
@@ -767,9 +794,12 @@
   <div class="player-inner">
     <div class="info">
       <div class="item-info" id="folder-info">
+        <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <label for="folder-name" class="clickable" on:click={navigateToFolder}
           ><FolderIcon size={fileIconSize} /></label
         >
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <span
           role="link"
           tabindex="0"
@@ -792,6 +822,8 @@
             max={totalFolderTime}
           />
         </div>
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="total-time clickable"
           on:click={() => {
@@ -806,6 +838,8 @@
         </div>
       </div>
       <div class="item-info" id="file-info">
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
         <label
           for="file-name"
           class="clickable"
@@ -824,6 +858,8 @@
             <AudioIcon size={fileIconSize} />
           {/if}
         </label>
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
         <span
           class="label clickable"
           on:click={locateFile}
@@ -833,6 +869,7 @@
             >{folderSize}</span
           >)
         </span>
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <span
           role="link"
           tabindex="0"
@@ -885,6 +922,7 @@
     </div>
     <div class="controls-bar">
       <div class="player-controls">
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <span
           tabindex="0"
           role="button"
@@ -894,6 +932,7 @@
         >
           <PreviousIcon size={controlSize} />
         </span>
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <span
           tabindex="0"
           role="button"
@@ -904,6 +943,7 @@
         >
           <RewindIcon size={controlSize} />
         </span>
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <span
           tabindex="0"
           role="button"
@@ -919,6 +959,7 @@
             <PauseIcon size={controlSize} />
           {/if}
         </span>
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <span
           tabindex="0"
           role="button"
@@ -929,6 +970,7 @@
         >
           <ForwardIcon size={controlSize} />
         </span>
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <span
           tabindex="0"
           role="button"

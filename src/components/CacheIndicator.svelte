@@ -1,19 +1,14 @@
 <script lang="ts">
-import { onMount } from "svelte";
-import { windowSize } from "../state/stores";
-
+  import { onMount } from "svelte";
+  import { windowSize } from "../state/stores";
 
   export let offset = 0;
   export let totalTime = 0;
-  export let ranges: {start: number, end: number}[];
+  export let ranges: { start: number; end: number }[];
 
   let indicator: HTMLDivElement;
   let bar: HTMLDivElement;
   let svelteBarClass = "";
-
-  onMount(() => {
-      svelteBarClass = Array.from(bar.classList).filter(c => c.includes('svelte-'))[0];
-  })
 
   function update() {
     if (!indicator) return;
@@ -31,21 +26,21 @@ import { windowSize } from "../state/stores";
       end = Math.min(totalLength, end);
 
       let bar = document.createElement("div");
-      bar.setAttribute("class", "cache-bar "+ svelteBarClass);
+      bar.setAttribute("class", "cache-bar");
       bar.style.left = `${start}px`;
       bar.style.width = `${end - start}px`;
       indicator.appendChild(bar);
     }
   }
 
-  windowSize.subscribe(() => { if (indicator) update()});
+  windowSize.subscribe(() => {
+    if (indicator) update();
+  });
 
-  $: if (ranges) update()
+  $: if (ranges) update();
 </script>
 
-<div class="player-cache" bind:this={indicator}>
-  <div bind:this="{bar}" class="cache-bar" style="width: Opx;" />
-</div>
+<div class="player-cache" bind:this={indicator} />
 
 <style>
   .player-cache {
@@ -57,8 +52,7 @@ import { windowSize } from "../state/stores";
     cursor: default;
   }
 
-  /* @ts-ignore */
-  .cache-bar {
+  :global(.player-cache .cache-bar) {
     background-color: rgb(138, 207, 168);
     position: absolute;
     height: 3px;

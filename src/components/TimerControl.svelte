@@ -55,6 +55,7 @@
 </script>
 
 <div>
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <span
     role="button"
     tabindex="0"
@@ -63,6 +64,7 @@
   >
     <CircleMinusIcon size={iconSize} />
   </span>
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <span
     role="button"
     tabindex="0"
@@ -97,6 +99,7 @@
       }
     }}
   />
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <span
     role="button"
     tabindex="0"
@@ -105,6 +108,7 @@
   >
     <PlusIcon size={iconSize} />
   </span>
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <span
     role="button"
     tabindex="0"
@@ -115,6 +119,7 @@
   </span>
 
   {#if $sleepTime > 0}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <span
       role="button"
       tabindex="0"

@@ -385,6 +385,7 @@
         <summary
           >Subfolders
           <Badge value={subfolders.length} />
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
           <span
             class="summary-icons button-like"
             on:click|stopPropagation|preventDefault={toggleSubfoldersSort}
@@ -401,6 +402,8 @@
         </summary>
         <ul class="items-list">
           {#each subfolders as fld}
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
             <li on:click={navigateTo(fld.path)}>
               <FolderItem
                 {observer}

@@ -18,4 +18,5 @@ export const defaultConfig: AppConfig = {
   showFolderRemainingTime: false,
   expandedPlayerTray: false,
   enableSlideInBrowser: false,
+  enableEagerSwitchToCached: false
 };

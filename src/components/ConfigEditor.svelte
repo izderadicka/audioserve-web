@@ -204,6 +204,21 @@
       on touch devices to prevent accidental touches and thus jumps in playback.
     </p>
 
+    <label for="eager-cache-switch">
+      <input
+        id="eager-cache-switch"
+        aria-describedby="eager-cache-switch-desc"
+        type="checkbox"
+        bind:checked={currentConfig.enableEagerSwitchToCached}
+      />
+      Switch to cached audio early
+    </label>
+    <p class="no-input" id="eager-cache-switch-desc">
+      If audio file gets cached during playback, switch to cached version
+      immediately. This can cause a small glitches in playback, but may provide
+      more stable listening in case of unreliable network connection.
+    </p>
+
     <div class="grid">
       <button class="secondary" on:click|preventDefault={cancel}>Cancel</button>
       <button on:click|preventDefault={applyConfig}>Apply</button>

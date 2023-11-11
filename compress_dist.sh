@@ -1,2 +1,2 @@
 #! /bin/sh
-gzip -kf public/*.js public/*.css
+gzip -kf dist/*.js dist/*.css

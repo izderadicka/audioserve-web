@@ -1,5 +1,5 @@
-export const ENVIRONMENT = "REPLACE_ENV";
-export const APP_VERSION = "REPLACE_VERSION";
-export const APP_COMMIT = "REPLACE_COMMIT_HASH";
-/// @ts-ignore
-export const isDevelopment = ENVIRONMENT === "DEVELOPMENT"; 
+export const ENVIRONMENT = import.meta.env.MODE;
+export const APP_VERSION = import.meta.env.VITE_VERSION;
+export const APP_COMMIT =  import.meta.env.VITE_COMMIT_HASH_SHORT;
+
+export const isDevelopment = ENVIRONMENT === "development"; 

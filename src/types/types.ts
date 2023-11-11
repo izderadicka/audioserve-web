@@ -37,6 +37,7 @@ export interface AppConfig {
   showFolderRemainingTime: boolean;
   expandedPlayerTray: boolean;
   enableSlideInBrowser: boolean;
+  enableEagerSwitchToCached: boolean;
 }
 
 export interface TranscodingDetail {
