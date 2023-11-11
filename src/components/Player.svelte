@@ -255,7 +255,18 @@
       if (safeToSeekInPlayer(time)) {
         setCurrentTime(time);
       } else {
-        loadTime(time);
+        // maybe file was cached meanwhile
+        if (!cached) {
+          const cachedItem = cache
+            .getCachedUrl($playItem.url)
+            .then((cachedItem) => {
+              if (cachedItem) {
+                switchCurrentToCached(cachedItem, false, time);
+              } else {
+                loadTime(time);
+              }
+            });
+        }
       }
     } else {
       setCurrentTime(time);
@@ -441,7 +452,11 @@
         evt.item.originalUrl,
         getLocationPath()
       );
-      if (cachedCollection === collection && cachedPath === filePath) {
+      if (
+        cachedCollection === collection &&
+        cachedPath === filePath &&
+        paused
+      ) {
         switchCurrentToCached(evt.item, paused);
       }
     }
@@ -449,12 +464,15 @@
 
   cache?.addListener(updateCurrentlyPlaying);
 
-  function switchCurrentToCached(cachedItem: CachedItem, keepPaused = false) {
+  function switchCurrentToCached(
+    cachedItem: CachedItem,
+    keepPaused = false,
+    atTime?: number
+  ) {
     console.debug(
-      `Current file ${$playItem.url} gets cached on url ${cachedItem.cachedUrl}`
+      `Current file ${$playItem.url} switched to cached on url ${cachedItem.cachedUrl}`
     );
-    const pos = currentTime;
-    const oldSrc = player.src;
+    const pos = atTime !== undefined ? atTime : currentTime;
     player.src = cachedItem.cachedUrl;
     cached = true;
     // $playItem.cached = true;
@@ -486,6 +504,14 @@
 
   async function safePlayPlayer(coldStart = false) {
     wantPlay = true;
+    // might get cached in the meantime
+    if (!cached) {
+      const cachedItem = await cache?.getCachedUrl($playItem.url);
+      if (cachedItem) {
+        switchCurrentToCached(cachedItem, true);
+      }
+    }
+
     if (
       transcoded &&
       !cached &&
