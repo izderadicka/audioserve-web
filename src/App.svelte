@@ -376,6 +376,7 @@
               {#if showCollectionSelect}
                 <CollectionSelector selected={$selectedCollection} />
                 {#if smallScreen}
+                  <!-- svelte-ignore a11y-click-events-have-key-events -->
                   <span
                     role="button"
                     tabindex="0"
@@ -398,6 +399,7 @@
                   use:gainFocus
                 />
                 {#if smallScreen}
+                  <!-- svelte-ignore a11y-click-events-have-key-events -->
                   <span
                     role="button"
                     tabindex="0"
@@ -411,6 +413,7 @@
           </li>
           <li class="icons">
             {#if !showCollectionSelect && !showSearch && smallScreen}
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
               <span
                 role="button"
                 tabindex="0"
@@ -419,6 +422,7 @@
                 on:click={toggleCollectionsSelect}
                 ><CollectionsIcon size="1.5rem" /></span
               >
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
               <span
                 role="button"
                 tabindex="0"
@@ -429,6 +433,7 @@
             {/if}
             {#if (!showCollectionSelect && !showSearch) || !smallScreen}
               {#if $pendingDownloads > 0}
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <span
                   role="button"
                   tabindex="0"
@@ -442,6 +447,7 @@
               {/if}
 
               {#if $sleepTime > 0}
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <span
                   role="button"
                   tabindex="0"
@@ -455,6 +461,7 @@
                   <span>{$sleepTime}</span>
                 </span>
               {:else}
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <span
                   role="button"
                   tabindex="0"

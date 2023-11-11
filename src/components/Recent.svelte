@@ -48,6 +48,8 @@
     <summary>Files</summary>
     <ul class="items-list">
       {#each items as position}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
         <li on:click={goToPosition(position)}><PositionItem {position} /></li>
       {/each}
     </ul>

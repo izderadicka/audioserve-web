@@ -726,6 +726,7 @@
 </script>
 
 <div class="player-separator">
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
     tabindex="0"
     role="button"
@@ -793,9 +794,12 @@
   <div class="player-inner">
     <div class="info">
       <div class="item-info" id="folder-info">
+        <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <label for="folder-name" class="clickable" on:click={navigateToFolder}
           ><FolderIcon size={fileIconSize} /></label
         >
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <span
           role="link"
           tabindex="0"
@@ -818,6 +822,8 @@
             max={totalFolderTime}
           />
         </div>
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="total-time clickable"
           on:click={() => {
@@ -832,6 +838,8 @@
         </div>
       </div>
       <div class="item-info" id="file-info">
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
         <label
           for="file-name"
           class="clickable"
@@ -850,6 +858,8 @@
             <AudioIcon size={fileIconSize} />
           {/if}
         </label>
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
         <span
           class="label clickable"
           on:click={locateFile}
@@ -859,6 +869,7 @@
             >{folderSize}</span
           >)
         </span>
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <span
           role="link"
           tabindex="0"
@@ -911,6 +922,7 @@
     </div>
     <div class="controls-bar">
       <div class="player-controls">
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <span
           tabindex="0"
           role="button"
@@ -920,6 +932,7 @@
         >
           <PreviousIcon size={controlSize} />
         </span>
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <span
           tabindex="0"
           role="button"
@@ -930,6 +943,7 @@
         >
           <RewindIcon size={controlSize} />
         </span>
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <span
           tabindex="0"
           role="button"
@@ -945,6 +959,7 @@
             <PauseIcon size={controlSize} />
           {/if}
         </span>
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <span
           tabindex="0"
           role="button"
@@ -955,6 +970,7 @@
         >
           <ForwardIcon size={controlSize} />
         </span>
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <span
           tabindex="0"
           role="button"
