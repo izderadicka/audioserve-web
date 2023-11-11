@@ -288,12 +288,12 @@
   }
 
   function jumpToFile(jumpEvent) {
-    const { selectedItemIndex, selectedPosition } = jumpEvent.detail;
+    const { selectedItemIndex, selectedTime } = jumpEvent.detail;
     const item = new PlayItem({
       file: $playList.files[selectedItemIndex],
-      position: selectedPosition,
+      position: selectedItemIndex,
       startPlay: !paused,
-      time: selectedPosition,
+      time: selectedTime,
     });
     $playItem = item;
   }

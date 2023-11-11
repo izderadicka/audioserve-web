@@ -48,7 +48,7 @@
 
     let selectedItem: AudioFileExt;
     let selectedItemIndex: number;
-    let selectedPosition: number;
+    let selectedTime: number;
     let selectedFormattedPosition: string;
     let selectedDuration: number;
 
@@ -86,12 +86,12 @@
             durationToPlaylistItem(selectedDuration);
         selectedItem = item;
         selectedItemIndex = itemIndex;
-        selectedPosition = position;
-        selectedFormattedPosition = formatTime(selectedPosition);
+        selectedTime = position;
+        selectedFormattedPosition = formatTime(selectedTime);
     }
 
     function onConfirm() {
-        dispatch("jump", { selectedItem, selectedPosition, selectedItemIndex });
+        dispatch("jump", { selectedItem, selectedTime, selectedItemIndex });
     }
 </script>
 
