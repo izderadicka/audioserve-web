@@ -1,5 +1,4 @@
 <script lang="ts" context="module">
-
   const isScrollbarVisible = () => {
     return document.body.scrollHeight > screen.height;
   };
@@ -25,12 +24,10 @@
 
     return scrollbarWidth;
   };
-
 </script>
 
 <script lang="ts">
-import { onDestroy } from "svelte";
-
+  import { onDestroy } from "svelte";
 
   const isOpenClass = "modal-is-open";
   const openingClass = "modal-is-opening";
@@ -39,8 +36,9 @@ import { onDestroy } from "svelte";
   let visibleModal = null;
 
   export let id: string;
-  export let confirmAction: ()=>void = null;
+  export let confirmAction: () => void = null;
   export let noConfirm = false;
+  export let confirmName = "Confirm";
 
   // Toggle modal
   export const toggleModal = (event?) => {
@@ -52,12 +50,11 @@ import { onDestroy } from "svelte";
   };
 
   const confirmModal = (event) => {
-      toggleModal(event);
-      if (confirmAction) {
-          confirmAction();
-      }
-
-  }
+    toggleModal(event);
+    if (confirmAction) {
+      confirmAction();
+    }
+  };
 
   // Is modal open
   const isModalOpen = (modal) => {
@@ -110,40 +107,29 @@ import { onDestroy } from "svelte";
   document.addEventListener("keydown", closeOnEscapekey);
 
   onDestroy(() => {
-      document.removeEventListener("click", closeOnOutsideClick);
-      document.removeEventListener("click", closeOnEscapekey);
-  })
+    document.removeEventListener("click", closeOnOutsideClick);
+    document.removeEventListener("click", closeOnEscapekey);
+  });
 </script>
 
 <dialog {id}>
   <article>
     <!-- svelte-ignore a11y-missing-content -->
-    <a
-      href="#close"
-      aria-label="Close"
-      class="close"
-      on:click={toggleModal}
-    />
+    <a href="#close" aria-label="Close" class="close" on:click={toggleModal} />
     <h3><slot name="header" /></h3>
     <p>
       <slot name="body" />
     </p>
     <footer>
-      <a
-        href="#cancel"
-        role="button"
-        class="secondary"
-        on:click={toggleModal}
-      >
+      <a href="#cancel" role="button" class="secondary" on:click={toggleModal}>
         Cancel
       </a>
-      
-      {#if !noConfirm}
-      <a href="#confirm" role="button" on:click={confirmModal}>
-        Confirm
-      </a>
-      {/if}
 
+      {#if !noConfirm}
+        <a href="#confirm" role="button" on:click={confirmModal}>
+          {confirmName}
+        </a>
+      {/if}
     </footer>
   </article>
 </dialog>

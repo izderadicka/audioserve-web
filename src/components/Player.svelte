@@ -50,6 +50,8 @@
   import { calculateAutorewind } from "../util/play";
   import { SMALL_SCREEN_WIDTH_LIMIT } from "../types/constants";
   import TimerControl from "./TimerControl.svelte";
+  import ConfirmDialog from "./ConfirmDialog.svelte";
+  import PlayerNavigationDialog from "./PlayerNavigationDialog.svelte";
 
   const fileIconSize = "1.5rem";
   const controlSize = "48px";
@@ -283,6 +285,17 @@
       }
       jumpTime(toTime);
     };
+  }
+
+  function jumpToFile(jumpEvent) {
+    const { selectedItemIndex, selectedPosition } = jumpEvent.detail;
+    const item = new PlayItem({
+      file: $playList.files[selectedItemIndex],
+      position: selectedPosition,
+      startPlay: !paused,
+      time: selectedPosition,
+    });
+    $playItem = item;
   }
 
   $: folderSize = $playList?.files.length || 0;
@@ -723,6 +736,15 @@
     player?.removeEventListener("play", onPlayStarted);
     player?.removeEventListener("pause", onPlayPaused);
   });
+
+  let navigationDialog: PlayerNavigationDialog;
+  let totalProgressBar: HTMLProgressElement;
+  function openNavigationDialog(evt: MouseEvent) {
+    const clickX = Math.max(evt.offsetX, 0);
+    const clickPosition = clickX / totalProgressBar.clientWidth;
+    const clickTime = clickPosition * totalFolderTime;
+    navigationDialog.open(clickTime);
+  }
 </script>
 
 <div class="player-separator">
@@ -814,8 +836,15 @@
         <div class="play-time" aria-label="Current time in whole folder">
           {formattedFolderTime}
         </div>
-        <div class="progress total">
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <div
+          class="progress total"
+          on:click={openNavigationDialog}
+          title="Click to open navigation dialog"
+        >
           <progress
+            bind:this={totalProgressBar}
             aria-label="Total folder playback progress"
             aria-valuetext={`${formattedFolderTime} of ${formattedTotalFolderTime}`}
             value={folderTime}
@@ -826,6 +855,7 @@
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="total-time clickable"
+          title="Click to switch between total and remaining time"
           on:click={() => {
             $config.showFolderRemainingTime = !$config.showFolderRemainingTime;
             saveConfig($config);
@@ -988,6 +1018,11 @@
     </div>
   </div>
 </div>
+<PlayerNavigationDialog
+  bind:this={navigationDialog}
+  maxTime={totalFolderTime}
+  on:jump={jumpToFile}
+/>
 
 <style>
   .icon {
