@@ -160,7 +160,7 @@
                 class="small"
             />:
             <input
-                enterkeyhint="done"
+                enterkeyhint="go"
                 type="number"
                 name="second"
                 bind:value={second}
