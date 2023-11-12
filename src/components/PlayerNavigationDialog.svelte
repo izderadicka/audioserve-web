@@ -116,6 +116,7 @@
     function onEnter(action: EnterAction) {
         return (evt: KeyboardEvent) => {
             if (evt.key === "Enter") {
+                evt.preventDefault();
                 switch (action) {
                     case EnterAction.Next: {
                         // focus next
@@ -148,7 +149,7 @@
                 type="number"
                 name="hour"
                 bind:value={hour}
-                on:keyup={onEnter(EnterAction.Next)}
+                on:keydown={onEnter(EnterAction.Next)}
                 class="small"
             />:
             <input
@@ -156,7 +157,7 @@
                 type="number"
                 name="minute"
                 bind:value={minute}
-                on:keyup={onEnter(EnterAction.Next)}
+                on:keydown={onEnter(EnterAction.Next)}
                 class="small"
             />:
             <input
@@ -164,7 +165,7 @@
                 type="number"
                 name="second"
                 bind:value={second}
-                on:keyup={onEnter(EnterAction.Confirm)}
+                on:keydown={onEnter(EnterAction.Confirm)}
                 class="small"
             />
         </div>
