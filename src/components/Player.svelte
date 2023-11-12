@@ -331,7 +331,11 @@
         cached = false;
       }
       timeOffset = 0;
-      if (!cached && item.transcoded && item.time > 5) {
+      if (
+        !cached &&
+        item.transcoded &&
+        item.time > $config.transcodingJumpLimit
+      ) {
         source = prepareSeekUrl(source, item.time);
       }
 
