@@ -93,6 +93,44 @@
     function onConfirm() {
         dispatch("jump", { selectedItem, selectedTime, selectedItemIndex });
     }
+
+    enum EnterAction {
+        Next,
+        Confirm,
+    }
+
+    let clockInputs: HTMLDivElement;
+
+    function focusNextInput() {
+        const inputs = clockInputs.querySelectorAll("input");
+        const currentInput = document.activeElement as HTMLInputElement;
+        const currentIndex = Array.from(inputs).indexOf(currentInput);
+        const nextIndex = currentIndex + 1;
+
+        if (nextIndex < inputs.length) {
+            const nextInput = inputs[nextIndex];
+            nextInput.focus();
+        }
+    }
+
+    function onEnter(action: EnterAction) {
+        return (evt: KeyboardEvent) => {
+            if (evt.key === "Enter") {
+                switch (action) {
+                    case EnterAction.Next: {
+                        // focus next
+                        focusNextInput();
+                        break;
+                    }
+                    case EnterAction.Confirm: {
+                        dialog.toggleModal();
+                        onConfirm();
+                        break;
+                    }
+                }
+            }
+        };
+    }
 </script>
 
 <ConfirmDialog
@@ -104,18 +142,29 @@
     <div slot="header">Global Navigation</div>
     <div slot="body">
         <div class="label">Global position:</div>
-        <div class="clock">
-            <input type="number" name="hour" bind:value={hour} class="small" />:
+        <div class="clock" bind:this={clockInputs}>
             <input
+                enterkeyhint="next"
                 type="number"
-                name="minute"
-                bind:value={minute}
+                name="hour"
+                bind:value={hour}
+                on:keyup={onEnter(EnterAction.Next)}
                 class="small"
             />:
             <input
+                enterkeyhint="next"
+                type="number"
+                name="minute"
+                bind:value={minute}
+                on:keyup={onEnter(EnterAction.Next)}
+                class="small"
+            />:
+            <input
+                enterkeyhint="done"
                 type="number"
                 name="second"
                 bind:value={second}
+                on:keyup={onEnter(EnterAction.Confirm)}
                 class="small"
             />
         </div>
