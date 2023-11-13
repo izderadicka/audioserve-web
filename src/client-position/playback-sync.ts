@@ -1,3 +1,4 @@
+import { splitPath } from "../util";
 import { baseWsUrl } from "../util/browser";
 
 interface LastPosition {
@@ -24,8 +25,8 @@ export class PlaybackSync {
     failures: number;
     socket: WebSocket;
     lastSend: LastPosition;
-    pendingPosition: PendingPosition;
     pendingPositionTimeout: number;
+    failedPositions: PendingItems
     pendingQuery: string;
     pendingQueryTimeout: number;
     pendingQueryAnswer: (any) => void;
@@ -47,6 +48,7 @@ export class PlaybackSync {
         this._enabled = true;
         this._groupPrefix = config.group;
         this.config = config;
+        this.failedPositions = new PendingItems(1000);
     }
 
     get groupPrefix() {
@@ -91,13 +93,14 @@ export class PlaybackSync {
             this.filePath = null;
             this.lastSend = null;
             console.debug("Web socket is ready");
-            // do we have pending time update?
-            if (this.pendingPosition) {
-                if ((new Date().getTime() - this.pendingPosition.timestamp.getTime()) < 300000000) { // do not send old updates
-                    this.enqueuePosition(this.pendingPosition.filePath, this.pendingPosition.position, this.pendingPosition.timestamp);
-                }
-                this.pendingPosition = null;
+            // resend failed positions
+            const historyLimit = new Date();
+            historyLimit.setDate(historyLimit.getDate() - 3);
+            const toResend = this.failedPositions.getNewerThan(historyLimit);
+            for (const item of toResend) {
+                this.sendMessage(item[1].position, item[1].filePath, item[1].timestamp);
             }
+
             // do we have pending query?
             if (this.pendingQuery) {
                 this.socket.send(this.pendingQuery);
@@ -141,11 +144,12 @@ export class PlaybackSync {
         }
         if (!this.groupPrefix) return;
         if (!this.active) {
-            this.pendingPosition = {
+            let pendingPosition = {
                 filePath,
                 position,
                 timestamp: new Date()
             };
+            this.failedPositions.add(pendingPosition);
 
             this.try_open();
             return;
@@ -238,4 +242,45 @@ export class PlaybackSync {
         return this.socket && this.socket.readyState == WebSocket.CONNECTING;
     }
 
+}
+
+export class PendingItems {
+    items: Map<string, PendingPosition> = new Map();
+    capacity: number;
+
+    constructor(capacity: number = 100) {
+        this.capacity = capacity;
+    }
+
+    add(position: PendingPosition) {
+        // key is only folder path
+        const key = splitPath(position.filePath).folder || "";
+        this.items.set(key, position);
+        this.evict();
+    }
+
+    evict() {
+        if (this.items.size <= this.capacity) return;
+
+        const entries = Array.from(this.items.entries());
+        // sort according to timestamp
+        entries.sort((a, b) => a[1].timestamp.getTime() - b[1].timestamp.getTime());
+        const evictedCount = entries.length - this.capacity;
+        for(let i = 0; i < evictedCount; i++) {
+            this.items.delete(entries[i][0]);
+        }
+        
+    }
+
+    clear() {
+        this.items.clear();
+    }
+
+    getNewerThan(timestamp: Date) {
+        // sorted list of items not older than timestamp
+        const entries = Array.from(this.items.entries());
+        entries.sort((a, b) => a[1].timestamp.getTime() - b[1].timestamp.getTime());
+        const firstNewer =entries.findIndex(e => e[1].timestamp.getTime() >= timestamp.getTime());
+        return entries.slice(firstNewer);
+    }
 }
