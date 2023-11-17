@@ -19,6 +19,7 @@ export interface PlaybackSyncConfig {
 }
 
 export class PlaybackSync {
+    static id: number = 0;
     socketUrl: string;
     closed: boolean;
     filePath: string;
@@ -37,9 +38,11 @@ export class PlaybackSync {
 
     private _groupPrefix: string;
     private _enabled: boolean;
+    private _onlineListener: any;
 
     constructor(config: PlaybackSyncConfig) {
-
+        PlaybackSync.id++;
+        console.debug(`PlaybackSync ${PlaybackSync.id} created`, config);
         this.socketUrl = baseWsUrl(config.development, config.developmentPort) + "/position";
         this.closed = false;
         this.filePath = null;
@@ -49,6 +52,21 @@ export class PlaybackSync {
         this._groupPrefix = config.group;
         this.config = config;
         this.failedPositions = new PendingItems(100);
+
+        this._onlineListener = this.onOnline.bind(this)
+
+        window.addEventListener("online", this._onlineListener);
+    }
+
+    onOnline() {
+        console.debug(`PlaybackSync ${PlaybackSync.id} online `);
+        if (! this.active && this.failedPositions.hasSome()) {
+            this.try_open();
+        }
+    }
+
+    finalize() {
+        window.removeEventListener("online", this._onlineListener);
     }
 
     get groupPrefix() {
@@ -246,6 +264,9 @@ export class PlaybackSync {
 }
 
 export class PendingItems {
+    hasSome() {
+        return this.items.size > 0
+    }
     items: Map<string, PendingPosition> = new Map();
     capacity: number;
 

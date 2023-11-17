@@ -89,13 +89,16 @@ export const config: Writable<AppConfig> = writable(getInitialConfig());
 
 export const positionWsApi: Readable<PlaybackSync> = derived(
   [config, apiConfig, group],
-  ([$config, $apiConfig, $group]) => {
-    return new PlaybackSync({
+  ([$config, $apiConfig, $group], set) => {
+    
+    const newSyncer = new PlaybackSync({
       development: isDevelopment,
       developmentPort: 3000,
       positionReportingPeriod: $config.positionReportingPeriod,
       group: $group,
     });
+    set(newSyncer);
+    return () => newSyncer.finalize();
   }
 );
 function getWindowSize() {
