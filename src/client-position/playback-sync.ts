@@ -48,7 +48,7 @@ export class PlaybackSync {
         this._enabled = true;
         this._groupPrefix = config.group;
         this.config = config;
-        this.failedPositions = new PendingItems(1000);
+        this.failedPositions = new PendingItems(100);
     }
 
     get groupPrefix() {
@@ -97,8 +97,9 @@ export class PlaybackSync {
             const historyLimit = new Date();
             historyLimit.setDate(historyLimit.getDate() - 3);
             const toResend = this.failedPositions.getNewerThan(historyLimit);
+            this.failedPositions.clear();
             for (const item of toResend) {
-                this.sendMessage(item[1].position, item[1].filePath, item[1].timestamp);
+                this.sendMessage(item.position, item.filePath, item.timestamp);
             }
 
             // do we have pending query?
@@ -276,11 +277,14 @@ export class PendingItems {
         this.items.clear();
     }
 
-    getNewerThan(timestamp: Date) {
+    getNewerThan(timestamp: Date): PendingPosition[] {
         // sorted list of items not older than timestamp
-        const entries = Array.from(this.items.entries());
-        entries.sort((a, b) => a[1].timestamp.getTime() - b[1].timestamp.getTime());
-        const firstNewer =entries.findIndex(e => e[1].timestamp.getTime() >= timestamp.getTime());
+        const entries = Array.from(this.items.values());
+        entries.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+        const firstNewer =entries.findIndex(e => e.timestamp.getTime() >= timestamp.getTime());
+        if (firstNewer < 0) {
+            return [];
+        }
         return entries.slice(firstNewer);
     }
 }
