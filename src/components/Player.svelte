@@ -115,7 +115,7 @@
       progressValue = val;
     } catch (e) {
       console.error(
-        `Cannot set currentTime, val=${val}, offset=${timeOffset}: ${e}`
+        `Cannot set currentTime, val=${val}, offset=${timeOffset}: ${e}`,
       );
     }
   }
@@ -139,7 +139,7 @@
   let player: HTMLAudioElement;
   let buffered = [];
   let playbackRate: number = Number(
-    localStorage.getItem(StorageKeys.PLAYBACK_SPEED) || 1.0
+    localStorage.getItem(StorageKeys.PLAYBACK_SPEED) || 1.0,
   );
 
   function onPlayStarted() {
@@ -162,7 +162,7 @@
   }
 
   let volume: number = Number(
-    localStorage.getItem(StorageKeys.PLAYBACK_VOLUME) || 1.0
+    localStorage.getItem(StorageKeys.PLAYBACK_VOLUME) || 1.0,
   );
 
   $: {
@@ -265,7 +265,7 @@
         // maybe file was cached meanwhile
         if (!cached) {
           const cachedItem = cache
-            .getCachedUrl($playItem.url)
+            ?.getCachedUrl($playItem.url)
             .then((cachedItem) => {
               if (cachedItem) {
                 switchCurrentToCached(cachedItem, false, time);
@@ -380,7 +380,7 @@
         }/${$selectedCollection}/icon/${encodeURIComponent($playList.folder)}`;
       }
       const { root: artist, path: album } = splitRootPath(
-        splitPath(item.path).folder
+        splitPath(item.path).folder,
       );
       navigator.mediaSession.setPositionState(null);
       navigator.mediaSession.metadata = new MediaMetadata({
@@ -392,11 +392,11 @@
 
       navigator.mediaSession.setActionHandler(
         "seekbackward",
-        jumpTimeRelative(-$config.jumpBackTime)
+        jumpTimeRelative(-$config.jumpBackTime),
       );
       navigator.mediaSession.setActionHandler(
         "seekforward",
-        jumpTimeRelative($config.jumpForwardTime)
+        jumpTimeRelative($config.jumpForwardTime),
       );
       //navigator.mediaSession.setActionHandler('seekto', function() { /* Code excerpted. */ });
       navigator.mediaSession.setActionHandler("previoustrack", playPrevious);
@@ -430,13 +430,13 @@
     window.clearTimeout(cacheAheadTimer);
     const delay = Math.min(
       $config.cacheAheadDelay * 1000,
-      (1000 * $playItem.duration) / 2
+      (1000 * $playItem.duration) / 2,
     );
     cacheAheadTimer = window.setTimeout(
       startCacheAhead,
       delay,
       pos,
-      currentCached
+      currentCached,
     );
   }
 
@@ -477,7 +477,7 @@
     if (!cached && evt.kind === EventType.FileCached) {
       const { collection: cachedCollection, path: cachedPath } = splitUrl(
         evt.item.originalUrl,
-        getLocationPath()
+        getLocationPath(),
       );
       if (
         cachedCollection === collection &&
@@ -494,10 +494,10 @@
   function switchCurrentToCached(
     cachedItem: CachedItem,
     keepPaused = false,
-    atTime?: number
+    atTime?: number,
   ) {
     console.debug(
-      `Current file ${$playItem.url} switched to cached on url ${cachedItem.cachedUrl}`
+      `Current file ${$playItem.url} switched to cached on url ${cachedItem.cachedUrl}`,
     );
     const pos = atTime !== undefined ? atTime : currentTime;
     player.src = cachedItem.cachedUrl;
@@ -512,7 +512,7 @@
           progressValueChanging = false;
           setCurrentTime(pos, true);
         },
-        { once: true }
+        { once: true },
       );
     } else {
       setCurrentTime(pos, true);
@@ -594,7 +594,7 @@
   function tryNextFile() {
     if (currentTime < expectedDuration - 60) {
       console.warn(
-        `Playback ended at ${currentTime} before expected duration ${expectedDuration}, maybe problem with cached version`
+        `Playback ended at ${currentTime} before expected duration ${expectedDuration}, maybe problem with cached version`,
       );
     } else {
       console.debug(`File ${$playItem.name} on ${$playItem.path} finished`);
@@ -712,7 +712,7 @@
     // disable for certain elements where keys plays a role
     if (
       (!["INPUT", "SELECT", "TEXTAREA"].includes(
-        (evt.target as HTMLElement).tagName
+        (evt.target as HTMLElement).tagName,
       ) ||
         (evt.target instanceof HTMLInputElement &&
           evt.target.classList.contains("allow-global-keys"))) &&
@@ -891,8 +891,8 @@
           title={cached
             ? "Playing cached file"
             : transcoded
-            ? "Playing transcoded file"
-            : "Playing streamed file"}
+              ? "Playing transcoded file"
+              : "Playing streamed file"}
         >
           {#if cached}
             <CachedIcon size={fileIconSize} />
