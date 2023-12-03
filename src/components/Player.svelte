@@ -256,7 +256,7 @@
   };
 
   function jumpTime(time: number) {
-    if (transcoded && !cached && !paused) {
+    if (transcoded && !cached) {
       // can move only to already buffered or slightly beyond
       // otherwise use seek on server
       if (safeToSeekInPlayer(time)) {
