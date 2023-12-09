@@ -25,7 +25,7 @@ function createApp(cache: Cache) {
 
 export default app;
 
-if ("serviceWorker" in navigator) {
+if (("serviceWorker" in navigator) && window.caches) {
   navigator.serviceWorker
     .register("./service-worker.js", { scope: "./", type: "module" })
     .catch((error) => {
@@ -64,7 +64,7 @@ if ("serviceWorker" in navigator) {
     }
   });
 } else {
-  console.error("Service worker is not available - will start with no caching");
+  console.error("Service worker or Cached Storage are not available - will start with no caching");
   createApp(null);
 }
 

@@ -263,9 +263,9 @@
         setCurrentTime(time);
       } else {
         // maybe file was cached meanwhile
-        if (!cached) {
+        if (cache) {
           const cachedItem = cache
-            ?.getCachedUrl($playItem.url)
+            .getCachedUrl($playItem.url)
             .then((cachedItem) => {
               if (cachedItem) {
                 switchCurrentToCached(cachedItem, false, time);
@@ -273,6 +273,8 @@
                 loadTime(time);
               }
             });
+        } else {
+          loadTime(time);
         }
       }
     } else {
