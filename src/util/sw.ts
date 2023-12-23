@@ -3,7 +3,8 @@
 /// <reference lib="webworker" />
 
 import { removeQuery } from ".";
-import { CacheMessage, CacheMessageKind } from "../cache/cs-cache";
+import { CacheMessageKind } from "../cache/cs-cache";
+import type { CacheMessage } from "../cache/cs-cache";
 
 function parseRange(range: string): [number, number?] {
   const r = /^bytes=(\d+)-?(\d+)?/.exec(range)!;
@@ -67,7 +68,7 @@ class FetchQueueItem {
     public abort: AbortController,
     public isDirect?: boolean,
     public folderPosition?: number
-  ) {}
+  ) { }
 }
 
 export class AudioCache {
@@ -77,7 +78,7 @@ export class AudioCache {
     private audioCache: string,
     private sizeLimit: number,
     private broadcastMessage: (msg: any) => Promise<any>
-  ) {}
+  ) { }
 
   getQueue() {
     return this.queue.map((item) => item.url);
@@ -276,7 +277,7 @@ export class AudioCache {
 class CacheBase {
   protected isEnabled = true;
 
-  constructor(protected cacheName: string, protected sizeLimit = 1000) {}
+  constructor(protected cacheName: string, protected sizeLimit = 1000) { }
 
   enable() {
     this.isEnabled = true;
@@ -348,6 +349,94 @@ export class NetworkFirstCache extends CacheBase {
               return errorResponse();
             });
         })
+    );
+  }
+}
+
+export class CacheFirstCache extends CacheBase {
+  age: number = 60;
+  constructor(cacheName: string, sizeLimit = 1000, age: number = 60) {
+    super(cacheName, sizeLimit);
+    this.age = age;
+  }
+
+  async fetchAndCache(cache: Cache, request: Request): Promise<Response> {
+
+    let directResponse: Response = null;
+    try {
+      directResponse = await fetch(request);
+    } catch (e) {
+      console.error("SW Fetch error", e);
+
+    }
+
+    if (directResponse && directResponse.status === 200) {
+      const clonedResponse = directResponse.clone();
+      const newHeaders = new Headers(clonedResponse.headers);
+      newHeaders.set('x-cached-time', new Date().toUTCString());
+      const toCache = new Response(clonedResponse.body, { headers: newHeaders });
+      // const toCache = directResponse.clone();
+      // toCache.headers.set("X-Cache-Date", new Date().toUTCString());
+      cache.put(request, toCache).then(() => {
+        return evictCache(cache, this.sizeLimit, (req) => {
+          console.debug(
+            `Deleted ${req.url} from cache ${this.cacheName}`
+          );
+          return Promise.resolve();
+        })
+      })
+      return directResponse;
+    } else if (directResponse) {
+      console.error(`SW Fetch HTTP error ${directResponse.status}`, directResponse);
+      throw directResponse;
+    }
+
+  }
+
+  async handleRequest(evt: FetchEvent) {
+    if (!this.isEnabled) return;
+    evt.respondWith(
+      caches.open(this.cacheName).then(async (cache) => {
+        const cachedResponse = await cache.match(evt.request);
+        let cacheIsStaled = true;
+        if (cachedResponse) {
+          const responseDate = cachedResponse.headers.get("date");
+          const cacheDate = cachedResponse.headers.get("x-cached-time");
+          if (responseDate) {
+            const headerDate = responseDate ? new Date(responseDate) : null;
+            const responseAge = headerDate ? (Date.now() - headerDate.getTime()) / 1000 : Number.POSITIVE_INFINITY;
+            if (responseAge < this.age) {
+              cacheIsStaled = false;
+              console.debug(`Returning cached response with date ${headerDate}, cached date ${cacheDate} and age ${responseAge}`);
+            }
+          }
+        }
+        let directResponsePromise = this.fetchAndCache(cache, evt.request);
+
+        if (cachedResponse && !cacheIsStaled) {
+          directResponsePromise.then((response) => {
+            console.debug(`Also cachinig fresh response ${response.url}`);
+          }).catch((e) => {
+            console.error("SW Fetch for cache only error", e);
+          });
+          return cachedResponse;
+        } else {
+          try {
+            return await directResponsePromise;
+          } catch (e) {
+            if (e instanceof Response) {
+              return e;
+            } else {
+              console.error(`For ${evt.request.url} cannot get meaningful response returning 555 error`);
+              return new Response("CacheFirst Cache Error", {
+                status: 555,
+              });
+            }
+          }
+
+        }
+      })
+
     );
   }
 }

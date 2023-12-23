@@ -10,8 +10,8 @@ import {
 } from "./cache/cs-cache";
 import { API_CACHE_NAME, APP_CACHE_PREFIX } from "./types/constants";
 import { removeQuery, splitPath } from "./util";
-import { AudioCache, NetworkFirstCache } from "./util/sw";
-import type {CacheMessage} from "./cache/cs-cache";
+import { AudioCache, NetworkFirstCache, CacheFirstCache } from "./util/sw";
+import type { CacheMessage } from "./cache/cs-cache";
 
 function broadcastMessage(msg: CacheMessage) {
   return self.clients
@@ -59,7 +59,7 @@ self.addEventListener("install", (evt) => {
       .then((cache) => {
         return cache.addAll(IS_DEVELOPMENT ? ["favicon.png"] : staticResources);
       })
-      .catch(e=> console.error("Fail to add static resources due to error: " + e))
+      .catch(e => console.error("Fail to add static resources due to error: " + e))
       .then(() => {
         console.debug(
           `Service worker Installation successful (dev ${IS_DEVELOPMENT} ) on path ${location.pathname}`
@@ -97,7 +97,7 @@ const audioCacheHandler = new AudioCache(
   AUDIO_CACHE_LIMIT,
   broadcastMessage
 );
-const apiCacheHandler = new NetworkFirstCache(apiCache);
+const apiCacheHandler = new CacheFirstCache(apiCache);
 
 self.addEventListener("message", (evt) => {
   const msg: CacheMessage = evt.data;
