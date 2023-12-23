@@ -367,7 +367,7 @@ export class CacheFirstCache extends CacheBase {
       directResponse = await fetch(request);
     } catch (e) {
       console.error("SW Fetch error", e);
-
+      throw e;
     }
 
     if (directResponse && directResponse.status === 200) {
@@ -424,7 +424,11 @@ export class CacheFirstCache extends CacheBase {
           try {
             return await directResponsePromise;
           } catch (e) {
-            if (e instanceof Response) {
+            if (cachedResponse) {
+              console.warn(`Returning stale cached response ${cachedResponse.url}`);
+              return cachedResponse;
+            }
+            else if (e instanceof Response) {
               return e;
             } else {
               console.error(`For ${evt.request.url} cannot get meaningful response returning 555 error`);
