@@ -1,6 +1,7 @@
 <script lang="ts">
     import { playList } from "../state/stores";
     import type { AudioFileExt } from "../types/types";
+    import { splitExtInName } from "../util";
     import { formatTime } from "../util/date";
     import ConfirmDialog from "./ConfirmDialog.svelte";
     import { createEventDispatcher } from "svelte";
@@ -47,6 +48,7 @@
     }
 
     let selectedItem: AudioFileExt;
+    let selectedItemName: string;
     let selectedItemIndex: number;
     let selectedTime: number;
     let selectedFormattedPosition: string;
@@ -85,6 +87,7 @@
         let { item, itemIndex, position } =
             durationToPlaylistItem(selectedDuration);
         selectedItem = item;
+        selectedItemName = splitExtInName(item).baseName;
         selectedItemIndex = itemIndex;
         selectedTime = position;
         selectedFormattedPosition = formatTime(selectedTime);
@@ -172,7 +175,7 @@
         {#if selectedItem}
             <div class="row">
                 <div class="label">Navigates to this file:</div>
-                <div>{selectedItem.name}</div>
+                <div>{selectedItemName}</div>
             </div>
             <div class="row">
                 <div class="label">And position in file:</div>

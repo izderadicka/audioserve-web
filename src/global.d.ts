@@ -2,7 +2,7 @@
 /// <reference types="vite/client" />
 
 //This can be used to add custom events to HtmlElements
-declare namespace svelte.JSX {
+declare namespace svelteHTML {
   interface HTMLProps<T> {
     onoutclick?: (e: CustomEvent) => void;
     onintersect?: (e: CustomEvent) => void;
