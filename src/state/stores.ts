@@ -17,6 +17,10 @@ import type {
   TranscodingDetail,
 } from "../types/types";
 import { isDevelopment } from "../util/version";
+import { get, set } from "idb-keyval";
+import { API_CACHE_AGE_KEY } from "../types/constants";
+import { getContext } from "svelte";
+import { CacheMessageKind } from "../cache/cs-cache";
 
 export const isAuthenticated = writable(true);
 export const apiConfig = writable(new Configuration());
@@ -87,10 +91,23 @@ const getInitialConfig = () => {
 
 export const config: Writable<AppConfig> = writable(getInitialConfig());
 
+config.subscribe(async (config) => {
+  const currentApiCacheAge = await get(API_CACHE_AGE_KEY);
+  if (currentApiCacheAge !== config.apiCacheAge) {
+    await set(API_CACHE_AGE_KEY, config.apiCacheAge);
+    const worker = navigator.serviceWorker?.controller;
+    worker?.postMessage({
+      kind: CacheMessageKind.UpdateConfig,
+      data: {},
+    });
+
+  }
+})
+
 export const positionWsApi: Readable<PlaybackSync> = derived(
   [config, apiConfig, group],
   ([$config, $apiConfig, $group], set) => {
-    
+
     const newSyncer = new PlaybackSync({
       development: isDevelopment,
       developmentPort: 3000,

@@ -38,6 +38,7 @@ export interface AppConfig {
   expandedPlayerTray: boolean;
   enableSlideInBrowser: boolean;
   enableEagerSwitchToCached: boolean;
+  apiCacheAge: number;
 }
 
 export interface TranscodingDetail {

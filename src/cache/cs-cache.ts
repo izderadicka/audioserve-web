@@ -23,6 +23,7 @@ export enum CacheMessageKind {
   OtherError = 39,
   Ping = 40,
   Pong = 41,
+  UpdateConfig = 50,
 }
 
 const MAX_QUEUE_SIZE = 4096;
@@ -37,7 +38,7 @@ class QueueItem {
     public url: string,
     public lowPriority: boolean,
     public folderPosition?: number
-  ) {}
+  ) { }
 }
 
 export class CacheStorageCache implements Cache {
@@ -349,6 +350,6 @@ export class CacheStorageCache implements Cache {
   maxParallelLoads: number = 1;
 
   clearCache(): Promise<void> {
-    return caches.delete(AUDIO_CACHE_NAME).then(() => {});
+    return caches.delete(AUDIO_CACHE_NAME).then(() => { });
   }
 }

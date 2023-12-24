@@ -219,6 +219,20 @@
       more stable listening in case of unreliable network connection.
     </p>
 
+    <label for="api-cache-age">API Cache Age (secs)</label>
+    <input
+      id="api-cache-age"
+      aria-describedby="api-cache-age-desc"
+      type="number"
+      bind:value={currentConfig.apiCacheAge}
+    />
+    <p id="api-cache-age-desc">
+      To speed up navigation API calls can be cached and use for x secs and used
+      immediately. On background newest are always cached. Negative values mean
+      cached values are not used, unless offline. When offline cached API
+      responses are used regardless of age.
+    </p>
+
     <div class="grid">
       <button class="secondary" on:click|preventDefault={cancel}>Cancel</button>
       <button on:click|preventDefault={applyConfig}>Apply</button>
