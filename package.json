@@ -20,7 +20,9 @@
     "test": "vitest run"
   },
   "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-replace": "^5.0.5",
+    "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.5",
     "@sveltejs/vite-plugin-svelte": "^2.4.2",
     "@tsconfig/svelte": "^5.0.0",
@@ -37,6 +39,7 @@
   "dependencies": {
     "@picocss/pico": "^1.5.7",
     "base64-js": "^1.5.1",
+    "idb-keyval": "^6.2.1",
     "isomorphic-fetch": "^3.0.0",
     "sha256": "^0.2.0",
     "showdown": "^2.1.0",

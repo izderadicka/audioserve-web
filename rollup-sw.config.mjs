@@ -1,5 +1,7 @@
 import typescript from '@rollup/plugin-typescript';
 import replace from '@rollup/plugin-replace';
+import { nodeResolve } from '@rollup/plugin-node-resolve';
+import terser from '@rollup/plugin-terser';
 import gitCommitId from "git-commit-id";
 
 export const production = !process.env.ROLLUP_WATCH;
@@ -15,11 +17,12 @@ export const replaceConfig =
 
 export default {
   input: 'src/service-worker.ts',
-
   output: {
     sourcemap: !production,
     dir: 'public',
-    format: 'es'
+    format: 'es',
+    generatedCode: "es2015",
+
   },
   plugins: [
     replace(replaceConfig),
@@ -27,5 +30,7 @@ export default {
       sourceMap: !production,
       inlineSources: !production,
       tsconfig: 'tsconfig-sw.json'
-    })]
+    }),
+    nodeResolve(),
+    production ? null : terser(),]
 };

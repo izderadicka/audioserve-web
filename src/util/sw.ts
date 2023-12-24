@@ -387,9 +387,34 @@ export class CacheFirstCache extends CacheBase {
       })
       return directResponse;
     } else if (directResponse) {
-      console.error(`SW Fetch HTTP error ${directResponse.status}`, directResponse);
+      const status = directResponse.status;
+      console.error(`SW Fetch HTTP error ${status}`, directResponse);
+      // delete previous cached response if status is serious error
+      if (!([429, 500, 502, 503, 504].indexOf(status) >= 0)) {
+        cache.delete(request);
+      }
       throw directResponse;
     }
+
+  }
+
+  checkStaled(cachedResponse: Response): boolean {
+
+    let cacheIsStaled = true;
+    if (cachedResponse) {
+      const responseDate = cachedResponse.headers.get("date");
+      const cacheDate = cachedResponse.headers.get("x-cached-time");
+      if (cacheDate) {
+        const headerDate = cacheDate ? new Date(cacheDate) : null;
+        const responseAge = headerDate ? (Date.now() - headerDate.getTime()) / 1000 : Number.POSITIVE_INFINITY;
+        if (responseAge <= this.age) {
+          cacheIsStaled = false;
+          console.debug(`Returning cached response with date ${responseDate}, cached date ${cacheDate} and age ${responseAge}`);
+        }
+      }
+    }
+
+    return cacheIsStaled;
 
   }
 
@@ -398,24 +423,12 @@ export class CacheFirstCache extends CacheBase {
     evt.respondWith(
       caches.open(this.cacheName).then(async (cache) => {
         const cachedResponse = await cache.match(evt.request);
-        let cacheIsStaled = true;
-        if (cachedResponse) {
-          const responseDate = cachedResponse.headers.get("date");
-          const cacheDate = cachedResponse.headers.get("x-cached-time");
-          if (responseDate) {
-            const headerDate = responseDate ? new Date(responseDate) : null;
-            const responseAge = headerDate ? (Date.now() - headerDate.getTime()) / 1000 : Number.POSITIVE_INFINITY;
-            if (responseAge < this.age) {
-              cacheIsStaled = false;
-              console.debug(`Returning cached response with date ${headerDate}, cached date ${cacheDate} and age ${responseAge}`);
-            }
-          }
-        }
+        let cacheIsStaled = this.checkStaled(cachedResponse);
         let directResponsePromise = this.fetchAndCache(cache, evt.request);
 
         if (cachedResponse && !cacheIsStaled) {
           directResponsePromise.then((response) => {
-            console.debug(`Also cachinig fresh response ${response.url}`);
+            console.debug(`Also caching fresh response ${response.url}`);
           }).catch((e) => {
             console.error("SW Fetch for cache only error", e);
           });

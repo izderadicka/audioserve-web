@@ -8,10 +8,21 @@ import {
   CacheMessageKind,
   AUDIO_CACHE_LIMIT,
 } from "./cache/cs-cache";
-import { API_CACHE_NAME, APP_CACHE_PREFIX } from "./types/constants";
+import { API_CACHE_NAME, API_CACHE_AGE_KEY, APP_CACHE_PREFIX } from "./types/constants";
 import { removeQuery, splitPath } from "./util";
 import { AudioCache, NetworkFirstCache, CacheFirstCache } from "./util/sw";
 import type { CacheMessage } from "./cache/cs-cache";
+import { get } from "idb-keyval";
+
+let apiCacheAge = Number.NEGATIVE_INFINITY;
+function updateApiCacheAge() {
+  get(API_CACHE_AGE_KEY).then((age) => {
+    apiCacheAge = age >= 0 ? age : Number.NEGATIVE_INFINITY;
+    console.debug(`API cache age is ${apiCacheAge}`);
+  });
+}
+
+updateApiCacheAge();
 
 function broadcastMessage(msg: CacheMessage) {
   return self.clients
