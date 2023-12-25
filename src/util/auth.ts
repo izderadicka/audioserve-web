@@ -12,21 +12,19 @@ export async function encodeSecret(secret: string) {
   if (!window.crypto.subtle) {
     console.warn(
       "Crypto subtle is not available - insecure context or old browser. Using JS crypto.");
-      digestPromise = new Promise((resolve, reject) => {
-        const hash = sha256(concatedBytes, { asBytes: true });
-        resolve(hash);
-      });
+    digestPromise = new Promise((resolve, reject) => {
+      const hash = sha256(concatedBytes, { asBytes: true });
+      resolve(hash);
+    });
   } else {
     digestPromise = window.crypto.subtle.digest("SHA-256", concatedBytes)
-    .then(hash => new Uint8Array(hash));
+      .then(hash => new Uint8Array(hash));
   }
   const digest = await digestPromise;
-  console.debug("digest", digest);
   const finalSecret =
     base64js.fromByteArray(randomBytes) +
     "|" +
     base64js.fromByteArray(digest);
-  console.debug("final secret", finalSecret);
   return finalSecret;
 }
 

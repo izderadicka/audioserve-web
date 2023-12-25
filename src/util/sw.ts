@@ -288,71 +288,6 @@ class CacheBase {
   }
 }
 
-export class NetworkFirstCache extends CacheBase {
-  constructor(cacheName: string, sizeLimit = 1000) {
-    super(cacheName, sizeLimit);
-  }
-
-  async handleRequest(evt: FetchEvent) {
-    if (!this.isEnabled) return;
-    evt.respondWith(
-      fetch(evt.request)
-        .then((response) => {
-          if (response.status !== 200) {
-            console.error(
-              `Server returned status ${response.status} for ${evt.request.url}`
-            );
-            throw response;
-          }
-          return caches.open(this.cacheName).then((cache) => {
-            cache.put(evt.request, response.clone()).then(() => {
-              return evictCache(cache, this.sizeLimit, (req) => {
-                console.debug(
-                  `Deleted ${req.url} from cache ${this.cacheName}`
-                );
-                return Promise.resolve();
-              });
-            });
-            return response;
-          });
-        })
-        .catch((e: any) => {
-          // For 401, 404 errors we must not use cache!!!
-          if (e instanceof Response && [401, 404].indexOf(e.status) >= 0) {
-            // delete it from cache
-            caches.open(this.cacheName).then((c) => c.delete(evt.request));
-            return e;
-          }
-          const errorResponse = () => {
-            if (e instanceof Response) {
-              return e;
-            } else {
-              return new Response("NetworkFirst Cache Error: " + e, {
-                status: 555,
-              });
-            }
-          };
-          return caches
-            .open(this.cacheName)
-            .then((cache) => {
-              return cache.match(evt.request);
-            })
-            .then((resp) => {
-              if (resp) {
-                console.debug("Returning cached response");
-                return resp;
-              } else {
-                return errorResponse();
-              }
-            })
-            .catch(() => {
-              return errorResponse();
-            });
-        })
-    );
-  }
-}
-
 export class CacheFirstCache extends CacheBase {
   age: number = 60;
   constructor(cacheName: string, sizeLimit = 1000, age: number = 60) {
@@ -363,12 +298,7 @@ export class CacheFirstCache extends CacheBase {
   async fetchAndCache(cache: Cache, request: Request): Promise<Response> {
 
     let directResponse: Response = null;
-    try {
-      directResponse = await fetch(request);
-    } catch (e) {
-      console.error("SW Fetch error", e);
-      throw e;
-    }
+    directResponse = await fetch(request);
 
     if (directResponse && directResponse.status === 200) {
       const clonedResponse = directResponse.clone();
@@ -388,10 +318,16 @@ export class CacheFirstCache extends CacheBase {
       return directResponse;
     } else if (directResponse) {
       const status = directResponse.status;
-      console.error(`SW Fetch HTTP error ${status}`, directResponse);
       // delete previous cached response if status is serious error
       if (!([429, 500, 502, 503, 504].indexOf(status) >= 0)) {
-        cache.delete(request);
+        cache.delete(request).then(() => {
+          if (directResponse.status === 401) {
+            // and for 401 delete whole cache
+            caches.delete(this.cacheName);
+          }
+        }).catch((e) => {
+          console.error("Error deleting in cache", e);
+        });
       }
       throw directResponse;
     }
@@ -438,10 +374,11 @@ export class CacheFirstCache extends CacheBase {
             return await directResponsePromise;
           } catch (e) {
             if (cachedResponse) {
-              console.warn(`Returning stale cached response ${cachedResponse.url}`);
+              console.warn(`Returning stale cached response ${cachedResponse.url} because of error ${e}`);
               return cachedResponse;
             }
             else if (e instanceof Response) {
+              console.error(`Got error response with status ${e.status}`, e);
               return e;
             } else {
               console.error(`For ${evt.request.url} cannot get meaningful response returning 555 error`);

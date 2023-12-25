@@ -9,8 +9,8 @@ import {
   AUDIO_CACHE_LIMIT,
 } from "./cache/cs-cache";
 import { API_CACHE_NAME, API_CACHE_AGE_KEY, APP_CACHE_PREFIX, API_CACHE_LIMIT } from "./types/constants";
-import { removeQuery, splitPath } from "./util";
-import { AudioCache, NetworkFirstCache, CacheFirstCache } from "./util/sw";
+import { splitPath } from "./util";
+import { AudioCache, CacheFirstCache } from "./util/sw";
 import type { CacheMessage } from "./cache/cs-cache";
 import { get } from "idb-keyval";
 
@@ -91,9 +91,6 @@ self.addEventListener("activate", (evt) => {
             if (key.startsWith("static-") && key != cacheName) {
               return caches.delete(key);
             }
-            // else if (key == apiCache) {
-            //   return caches.delete(key);
-            // }
           })
         );
       })

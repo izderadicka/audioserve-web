@@ -93,7 +93,7 @@ export const config: Writable<AppConfig> = writable(getInitialConfig());
 
 config.subscribe(async (config) => {
   const currentApiCacheAge = await get(API_CACHE_AGE_KEY);
-  if (currentApiCacheAge !== config.apiCacheAge) {
+  if (indexedDB && currentApiCacheAge !== config.apiCacheAge) {
     await set(API_CACHE_AGE_KEY, config.apiCacheAge);
     const worker = navigator.serviceWorker?.controller;
     worker?.postMessage({

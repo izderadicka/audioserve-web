@@ -9,7 +9,12 @@
   import DownloadFolderIcon from "svelte-material-icons/BriefcaseDownloadOutline.svelte";
   import ClockIcon from "svelte-material-icons/ClockOutline.svelte";
 
-  import type { AudioFile, PositionShort, Subfolder } from "../client";
+  import type {
+    AudioFile,
+    PositionShort,
+    ResponseError,
+    Subfolder,
+  } from "../client";
   import {
     apiConfig,
     colApi,
@@ -142,7 +147,7 @@
       });
       const cachedPaths = await cache?.getCachedPaths(
         $selectedCollection,
-        folder
+        folder,
       );
       console.debug("Cached files for this folder", cachedPaths);
 
@@ -177,14 +182,14 @@
         const prevFile = localStorage.getItem(StorageKeys.LAST_FILE);
         if (prevFile) {
           console.debug(
-            `Can try to play ${prevFile} in folder ${$currentFolder} in collection ${$selectedCollection}`
+            `Can try to play ${prevFile} in folder ${$currentFolder} in collection ${$selectedCollection}`,
           );
           const position = files.findIndex((f) => f.path === prevFile);
           if (position >= 0) {
             let time: number | undefined;
             try {
               time = parseFloat(
-                localStorage.getItem(StorageKeys.LAST_POSITION)
+                localStorage.getItem(StorageKeys.LAST_POSITION),
               );
             } catch (e) {
               console.warn("Invalid last position", e);
@@ -196,11 +201,12 @@
 
       folderPath = folder;
       isCollapsed = !audioFolder.isFile && audioFolder.isCollapsed;
-    } catch (resp) {
+    } catch (e) {
+      const resp = (e as ResponseError)?.response;
       console.error("Cannot load folder", resp);
-      if (resp.status === 404) {
+      if (resp?.status === 404) {
         $currentFolder = { value: "", type: FolderType.REGULAR };
-      } else if (resp.status === 401) {
+      } else if (resp?.status === 401) {
         $isAuthenticated = false;
       } else {
         window.alert(`Failed to load folder ${$currentFolder}`);
@@ -285,10 +291,10 @@
         }
         localStorage.setItem(
           StorageKeys.LAST_COLLECTION,
-          $selectedCollection.toString()
+          $selectedCollection.toString(),
         );
       }
-    })
+    }),
   );
 
   function folderIsPlaying(): boolean {
@@ -455,7 +461,7 @@
             aria-label="Continue on last position in this folder"
             ><ContinuePlay size="2rem" />
             {sharePositionDisplayName} at {formatTime(
-              sharedPosition.position
+              sharedPosition.position,
             )}</button
           >
         </div>

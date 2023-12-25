@@ -76,7 +76,7 @@
     new Configuration({
       basePath: API_BASE_URL,
       credentials: "include",
-    })
+    }),
   );
 
   let container: HTMLDivElement;
@@ -89,7 +89,7 @@
         console.debug("Got collections list", cols);
         $collections = cols;
         let parsedCollection: number = parseInt(
-          localStorage.getItem(StorageKeys.LAST_COLLECTION) || "0"
+          localStorage.getItem(StorageKeys.LAST_COLLECTION) || "0",
         );
         if (parsedCollection >= cols.names.length) parsedCollection = 0;
         $selectedCollection = parsedCollection;
@@ -109,8 +109,7 @@
     console.debug("Menu selected", menuSelection);
     switch (menuSelection) {
       case "logout":
-        $isAuthenticated = false;
-        deleteCookie();
+        logout();
         break;
       case "switch-theme":
         const theme = otherTheme();
@@ -118,14 +117,7 @@
         localStorage.setItem(StorageKeys.THEME, theme);
         break;
       case "clear-cache":
-        Promise.all([
-          cache?.clearCache().then(() => {
-            cache.cancelPendingLoads("", true);
-          }),
-          window?.caches.delete(API_CACHE_NAME),
-        ])
-          .then(() => window.location.reload())
-          .catch((e) => console.warn("Error clearing cache " + e));
+        clearCache().then(() => window.location.reload());
         break;
       case "show-preferences":
         showComponent = "config";
@@ -140,6 +132,21 @@
         showComponent = "browser";
         downloadCurrentFolder();
     }
+  }
+
+  function clearCache() {
+    return Promise.all([
+      cache?.clearCache().then(() => {
+        cache.cancelPendingLoads("", true);
+      }),
+      window?.caches?.delete(API_CACHE_NAME),
+    ]).catch((e) => console.error("Error clearing cache " + e));
+  }
+
+  function logout() {
+    $isAuthenticated = false;
+    deleteCookie();
+    clearCache();
   }
 
   function downloadCurrentFolder() {
@@ -186,15 +193,18 @@
         if (e.response.status === 401) {
           $isAuthenticated = false;
           // try to load again after authentication
-          const _unsubsribe = isAuthenticated.subscribe(async (ok) => {
-            if (ok) {
-              try {
-                await loadCollections();
-              } catch (e) {
-                error = `Fail to load collections after authentication, one reason can be insecure context and API on different origin`;
+          const unsubscribeAuthentication = isAuthenticated.subscribe(
+            async (ok) => {
+              if (ok) {
+                try {
+                  await loadCollections();
+                } catch (e) {
+                  error = `Fail to load collections after authentication, one reason can be insecure context and API on different origin`;
+                }
               }
-            }
-          });
+            },
+            () => unsubscribeAuthentication(),
+          );
         } else {
           error = `Unexpected respose from server: ${e.response.status} ${e}`;
         }
