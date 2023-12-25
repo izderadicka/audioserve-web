@@ -145,6 +145,7 @@
 
   function logout() {
     $isAuthenticated = false;
+    $playItem = null;
     deleteCookie();
     clearCache();
   }
