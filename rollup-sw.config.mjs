@@ -32,5 +32,5 @@ export default {
       tsconfig: 'tsconfig-sw.json'
     }),
     nodeResolve(),
-    production ? null : terser(),]
+    production ? terser() : null,]
 };
