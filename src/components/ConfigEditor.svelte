@@ -223,14 +223,15 @@
     <input
       id="api-cache-age"
       aria-describedby="api-cache-age-desc"
-      type="number"
+      type="text"
+      inputmode="numeric"
       bind:value={currentConfig.apiCacheAge}
     />
     <p id="api-cache-age-desc">
-      To speed up navigation API calls can be cached and use for x secs and used
-      immediately. On background newest are always cached. Negative values mean
-      cached values are not used, unless offline. When offline cached API
-      responses are used regardless of age.
+      To speed up navigation API calls can be cached and then used immediately
+      for up to n seconds of its age. On background newest responses are always
+      retrieved. Negative values mean cached values are not used, unless
+      offline. When offline cached API responses are used regardless of age.
     </p>
 
     <div class="grid">
