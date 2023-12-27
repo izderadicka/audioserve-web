@@ -209,7 +209,7 @@
       } else if (resp?.status === 401) {
         $isAuthenticated = false;
       } else {
-        window.alert(`Failed to load folder ${$currentFolder}`);
+        window.alert(`Failed to load folder ${$currentFolder.value}`);
       }
     } finally {
       searchQuery = undefined;
