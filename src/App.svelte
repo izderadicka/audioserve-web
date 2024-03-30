@@ -546,7 +546,7 @@
       <p class="red">Cache via service worker is not available</p>
     {/if}
     <p>Version: {APP_VERSION}({APP_COMMIT})</p>
-    <p>Server Version: {$collections?.version}</p>
+    <p>Server Version: {$collections?.version} ({$collections?.commit})</p>
   </svelte:fragment>
 </ConfirmDialog>
 

@@ -49,6 +49,7 @@ export interface CollectionsInfo {
      * @memberof CollectionsInfo
      */
     version?: string;
+    commit?: string;
 }
 
 /**
@@ -69,12 +70,13 @@ export function CollectionsInfoFromJSONTyped(json: any, ignoreDiscriminator: boo
         return json;
     }
     return {
-        
+
         'names': !exists(json, 'names') ? undefined : json['names'],
         'count': !exists(json, 'count') ? undefined : json['count'],
         'folderDownload': !exists(json, 'folder_download') ? undefined : json['folder_download'],
         'sharedPositions': !exists(json, 'shared_positions') ? undefined : json['shared_positions'],
         'version': !exists(json, 'version') ? undefined : json['version'],
+        'commit': !exists(json, 'commit') ? undefined : json['commit'],
     };
 }
 
@@ -86,12 +88,13 @@ export function CollectionsInfoToJSON(value?: CollectionsInfo | null): any {
         return null;
     }
     return {
-        
+
         'names': value.names,
         'count': value.count,
         'folder_download': value.folderDownload,
         'shared_positions': value.sharedPositions,
         'version': value.version,
+        'commit': value.commit,
     };
 }
 
