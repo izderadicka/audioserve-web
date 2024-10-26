@@ -18,7 +18,10 @@ export function getLocationPath(): string {
 
 export function baseUrl(dev: boolean) {
   let url: string;
-  if (dev) {
+  if (location.hostname === "tauri.localhost") {
+    url = "http://10.0.2.2:3000";
+    // url = "https://audioserve.zderadicka.eu";
+  } else if (dev) {
     url = "http://localhost:3000";
   } else {
     url = `${location.protocol}//${location.host}`;
@@ -39,9 +42,8 @@ function mapWsProtocol(p: string) {
 
 export function baseWsUrl(dev: boolean, port: number): string {
   let baseUrl = dev
-    ? `${mapWsProtocol(window.location.protocol)}//${
-        window.location.hostname
-      }:${port}`
+    ? `${mapWsProtocol(window.location.protocol)}//${window.location.hostname
+    }:${port}`
     : `${mapWsProtocol(window.location.protocol)}//${window.location.host}`;
 
   const path = getLocationPath();

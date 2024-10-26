@@ -76,7 +76,7 @@
     new Configuration({
       basePath: API_BASE_URL,
       credentials: "include",
-    }),
+    })
   );
 
   let container: HTMLDivElement;
@@ -89,7 +89,7 @@
         console.debug("Got collections list", cols);
         $collections = cols;
         let parsedCollection: number = parseInt(
-          localStorage.getItem(StorageKeys.LAST_COLLECTION) || "0",
+          localStorage.getItem(StorageKeys.LAST_COLLECTION) || "0"
         );
         if (parsedCollection >= cols.names.length) parsedCollection = 0;
         $selectedCollection = parsedCollection;
@@ -98,7 +98,15 @@
         console.debug("Got transcodings list", trans);
         $transcodings = trans;
       }),
-    ]);
+    ]).catch((e) => {
+      if (e instanceof ResponseError) {
+        console.error(
+          `Error loading collections - server response ${e.response.status}`
+        );
+      }
+
+      return Promise.reject(e);
+    });
 
     await res;
     isInitialized = true;
@@ -200,17 +208,17 @@
                 try {
                   await loadCollections();
                 } catch (e) {
-                  error = `Fail to load collections after authentication, one reason can be insecure context and API on different origin`;
+                  error = `Failed to load collections after authentication, one reason can be insecure context and API on different origin. Error: ${e}`;
                 }
               }
             },
-            () => unsubscribeAuthentication(),
+            () => unsubscribeAuthentication()
           );
         } else {
           error = `Unexpected respose from server: ${e.response.status} ${e}`;
         }
       } else {
-        error = `Cannot contact server: ${e}`;
+        error = `Cannot contact server at ${$apiConfig.basePath}: ${e}`;
       }
     }
   });
