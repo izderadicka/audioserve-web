@@ -3,12 +3,14 @@
 
   import { get } from "svelte/store";
 
-  import { config } from "../state/stores";
+  import { config, group } from "../state/stores";
   import type { AppConfig } from "../types/types";
   import { saveConfig } from "../util/browser";
   import ClosableTitle from "./ClosableTitle.svelte";
+  import { setGroup } from "../util/auth";
 
   let currentConfig: AppConfig = get(config);
+  let currentGroup: string = get(group);
   let cache = getContext("cache");
 
   const dispatch = createEventDispatcher();
@@ -17,6 +19,7 @@
     dispatch("finished");
     saveConfig(currentConfig);
     config.set(currentConfig);
+    setGroup(currentGroup);
   };
   const cancel = () => {
     dispatch("finished");
@@ -26,6 +29,20 @@
 <div id="config-editor">
   <ClosableTitle on:close={cancel}>Audioserve Preferences</ClosableTitle>
   <form>
+    <label for="sync-group">Synchronization Group</label>
+    <input
+      id="sync-group"
+      aria-describedby="sync-group-desc"
+      type="text"
+      bind:value={currentGroup}
+    />
+    <p id="sync-group-desc">
+      If used synchronizes current playback position with server and position is
+      then available in other clients (if they set same group). Be aware that
+      group is available to anyone with access to server. If not set, then
+      synchronization is not used.
+    </p>
+
     {#if cache}
       <label for="cache-ahead">Files to Cache Ahead</label>
       <input

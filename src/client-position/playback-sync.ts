@@ -6,7 +6,7 @@ interface LastPosition {
     timestamp: Date,
 }
 
-interface PendingPosition extends LastPosition{
+interface PendingPosition extends LastPosition {
     filePath: string
 }
 
@@ -60,7 +60,7 @@ export class PlaybackSync {
 
     onOnline() {
         console.debug(`PlaybackSync ${PlaybackSync.id} online `);
-        if (! this.active && this.failedPositions.hasSome()) {
+        if (!this.active && this.failedPositions.hasSome()) {
             this.try_open();
         }
     }
@@ -83,12 +83,12 @@ export class PlaybackSync {
 
     try_open() {
         if (this.pendingOpen != null || this.opening) return;
-        this.pendingOpen = window.setTimeout(()=> {
+        this.pendingOpen = window.setTimeout(() => {
             this.open();
             this.pendingOpen = null;
 
         },
-        Math.min(10_000, this.failures<3?0: (this.failures-2) * 500)) // throttle retries progressively
+            Math.min(10_000, this.failures < 3 ? 0 : (this.failures - 2) * 500)) // throttle retries progressively
     }
 
     open() {
@@ -156,11 +156,15 @@ export class PlaybackSync {
         this.socket = null;;
     }
 
-    enqueuePosition(filePath: string, position:number, timestamp: Date  = null) {
+    clearPendingPosition() {
         if (this.pendingPositionTimeout) {
             window.clearTimeout(this.pendingPositionTimeout);
             this.pendingPositionTimeout = null;
         }
+    }
+
+    enqueuePosition(filePath: string, position: number, timestamp: Date = null) {
+        this.clearPendingPosition();
         if (!this.groupPrefix) return;
         if (!this.active) {
             let pendingPosition = {
@@ -175,9 +179,9 @@ export class PlaybackSync {
         };
         filePath = this.groupPrefix + filePath;
         if (this.filePath && this.lastSend && filePath == this.filePath) {
-            const lastSendTime = (Date.now() - this.lastSend!.timestamp.getTime())/1000;
+            const lastSendTime = (Date.now() - this.lastSend!.timestamp.getTime()) / 1000;
             const lastSendPosition = Math.abs(position - this.lastSend.position);
-            if ( lastSendTime >= this.config.positionReportingPeriod ||
+            if (lastSendTime >= this.config.positionReportingPeriod ||
                 lastSendPosition > this.config.positionReportingPeriod) {
                 this.sendMessage(position);
             } else {
@@ -199,7 +203,7 @@ export class PlaybackSync {
             position = Math.round(position * 10) / 10;
             let msg = position.toString() + "|";
             if (filePath) msg += filePath;
-            if (timestamp) msg += '|' + Math.round(timestamp.getTime()/1000);
+            if (timestamp) msg += '|' + Math.round(timestamp.getTime() / 1000);
             this.socket.send(msg);
             this.lastSend = {
                 position,
@@ -288,10 +292,10 @@ export class PendingItems {
         // sort according to timestamp
         entries.sort((a, b) => a[1].timestamp.getTime() - b[1].timestamp.getTime());
         const evictedCount = entries.length - this.capacity;
-        for(let i = 0; i < evictedCount; i++) {
+        for (let i = 0; i < evictedCount; i++) {
             this.items.delete(entries[i][0]);
         }
-        
+
     }
 
     clear() {
@@ -302,7 +306,7 @@ export class PendingItems {
         // sorted list of items not older than timestamp
         const entries = Array.from(this.items.values());
         entries.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-        const firstNewer =entries.findIndex(e => e.timestamp.getTime() >= timestamp.getTime());
+        const firstNewer = entries.findIndex(e => e.timestamp.getTime() >= timestamp.getTime());
         if (firstNewer < 0) {
             return [];
         }

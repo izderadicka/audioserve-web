@@ -10,3 +10,5 @@
 .vscode
 public/*.map
 /dist
+
+/src-tauri

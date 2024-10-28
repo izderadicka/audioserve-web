@@ -1,5 +1,7 @@
 import base64js from "base64-js";
 import sha256 from 'sha256';
+import { StorageKeys } from "../types/enums";
+import { group } from "../state/stores";
 
 export async function encodeSecret(secret: string) {
   let secretBytes = new TextEncoder().encode(secret);
@@ -30,4 +32,14 @@ export async function encodeSecret(secret: string) {
 
 export function deleteCookie() {
   document.cookie = "audioserve_token=; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+}
+
+export function setGroup(playbackGroup: string) {
+  if (playbackGroup) {
+    localStorage.setItem(StorageKeys.GROUP, playbackGroup);
+    group.set(playbackGroup); playbackGroup;
+  } else {
+    localStorage.removeItem(StorageKeys.GROUP);
+    group.set(undefined);
+  }
 }

@@ -22,6 +22,9 @@
     playItem,
     pendingDownloads,
     sleepTime,
+    positionsApi,
+    group,
+    positionWsApi,
   } from "./state/stores";
   import { onMount, setContext } from "svelte";
   import { Configuration, ResponseError } from "./client";
@@ -76,7 +79,7 @@
     new Configuration({
       basePath: API_BASE_URL,
       credentials: "include",
-    }),
+    })
   );
 
   let container: HTMLDivElement;
@@ -89,7 +92,7 @@
         console.debug("Got collections list", cols);
         $collections = cols;
         let parsedCollection: number = parseInt(
-          localStorage.getItem(StorageKeys.LAST_COLLECTION) || "0",
+          localStorage.getItem(StorageKeys.LAST_COLLECTION) || "0"
         );
         if (parsedCollection >= cols.names.length) parsedCollection = 0;
         $selectedCollection = parsedCollection;
@@ -102,6 +105,38 @@
 
     await res;
     isInitialized = true;
+  }
+
+  function markFolderAsRead() {
+    if (
+      $group &&
+      $currentFolder &&
+      $currentFolder.type === FolderType.REGULAR
+    ) {
+      let folder = $currentFolder.value;
+      if ($playItem && $playItem.path.startsWith(folder)) {
+        player.pause();
+        $positionWsApi.clearPendingPosition();
+      }
+      $positionsApi
+        .positionsGroupPost({
+          group: $group,
+          position: {
+            timestamp: new Date().getTime(),
+            collection: $selectedCollection,
+            folder: folder,
+            file: "",
+            position: 0,
+            folderFinished: true,
+          },
+        })
+        .then(() => {
+          console.debug("Marked folder as read", $currentFolder);
+        })
+        .catch((err) => {
+          console.error("Failed to mark folder as read", err);
+        });
+    }
   }
 
   function actOnMenu(menuEvt) {
@@ -131,6 +166,9 @@
       case "download":
         showComponent = "browser";
         downloadCurrentFolder();
+      case "mark-read":
+        markFolderAsRead();
+        break;
     }
   }
 
@@ -204,7 +242,7 @@
                 }
               }
             },
-            () => unsubscribeAuthentication(),
+            () => unsubscribeAuthentication()
           );
         } else {
           error = `Unexpected respose from server: ${e.response.status} ${e}`;

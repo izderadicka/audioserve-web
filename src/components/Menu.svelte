@@ -1,9 +1,16 @@
 <script lang="ts">
   import { createEventDispatcher, getContext } from "svelte";
   import type { Transcoding } from "../client";
-  import { group, selectedTranscoding, transcodings } from "../state/stores";
+  import {
+    currentFolder,
+    currentFolderProperties,
+    group,
+    selectedTranscoding,
+    transcodings,
+  } from "../state/stores";
   import Menu from "svelte-material-icons/Menu.svelte";
   import {
+    FolderType,
     StorageKeys,
     TranscodingCode,
     transcodingCodeToName,
@@ -136,6 +143,16 @@
                 >
               </li>
             {/if}
+            {#if $group && $currentFolder && $currentFolder.type === FolderType.REGULAR && $currentFolder.value !== "" && $currentFolderProperties.hasFiles}
+              <li>
+                <a
+                  href="#"
+                  data-menu="mark-read"
+                  on:click|preventDefault={menuClick}
+                  >Mark Current Folder Finished</a
+                >
+              </li>
+            {/if}
             <li>
               <a href="#" data-menu="about" on:click|preventDefault={menuClick}
                 >About</a
@@ -181,5 +198,11 @@
 
   .dropdown a {
     background-color: transparent !important;
+  }
+
+  @media only screen and (min-width: 768px) {
+    .dropdown-content {
+      min-width: 320px;
+    }
   }
 </style>

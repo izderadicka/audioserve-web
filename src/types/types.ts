@@ -11,6 +11,11 @@ export interface CurrentFolder {
   scrollTo?: number;
 }
 
+export interface CurrentFolderProperties {
+  hasFiles: boolean;
+  isFinished: boolean;
+}
+
 export interface CurrentPlayList {
   files: AudioFileExt[];
   collection: number;

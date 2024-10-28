@@ -1,7 +1,7 @@
 <script lang="ts">
   import { apiConfig, group, isAuthenticated } from "../state/stores";
   import { AuthenticationApi } from "../client/apis";
-  import { encodeSecret } from "../util/auth";
+  import { encodeSecret, setGroup } from "../util/auth";
   import { Configuration } from "../client";
   import { StorageKeys } from "../types/enums";
   import { getContext } from "svelte";
@@ -29,12 +29,7 @@
               //accessToken: token // TBD enable access token
             })
         );
-        if (playbackGroup) {
-          localStorage.setItem(StorageKeys.GROUP, playbackGroup);
-          $group = playbackGroup;
-        } else {
-          localStorage.removeItem(StorageKeys.GROUP);
-        }
+        setGroup(playbackGroup);
       } catch (e) {
         console.error("Login error", e);
         loginError = true;

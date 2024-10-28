@@ -13,6 +13,7 @@ import type { PlayItem } from "../types/play-item";
 import type {
   AppConfig,
   CurrentFolder,
+  CurrentFolderProperties,
   CurrentPlayList,
   TranscodingDetail,
 } from "../types/types";
@@ -56,6 +57,9 @@ export const selectedTranscodingDetails: Readable<TranscodingDetail> = derived(
 );
 export const currentFolder: Writable<CurrentFolder | undefined> =
   writable(undefined);
+
+export const currentFolderProperties: Writable<CurrentFolderProperties> =
+  writable({ hasFiles: false, isFinished: false });
 
 export const playItem: Writable<PlayItem> = writable(undefined);
 export const playList: Writable<CurrentPlayList> = writable(undefined);

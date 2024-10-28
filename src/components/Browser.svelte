@@ -20,6 +20,7 @@
     colApi,
     collections,
     currentFolder,
+    currentFolderProperties,
     group,
     isAuthenticated,
     playItem,
@@ -63,7 +64,10 @@
   export const navigate = (where: NavigateTarget) => {
     if (!folderIsPlaying()) {
       $selectedCollection = $playList.collection;
-      $currentFolder = { value: $playList.folder, type: FolderType.REGULAR };
+      $currentFolder = {
+        value: $playList.folder,
+        type: FolderType.REGULAR,
+      };
     } else if (where === NavigateTarget.PLAY_ITEM) {
       const elem: HTMLElement = document.querySelector("div.item.active");
       if (elem != null) {
@@ -147,7 +151,7 @@
       });
       const cachedPaths = await cache?.getCachedPaths(
         $selectedCollection,
-        folder,
+        folder
       );
       console.debug("Cached files for this folder", cachedPaths);
 
@@ -182,14 +186,14 @@
         const prevFile = localStorage.getItem(StorageKeys.LAST_FILE);
         if (prevFile) {
           console.debug(
-            `Can try to play ${prevFile} in folder ${$currentFolder} in collection ${$selectedCollection}`,
+            `Can try to play ${prevFile} in folder ${$currentFolder} in collection ${$selectedCollection}`
           );
           const position = files.findIndex((f) => f.path === prevFile);
           if (position >= 0) {
             let time: number | undefined;
             try {
               time = parseFloat(
-                localStorage.getItem(StorageKeys.LAST_POSITION),
+                localStorage.getItem(StorageKeys.LAST_POSITION)
               );
             } catch (e) {
               console.warn("Invalid last position", e);
@@ -291,10 +295,10 @@
         }
         localStorage.setItem(
           StorageKeys.LAST_COLLECTION,
-          $selectedCollection.toString(),
+          $selectedCollection.toString()
         );
       }
-    }),
+    })
   );
 
   function folderIsPlaying(): boolean {
@@ -321,7 +325,13 @@
         // console.debug("History scroll to " + scrollTo);
         container.scrollTo({ top: scrollTo || 0 });
       }
+
+      onFolderLoaded();
     });
+  }
+
+  function onFolderLoaded() {
+    $currentFolderProperties.hasFiles = files.length > 0;
   }
 
   const globalPathPrefix = getLocationPath();
@@ -461,7 +471,7 @@
             aria-label="Continue on last position in this folder"
             ><ContinuePlay size="2rem" />
             {sharePositionDisplayName} at {formatTime(
-              sharedPosition.position,
+              sharedPosition.position
             )}</button
           >
         </div>
