@@ -8,6 +8,7 @@
   import DownloadIcon from "svelte-material-icons/DownloadMultiple.svelte";
   import SleepIcon from "svelte-material-icons/AlarmSnooze.svelte";
   import SleepCancelIcon from "svelte-material-icons/AlarmOff.svelte";
+  import { SvelteToast, toast } from "@zerodevx/svelte-toast";
 
   import {
     apiConfig,
@@ -131,7 +132,7 @@
           },
         })
         .then(() => {
-          console.debug("Marked folder as read", $currentFolder);
+          toast.push("Folder marked as finished");
         })
         .catch((err) => {
           console.error("Failed to mark folder as read", err);
@@ -587,6 +588,10 @@
     <p>Server Version: {$collections?.version} ({$collections?.commit})</p>
   </svelte:fragment>
 </ConfirmDialog>
+
+<div class="toaster">
+  <SvelteToast options={{ pausable: true, initial: 0, next: 1 }} />
+</div>
 
 <style>
   .icons span.with-text {
