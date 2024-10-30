@@ -8,6 +8,7 @@
   import SortTimeIcon from "svelte-material-icons/SortClockAscendingOutline.svelte";
   import DownloadFolderIcon from "svelte-material-icons/BriefcaseDownloadOutline.svelte";
   import ClockIcon from "svelte-material-icons/ClockOutline.svelte";
+  import PodcastIcon from "svelte-material-icons/Podcast.svelte";
 
   import type {
     AudioFile,
@@ -392,6 +393,13 @@
       (isCollapsed ? "?collapsed" : "")
     );
   }
+
+  function generateFeedPath(): string {
+    return (
+      $apiConfig.basePath +
+      `/${$selectedCollection}/feed/${encodeURIComponent(folderPath)}`
+    );
+  }
 </script>
 
 <div id="browser">
@@ -445,6 +453,13 @@
             <a href={generateDownloadPath()} target="_self"
               ><span class="summary-icons" aria-label="Download"
                 ><DownloadFolderIcon /></span
+              ></a
+            >
+          {/if}
+          {#if $collections}
+            <a href={generateFeedPath()} target="_blank"
+              ><span class="summary-icons" aria-label="Download"
+                ><PodcastIcon /></span
               ></a
             >
           {/if}
