@@ -167,6 +167,7 @@
       case "download":
         showComponent = "browser";
         downloadCurrentFolder();
+        break;
       case "mark-read":
         markFolderAsRead();
         break;
