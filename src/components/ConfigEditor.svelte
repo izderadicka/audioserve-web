@@ -165,7 +165,22 @@
     />
     <p id="pos-reporting-desc">
       When file is being played, playback position is reported every n seconds
-      to server
+      to server.
+    </p>
+
+    <label for="check-latest-position">
+      <input
+        id="check-latest-position"
+        aria-describedby="check-latest-position-desc"
+        type="checkbox"
+        bind:checked={currentConfig.enableCheckLatestPosition}
+      />
+      Check Latest Playback Position on Play
+    </label>
+    <p class="no-input" id="browser-slide-desc">
+      When you click on Play button in Player, latest playback position for
+      currently playing folder is checked from server. If there is newer one
+      (from another device) then dialog is shown to confirm using it.
     </p>
 
     <label for="trans-tolerance">Transcoding Tolerance Coeficient</label>

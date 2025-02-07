@@ -22,6 +22,7 @@ import { get, set } from "idb-keyval";
 import { API_CACHE_AGE_KEY } from "../types/constants";
 import { getContext } from "svelte";
 import { CacheMessageKind } from "../cache/cs-cache";
+import { PositionExtraApi } from "../client-position/extra-api";
 
 export const isAuthenticated = writable(true);
 export const apiConfig = writable(new Configuration());
@@ -74,7 +75,11 @@ export const positionsApi = derived(
   [apiConfig, group],
   ([$apiConfig, $group]) => {
     if (!group) return null;
-    return new PositionsApi($apiConfig);
+    const api = new PositionsApi($apiConfig);
+    // this is a hack - as api is generated and is missing some endpoints
+    const apiExtra = new PositionExtraApi($apiConfig, $group);
+    (api as any).extra = apiExtra;
+    return api;
   }
 );
 

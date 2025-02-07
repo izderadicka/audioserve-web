@@ -25,6 +25,7 @@ export interface CurrentPlayList {
 }
 
 export interface AppConfig {
+  enableCheckLatestPosition: boolean;
   maxParallelDownload: number;
   cacheAheadFiles: number;
   cacheAheadDelay: number;

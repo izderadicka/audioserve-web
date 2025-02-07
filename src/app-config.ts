@@ -20,4 +20,5 @@ export const defaultConfig: AppConfig = {
   enableSlideInBrowser: false,
   enableEagerSwitchToCached: false,
   apiCacheAge: -1,
+  enableCheckLatestPosition: true
 };

@@ -4,6 +4,10 @@
     "types": [
       "vitest/globals"
     ],
+    "lib": [
+      "ESNext",
+      "DOM"
+    ],
     "target": "ESNext",
     "useDefineForClassFields": true,
     "module": "ESNext",

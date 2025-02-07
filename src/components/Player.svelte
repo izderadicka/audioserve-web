@@ -35,13 +35,13 @@
     playItem,
     playList,
     positionWsApi,
+    positionsApi,
     selectedCollection,
     windowSize,
-    sleepTime,
   } from "../state/stores";
   import { FolderType, NavigateTarget, StorageKeys } from "../types/enums";
   import { PlayItem } from "../types/play-item";
-  import { formatTime } from "../util/date";
+  import { formatTime, formatTimeAgo } from "../util/date";
   import { splitExtInName, splitPath, splitRootPath, splitUrl } from "../util";
   import CacheIndicator from "./CacheIndicator.svelte";
   import CoverIcon from "./FolderIcon.svelte";
@@ -52,6 +52,8 @@
   import TimerControl from "./TimerControl.svelte";
   import ConfirmDialog from "./ConfirmDialog.svelte";
   import PlayerNavigationDialog from "./PlayerNavigationDialog.svelte";
+  import { PositionExtraApi } from "../client-position/extra-api";
+  import type { Position } from "../client";
 
   const fileIconSize = "1.5rem";
   const controlSize = "48px";
@@ -560,14 +562,72 @@
   }
 
   async function playPause() {
-    reportPosition(true);
     if (paused) {
+      console.log("STARTED PLAYING", $playItem);
+      if (await checkLastPosition()) {
+        // Will use different position and thus different mean to start playing
+        return;
+      }
+      reportPosition(true);
       await safePlayPlayer();
     } else {
+      reportPosition(true);
       wantPlay = false;
       player.pause();
       preparingPlayback = false;
       window.clearTimeout(cacheAheadTimer);
+    }
+  }
+
+  let newerPosition: Position | null = null;
+
+  async function checkLastPosition(): Promise<boolean> {
+    if (!$positionsApi || !$config.enableCheckLatestPosition) return;
+    // this is hack because generated API missed that function
+    try {
+      const position = await (
+        ($positionsApi as any).extra as PositionExtraApi
+      ).checkPositionForFolder($playList.collection, $playList.folder);
+
+      console.log("Last position check", position);
+      const lastLocalPause =
+        parseInt(localStorage.getItem(StorageKeys.LAST_PAUSE)) || 0;
+
+      if (
+        position &&
+        $playList &&
+        position.folder === $playList.folder &&
+        position.timestamp >
+          lastLocalPause + $config.positionReportingPeriod * 1500
+      ) {
+        const positionPath = position.folder + "/" + position.file;
+        const idx = $playList.files.findIndex((f) => f.path === positionPath);
+        if (idx < 0) {
+          console.warn(
+            "Last position file not found in playlist",
+            position.file
+          );
+          return;
+        }
+
+        newerPosition = position;
+        newerPositionDialog.toggleModal();
+        const result = await newerPositionDialog.waitForDialog();
+        if (result) {
+          console.debug("Use newer position");
+          const item = new PlayItem({
+            file: $playList.files[idx],
+            position: idx,
+            startPlay: true,
+            time: position.position,
+          });
+
+          $playItem = item;
+          return true;
+        }
+      }
+    } catch (e) {
+      console.error("Last position check failed", e);
     }
   }
 
@@ -755,6 +815,7 @@
   });
 
   let navigationDialog: PlayerNavigationDialog;
+  let newerPositionDialog: ConfirmDialog;
   let totalProgressBar: HTMLProgressElement;
   function openNavigationDialog(evt: MouseEvent) {
     const clickX = Math.max(evt.offsetX, 0);
@@ -1040,6 +1101,21 @@
   maxTime={totalFolderTime}
   on:jump={jumpToFile}
 />
+<ConfirmDialog id="newer-position-dialog" bind:this={newerPositionDialog}>
+  <svelte:fragment slot="header">Newer Playback Position</svelte:fragment>
+  <svelte:fragment slot="body">
+    <b>File:</b>
+    {newerPosition?.file}
+    <br />
+    <b>Position:</b>
+    {newerPosition ? formatTime(newerPosition.position) : ""}
+    <br />
+    <b>From: </b>
+    {newerPosition ? formatTimeAgo(newerPosition.timestamp) : ""}
+    <br />
+    Play rather from this position?
+  </svelte:fragment>
+</ConfirmDialog>
 
 <style>
   .icon {

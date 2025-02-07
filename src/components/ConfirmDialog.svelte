@@ -49,7 +49,30 @@
       : openModal(modal);
   };
 
+  let finishDialog = null;
+
+  export const waitForDialog = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      finishDialog = resolve;
+    });
+  };
+
+  const updateConfirmed = () => {
+    if (finishDialog) {
+      finishDialog(true);
+    }
+    finishDialog = null;
+  };
+
+  const updateCanceled = () => {
+    if (finishDialog) {
+      finishDialog(false);
+    }
+    finishDialog = null;
+  };
+
   const confirmModal = (event) => {
+    updateConfirmed();
     toggleModal(event);
     if (confirmAction) {
       confirmAction();
@@ -83,6 +106,7 @@
   const closeModal = (modal) => {
     visibleModal = null;
     document.documentElement.classList.add(closingClass);
+    updateCanceled();
     setTimeout(() => {
       document.documentElement.classList.remove(closingClass, isOpenClass);
       document.documentElement.style.removeProperty("--scrollbar-width");
