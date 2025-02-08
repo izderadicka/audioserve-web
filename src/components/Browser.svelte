@@ -456,7 +456,8 @@
               ></a
             >
           {/if}
-          {#if $collections}
+          {#if $collections && false}
+            // TODO - updated collections definition
             <a href={generateFeedPath()} target="_blank"
               ><span class="summary-icons" aria-label="Download"
                 ><PodcastIcon /></span

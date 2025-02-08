@@ -582,7 +582,12 @@
   let newerPosition: Position | null = null;
 
   async function checkLastPosition(): Promise<boolean> {
-    if (!$positionsApi || !$config.enableCheckLatestPosition) return;
+    if (
+      !$positionsApi ||
+      !$config.enableCheckLatestPosition ||
+      !navigator.onLine
+    )
+      return;
     // this is hack because generated API missed that function
     try {
       const position = await (
