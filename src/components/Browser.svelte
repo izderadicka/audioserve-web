@@ -456,8 +456,7 @@
               ></a
             >
           {/if}
-          {#if $collections && false}
-            // TODO - updated collections definition
+          {#if $collections && $collections.rssFeed}
             <a href={generateFeedPath()} target="_blank"
               ><span class="summary-icons" aria-label="Download"
                 ><PodcastIcon /></span

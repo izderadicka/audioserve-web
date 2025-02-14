@@ -598,12 +598,14 @@
       const lastLocalPause =
         parseInt(localStorage.getItem(StorageKeys.LAST_PAUSE)) || 0;
 
+      const timeTolerance = $config.positionReportingPeriod * 1500;
+
       if (
         position &&
         $playList &&
+        $playItem &&
         position.folder === $playList.folder &&
-        position.timestamp >
-          lastLocalPause + $config.positionReportingPeriod * 1500
+        position.timestamp > lastLocalPause + timeTolerance
       ) {
         const positionPath = position.folder + "/" + position.file;
         const idx = $playList.files.findIndex((f) => f.path === positionPath);
@@ -612,6 +614,13 @@
             "Last position file not found in playlist",
             position.file
           );
+          return;
+        }
+
+        if (
+          $playItem.path === positionPath &&
+          Math.abs(currentTime - position.position) < timeTolerance / 1000
+        ) {
           return;
         }
 

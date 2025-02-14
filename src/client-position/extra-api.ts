@@ -11,7 +11,9 @@ export class PositionExtraApi {
     async checkPositionForFolder(colId: number, path: string): Promise<Position | null> {
         const baseURL = this.apiConfig.basePath;
         const url = baseURL + "/positions/" + encodeURIComponent(this.group) + "/" + colId + "/" + encodeURIComponent(path);
-        const response = await fetch(url, { credentials: "include" });
+        const controller = new AbortController();
+        setTimeout(() => controller.abort("Timeout"), 3000);
+        const response = await fetch(url, { credentials: "include", signal: controller.signal });
 
         if (!response.ok) {
             console.warn(`Failed to check position for folder ${path}`, response);
