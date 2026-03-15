@@ -381,7 +381,7 @@
       if ($playList.hasImage) {
         icon = `${
           $apiConfig.basePath
-        }/${$selectedCollection}/icon/${encodeURIComponent($playList.folder)}`;
+        }/pub-icon/${$selectedCollection}/${encodeURIComponent($playList.folder)}`;
       }
       const { root: artist, path: album } = splitRootPath(
         splitPath(item.path).folder,
@@ -391,7 +391,7 @@
         title: fileDisplayName,
         album,
         artist,
-        artwork: [{ src: icon }],
+        artwork: [{ src: icon, type: "image/png" }],
       });
 
       navigator.mediaSession.setActionHandler(
