@@ -370,18 +370,38 @@
         paused = true;
         wantPlay = false;
       }
-      updateMediaSessionMetadata(item);
+      await updateMediaSessionMetadata(item);
     }
   }
 
-  function updateMediaSessionMetadata(item: PlayItem) {
+  async function signUrl(path: string): Promise<string> {
+    const url = `${$apiConfig.basePath}/sign-path`;
+    const resp = await fetch(url, {
+      method: "POST",
+      credentials: "include",
+      mode: "cors",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ path }),
+    });
+    let data = await resp.json();
+    return `exp=${data.exp}&sig=${data.sig}`;
+  }
+
+  async function updateMediaSessionMetadata(item: PlayItem) {
     document.title = `${fileDisplayName} (${item.path})`;
     if ("mediaSession" in navigator) {
       let icon = "favicon.png";
       if ($playList.hasImage) {
-        icon = `${
-          $apiConfig.basePath
-        }/pub-icon/${$selectedCollection}/${encodeURIComponent($playList.folder)}`;
+        const iconPath = `/pub-icon/${$selectedCollection}/${$playList.folder}`;
+        try {
+          const signatureQuery = await signUrl(iconPath);
+          icon = `${$apiConfig.basePath}/pub-icon/${$selectedCollection}/${encodeURIComponent($playList.folder)}?${signatureQuery}`;
+          console.debug("Setting icon to", icon);
+        } catch (e) {
+          console.error("Error signing icon path", iconPath, e);
+        }
       }
       const { root: artist, path: album } = splitRootPath(
         splitPath(item.path).folder,

@@ -17,8 +17,7 @@ I'm definitely **interested in feedback** so you can log issues on this project.
 Comparing with native Android app there are some limitations, which are given by restrictions of mobile browsers and I do not see any possible workaround:
 1. Sensors API works only for active/visible browser window, thus for extension of sleep time by shaking you have to unlock screen first - thus it is not so useful.
 2. MediaSession on mobile browser behaves differently from native app, thus media notification is not so useful and behaves inconsistently. This will require bit more research.
-3. Javascript is paused on inactive/background windows, from what I tried it's kept running only, if audio is playing. This limits possibility to cache ahead audio files, when browser in in background and not playing. Again this will require more research. 
-
+3. Javascript is paused on inactive/background windows, from what I tried it's kept running only, if audio is playing. This limits possibility to cache ahead audio files, when browser in in background and not playing. On Android it helps to set in Chrome application settings `Battery / Unrestricted`.
 Service workers work only in secure context and same origin (or localhost). Thus caching is limited only to this setup.
 
 
